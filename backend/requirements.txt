@@ -1,0 +1,10 @@
+ruff
+ruff-lsp
+fastapi
+pydantic
+uvicorn
+sqlalchemy
+pytz
+bcrypt
+jpholiday
+apscheduler
