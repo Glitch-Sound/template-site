@@ -39,6 +39,5 @@ class User(Base, TimestampMixin):
 
     __table_args__ = (
         Index("idx_users_01", "is_deleted", "rid"),
-        Index("idx_users_02", "is_deleted", "post", "contract", "company", "id"),
     )
 # fmt: on

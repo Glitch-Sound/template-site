@@ -11,6 +11,7 @@ router = APIRouter()
 def get_users(db: Session = Depends(get_db)):
     try:
         return crud_user.get_users(db)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
