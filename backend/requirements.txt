@@ -1,6 +1,7 @@
 ruff
 ruff-lsp
 fastapi
+fastapi-users
 pydantic
 uvicorn
 sqlalchemy
