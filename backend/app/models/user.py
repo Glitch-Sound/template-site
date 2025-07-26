@@ -26,7 +26,7 @@ class User(Base, TimestampMixin):
     __tablename__ = "users"
 
     rid        = Column(Integer, primary_key=True)
-    id         = Column(String,  unique=True)
+    eid        = Column(String,  unique=True)
     username   = Column(String,  unique=True)
     password   = Column(String,  default='' )
     name       = Column(String,  default='')

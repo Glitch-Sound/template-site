@@ -4,7 +4,7 @@ from app.schemas import user as schema_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-router = APIRouter()
+router = APIRouter(tags=["User"])
 
 
 @router.get("/user", response_model=list[schema_user.User])

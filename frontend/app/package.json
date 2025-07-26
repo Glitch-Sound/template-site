@@ -13,9 +13,17 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "@types/crypto-js": "^4.2.2",
+    "@types/identicon.js": "^2.3.5",
+    "axios": "^1.11.0",
+    "crypto-js": "^4.2.0",
+    "identicon.js": "^2.3.3",
     "pinia": "^3.0.3",
     "vue": "^3.5.17",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vuetify": "^3.9.2",
+    "webfontloader": "^1.6.28"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
