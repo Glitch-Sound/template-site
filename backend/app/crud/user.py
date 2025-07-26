@@ -26,7 +26,7 @@ def get_user_by_username(db: Session, username: str) -> model_user.User:
         db.query(model_user.User)
         .filter(
             and_(
-                username == model_user.User.username,
+                model_user.User.username == username,
                 ~model_user.User.is_deleted
             )
         )
