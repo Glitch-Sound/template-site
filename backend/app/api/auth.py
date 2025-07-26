@@ -1,4 +1,3 @@
-import jwt
 from app.crud import auth as crud_auth
 from app.crud import user as crud_user
 from app.database import get_db
@@ -41,16 +40,6 @@ def refresh(data: schemas_auth.Refresh):
         return schemas_auth.Token(
             token_access=token_access, token_refresh=token_refresh
         )
-
-    except jwt.ExpiredSignatureError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
-        ) from exc
-
-    except jwt.InvalidTokenError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-        ) from exc
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
