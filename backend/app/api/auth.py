@@ -2,10 +2,34 @@ from app.crud import auth as crud_auth
 from app.crud import user as crud_user
 from app.database import get_db
 from app.schemas import auth as schemas_auth
+from app.schemas import user as schema_user
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 router = APIRouter(tags=["Auth"])
+
+
+@router.get("/setup/status", response_model=schemas_auth.Status)
+def get_status(db: Session = Depends(get_db)):
+    try:
+        list_user = crud_user.get_users(db)
+        if 0 < len(list_user):
+            return schemas_auth.Status(is_setup=True)
+        else:
+            return schemas_auth.Status(is_setup=False)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/setup/admin", response_model=schema_user.User)
+def create_user(target: schema_user.UserCreate, db: Session = Depends(get_db)):
+    try:
+        result = crud_user.create_user(db, target)
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/login", response_model=schemas_auth.Token)

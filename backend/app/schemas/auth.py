@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 
 
+class Status(BaseModel):
+    is_setup: bool
+
+
 class Token(BaseModel):
     rid: int
     token_access: str

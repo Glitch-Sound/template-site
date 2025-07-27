@@ -23,7 +23,7 @@ function clearTokens() {
   localStorage.removeItem(TOKEN_REFRESH_KEY)
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL + '/api'
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

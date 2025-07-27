@@ -1,3 +1,7 @@
+export interface Status {
+  is_setup: boolean
+}
+
 export interface Token {
   rid: number
   token_access: string

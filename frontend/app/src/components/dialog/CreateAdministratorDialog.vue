@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import type { Login } from '@/types/Auth'
+import type { UserCreate } from '@/types/User'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
 
 const emit = defineEmits(['submit'])
-const { dialog, valid, form_data, form_ref, rules, onSubmit } = useFormDialog<Login>(emit)
+const { dialog, valid, form_data, form_ref, rules, onSubmit } = useFormDialog<UserCreate>(emit)
 
 defineExpose({
   open() {
     dialog.value = true
     form_data.value = {
+      eid: '0000000',
       username: '',
       password: '',
+      name: '',
+      company: '-',
+      post: 0,
+      contract: 0,
+      price: 0,
+      is_admin: true,
     }
   },
   close() {
@@ -20,10 +27,10 @@ defineExpose({
 </script>
 
 <template>
-  <v-dialog v-model="dialog" max-width="600px">
+  <v-dialog v-model="dialog" max-width="600px" persistent>
     <v-card>
       <v-card-title>
-        <span class="dialog-title">Login</span>
+        <span class="dialog-title">Add Administrator</span>
       </v-card-title>
 
       <v-card-text>
@@ -31,7 +38,7 @@ defineExpose({
           <v-text-field
             v-model="form_data.username"
             :rules="[rules.required, rules.alphanumeric]"
-            label="Username"
+            label="User"
             autocomplete="current-user"
             required
           />
@@ -42,6 +49,13 @@ defineExpose({
             label="Password"
             type="password"
             autocomplete="current-password"
+            required
+          />
+
+          <v-text-field
+            v-model="form_data.name"
+            :rules="[rules.required, rules.username]"
+            label="Name"
             required
           />
         </v-form>
