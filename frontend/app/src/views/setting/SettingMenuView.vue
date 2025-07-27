@@ -1,4 +1,17 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+import SettingEvent from '@/views/setting/SettingEvent'
+
+const route = useRoute()
+
+const is_enable_user = computed(() => route.path === '/setting/user')
+
+const handleAddUser = () => {
+  SettingEvent.emit('openCreateUserDialog')
+}
+</script>
 
 <template>
   <v-navigation-drawer class="no-border" color="background">
@@ -15,6 +28,16 @@
           <v-icon icon="mdi-account" />
           User
         </router-link>
+
+        <template #append>
+          <v-btn
+            icon="mdi-plus-circle"
+            variant="plain"
+            size="x-small"
+            @click="handleAddUser"
+            :disabled="!is_enable_user"
+          />
+        </template>
       </v-list-item>
 
       <v-list-item>

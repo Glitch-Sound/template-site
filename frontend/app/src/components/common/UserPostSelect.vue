@@ -17,7 +17,6 @@ const emitSelected = () => {
 <template>
   <div class="d-flex justify-center">
     <v-chip-group v-model="selected_post" @update:modelValue="emitSelected">
-      <UserPostLabel :post="TypePost.NONE" />
       <UserPostLabel :post="TypePost.K" />
       <UserPostLabel :post="TypePost.C" />
       <UserPostLabel :post="TypePost.L" />

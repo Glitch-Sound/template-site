@@ -3,11 +3,11 @@ import { onMounted, ref } from 'vue'
 
 import type { User, UserCreate, UserUpdate } from '@/types/User'
 
+import SettingEvent from '@/views/setting/SettingEvent'
 import useUserStore from '@/stores/UserStore'
 import UserPostLabel from '@/components/common/UserPostLabel.vue'
 import UserContractLabel from '@/components/common/UserContractLabel.vue'
 import UserPriceLavel from '@/components/common/UserPriceLabel.vue'
-
 import CreateUserDialog from '@/components/dialog/CreateUserDialog.vue'
 import UpdateUserDialog from '@/components/dialog/UpdateUserDialog.vue'
 
@@ -30,6 +30,10 @@ const dialog_user_update = ref()
 
 onMounted(() => {
   store_user.fetchUsers()
+})
+
+SettingEvent.on('openCreateUserDialog', () => {
+  dialog_user_create.value?.open()
 })
 
 const openUpdateUserDialog = (data: User) => {
