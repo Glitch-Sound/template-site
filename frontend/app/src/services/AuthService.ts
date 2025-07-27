@@ -1,16 +1,18 @@
 import apiClient, { setTokens, getAccessToken } from '@/services/ApiClient'
-import type { Token, LoginRequest } from '@/types/Auth'
+
+import type { Token, Login } from '@/types/Auth'
 
 class AuthService {
-  public async login(username: string, password: string): Promise<void> {
-    const payload: LoginRequest = { username, password }
-    const res = await apiClient.post<Token>('/login', payload)
-    setTokens(res.data.token_access, res.data.token_refresh)
+  public async login(login: Login): Promise<Token> {
+    const response = await apiClient.post<Token>('/login', login)
+    setTokens(response.data.token_access, response.data.token_refresh)
+    return response.data
   }
 
-  public isAuthenticated(): boolean {
+  public isLogined(): boolean {
     return !!getAccessToken()
   }
 }
 
-export default new AuthService()
+const service_auth = new AuthService()
+export default service_auth

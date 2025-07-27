@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class Token(BaseModel):
+    rid: int
     token_access: str
     token_refresh: str
     token_type: str = "bearer"

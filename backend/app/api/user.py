@@ -19,6 +19,19 @@ def get_users(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@router.get("/user/{rid}", response_model=schema_user.User)
+def get_user_by_rid(
+    rid: int,
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_user.get_user_by_rid(db, rid)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
 @router.post("/user", response_model=schema_user.User)
 def create_user(
     target: schema_user.UserCreate,

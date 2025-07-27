@@ -37,7 +37,7 @@ const route = useRoute()
 
     <v-spacer />
 
-    <div class="mr-3">
+    <div class="mr-2">
       <LoginUser />
     </div>
 

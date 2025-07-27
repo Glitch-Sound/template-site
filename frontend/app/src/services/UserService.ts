@@ -2,13 +2,23 @@ import apiClient from '@/services/ApiClient'
 import type { User, UserCreate, UserUpdate } from '@/types/User'
 
 class UserService {
-  public async getUsers(): Promise<User[]> {
+  public async fetchUsers(): Promise<User[]> {
     try {
       const response = await apiClient.get<User[]>('/user')
       return response.data
     } catch (error: any) {
       console.error(error)
-      throw new Error(`getUsers: ${error?.message || error}`)
+      throw new Error(`fetchUsers: ${error?.message || error}`)
+    }
+  }
+
+  public async fetchUserByRID(rid: number): Promise<User> {
+    try {
+      const response = await apiClient.get<User>(`/user/${rid}`)
+      return response.data
+    } catch (error: any) {
+      console.error(error)
+      throw new Error(`fetchUserByRID: ${error?.message || error}`)
     }
   }
 
@@ -42,4 +52,5 @@ class UserService {
   }
 }
 
-export default new UserService()
+const service_user = new UserService()
+export default service_user

@@ -20,6 +20,21 @@ def get_users(db: Session) -> List[model_user.User]:
     return query.all()
 
 
+def get_user_by_rid(db: Session, rid: int) -> model_user.User:
+    # fmt: off
+    query = (
+        db.query(model_user.User)
+        .filter(
+            and_(
+                model_user.User.rid == rid,
+                ~model_user.User.is_deleted
+            )
+        )
+    )
+    # fmt: on
+    return query.first()
+
+
 def get_user_by_username(db: Session, username: str) -> model_user.User:
     # fmt: off
     query = (

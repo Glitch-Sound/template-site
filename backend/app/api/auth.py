@@ -19,7 +19,7 @@ def login(data: schemas_auth.Login, db: Session = Depends(get_db)):
 
         token_access, token_refresh = crud_auth.create_jwt_token_pair(user.rid)
         return schemas_auth.Token(
-            token_access=token_access, token_refresh=token_refresh
+            rid=user.rid, token_access=token_access, token_refresh=token_refresh
         )
 
     except Exception as e:
@@ -35,10 +35,10 @@ def refresh(data: schemas_auth.Refresh):
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
             )
 
-        user_id = decoded["sub"]
-        token_access, token_refresh = crud_auth.create_jwt_token_pair(user_id)
+        rid_user = decoded["sub"]
+        token_access, token_refresh = crud_auth.create_jwt_token_pair(rid_user)
         return schemas_auth.Token(
-            token_access=token_access, token_refresh=token_refresh
+            rid=rid_user, token_access=token_access, token_refresh=token_refresh
         )
 
     except Exception as e:
