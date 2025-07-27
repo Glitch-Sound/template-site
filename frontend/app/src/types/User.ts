@@ -10,10 +10,11 @@ export enum TypePost {
 
 // prettier-ignore
 export enum TypeContract {
-  NONE    = 0,
-  PROPER  = 1,
-  TEMP    = 2,
-  CONSIGN = 3,
+  NONE      = 0,
+  PROPER    = 1,
+  TEMP      = 2,
+  CONSIGN_C = 3,
+  CONSIGN_M = 4,
 }
 
 export interface User {

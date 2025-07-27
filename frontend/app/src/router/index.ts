@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import useAuthStore from '@/stores/AuthStore'
+
 import MainView from '@/views/main/MainView.vue'
 import ProjectView from '@/views/project/ProjectView.vue'
 import AccountView from '@/views/account/AccountView.vue'
@@ -20,14 +22,17 @@ const router = createRouter({
     {
       path: '/project',
       component: ProjectView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/account',
       component: AccountView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/viz',
       component: VizView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/setting',
@@ -48,6 +53,17 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+
+  if (requiresAuth && !authStore.user_login) {
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router

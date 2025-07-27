@@ -5,10 +5,11 @@ import type { User, UserCreate } from '@/types/User'
 
 import service_auth from '@/services/AuthService'
 import service_user from '@/services/UserService'
+import { saveLoginUser, loadLoginUser } from '@/stores/LocalStorage'
 
 const useAuthStore = defineStore('auth', {
   state: () => ({
-    user_login: null as User | null,
+    user_login: loadLoginUser() as User | null,
   }),
   actions: {
     async fetchStatus(): Promise<Status> {
@@ -20,6 +21,7 @@ const useAuthStore = defineStore('auth', {
     async login(login: Login): Promise<void> {
       const result = await service_auth.login(login)
       this.user_login = await service_user.fetchUserByRID(result.rid)
+      saveLoginUser(this.user_login)
     },
     isLogined(): boolean {
       return this.user_login !== null

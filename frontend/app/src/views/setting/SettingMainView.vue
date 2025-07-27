@@ -1,7 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import SettingMenuView from '@/views/setting/SettingMenuView.vue'
+import SettingContentMainView from '@/views/setting/SettingContentMainView.vue'
+</script>
 
 <template>
-  <v-main> Setting Main </v-main>
+  <SettingMenuView />
+  <SettingContentMainView />
 </template>
 
 <style scoped></style>

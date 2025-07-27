@@ -16,10 +16,11 @@ class TypePost(IntEnum):
 
 
 class TypeContract(IntEnum):
-    NONE    = 0
-    PROPER  = 1
-    TEMP    = 2
-    CONSIGN = 3
+    NONE      = 0
+    PROPER    = 1
+    TEMP      = 2
+    CONSIGN_C = 3
+    CONSIGN_M = 4
 
 
 class User(Base, TimestampMixin):

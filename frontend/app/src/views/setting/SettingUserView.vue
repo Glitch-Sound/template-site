@@ -1,7 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import SettingMenuView from '@/views/setting/SettingMenuView.vue'
+import SettingContentUserView from '@/views/setting/SettingContentUserView.vue'
+</script>
 
 <template>
-  <v-main> Setting User </v-main>
+  <SettingMenuView />
+  <SettingContentUserView />
 </template>
 
 <style scoped></style>
