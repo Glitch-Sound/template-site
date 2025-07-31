@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import type { Status, Login } from '@/types/Auth'
 import type { User, UserCreate } from '@/types/User'
 
+import { setAuthErrorCallback } from '@/services/ApiClient'
 import service_auth from '@/services/AuthService'
 import service_user from '@/services/UserService'
 import { saveLoginUser, loadLoginUser } from '@/stores/LocalStorage'
@@ -25,6 +26,12 @@ const useAuthStore = defineStore('auth', {
     },
     isLogined(): boolean {
       return this.user_login !== null
+    },
+    setupAuthErrorHandler() {
+      setAuthErrorCallback(() => {
+        this.user_login = null
+        saveLoginUser(null)
+      })
     },
   },
 })

@@ -39,6 +39,13 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config
 })
 
+type AuthErrorCallback = () => void
+let onAuthError: AuthErrorCallback | null = null
+
+function setAuthErrorCallback(cb: AuthErrorCallback) {
+  onAuthError = cb
+}
+
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
 
@@ -49,11 +56,6 @@ function subscribeTokenRefresh(cb: (token: string) => void) {
 function onRrefreshed(token: string) {
   refreshSubscribers.forEach((cb) => cb(token))
   refreshSubscribers = []
-}
-
-export let onLogout = () => {
-  clearTokens()
-  window.location.href = '/login'
 }
 
 apiClient.interceptors.response.use(
@@ -90,7 +92,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest)
       } catch (refreshErr) {
         clearTokens()
-        onLogout()
+        if (onAuthError) onAuthError()
         return Promise.reject(refreshErr)
       } finally {
         isRefreshing = false
@@ -106,4 +108,4 @@ export function isAuthenticated(): boolean {
 }
 
 export default apiClient
-export { setTokens, clearTokens, getAccessToken, getRefreshToken }
+export { setTokens, clearTokens, getAccessToken, getRefreshToken, setAuthErrorCallback }
