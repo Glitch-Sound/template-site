@@ -9,6 +9,7 @@ import VizView from '@/views/viz/VizView.vue'
 
 import SettingMainView from '@/views/setting/SettingMainView.vue'
 import SettingUserView from '@/views/setting/SettingUserView.vue'
+import SettingCompanyView from '@/views/setting/SettingCompanyView.vue'
 import SettingProjectView from '@/views/setting/SettingProjectView.vue'
 
 const router = createRouter({
@@ -44,6 +45,10 @@ const router = createRouter({
         {
           path: 'user',
           component: SettingUserView,
+        },
+        {
+          path: 'company',
+          component: SettingCompanyView,
         },
         {
           path: 'project',

@@ -7,7 +7,7 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-logger = logging.getLogger("uvicorn.access")
+logger = logging.getLogger("app.api")
 security = HTTPBearer()
 
 

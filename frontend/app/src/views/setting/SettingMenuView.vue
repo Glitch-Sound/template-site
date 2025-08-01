@@ -7,9 +7,19 @@ import SettingEvent from '@/views/setting/SettingEvent'
 const route = useRoute()
 
 const is_enable_user = computed(() => route.path === '/setting/user')
+const is_enable_company = computed(() => route.path === '/setting/company')
+const is_enable_project = computed(() => route.path === '/setting/project')
 
 const handleAddUser = () => {
   SettingEvent.emit('openCreateUserDialog')
+}
+
+const handleAddCompany = () => {
+  SettingEvent.emit('openCreateCompanyDialog')
+}
+
+const handleAddProject = () => {
+  SettingEvent.emit('openCreateProjectDialog')
 }
 </script>
 
@@ -41,10 +51,37 @@ const handleAddUser = () => {
       </v-list-item>
 
       <v-list-item>
+        <router-link to="/setting/company" class="link--normal" active-class="link--active">
+          <v-icon icon="mdi-domain" />
+          Company
+        </router-link>
+
+        <template #append>
+          <v-btn
+            icon="mdi-plus-circle"
+            variant="plain"
+            size="x-small"
+            @click="handleAddCompany"
+            :disabled="!is_enable_company"
+          />
+        </template>
+      </v-list-item>
+
+      <v-list-item>
         <router-link to="/setting/project" class="link--normal" active-class="link--active">
           <v-icon icon="mdi-grain" />
           Project
         </router-link>
+
+        <template #append>
+          <v-btn
+            icon="mdi-plus-circle"
+            variant="plain"
+            size="x-small"
+            @click="handleAddProject"
+            :disabled="!is_enable_project"
+          />
+        </template>
       </v-list-item>
     </v-sheet>
   </v-navigation-drawer>
