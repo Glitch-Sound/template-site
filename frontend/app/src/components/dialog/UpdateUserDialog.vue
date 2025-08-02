@@ -43,7 +43,6 @@ const handleContractSelected = (contract: number) => {
             :rules="[rules.required, rules.alphanumeric]"
             label="User"
             autocomplete="current-user"
-            required
           />
 
           <v-text-field
@@ -52,21 +51,19 @@ const handleContractSelected = (contract: number) => {
             label="Password"
             type="password"
             autocomplete="current-password"
-            required
           />
 
           <v-text-field
             v-model="form_data.name"
-            :rules="[rules.required, rules.username]"
+            :rules="[rules.required, rules.text]"
             label="Name"
             required
           />
 
           <v-text-field
             v-model="form_data.company"
-            :rules="[rules.required, rules.username]"
+            :rules="[rules.required, rules.text]"
             label="Company"
-            required
           />
 
           <UserPostSelect v-model="form_data.post" @itemSelected="handlePostSelected" />
@@ -74,7 +71,7 @@ const handleContractSelected = (contract: number) => {
 
           <v-text-field
             v-model="form_data.price"
-            :rules="[rules.required]"
+            :rules="[rules.required, rules.numeric]"
             label="Price"
             required
           />

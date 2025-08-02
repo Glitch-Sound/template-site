@@ -19,7 +19,7 @@ const handleAddCompany = () => {
 }
 
 const handleAddProject = () => {
-  SettingEvent.emit('openCreateProjectDialog')
+  SettingEvent.emit('openCreateProjectGroupDialog')
 }
 </script>
 

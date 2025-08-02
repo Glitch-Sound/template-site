@@ -11,7 +11,8 @@ export const useFormDialog = <T>(emits: any) => {
     alphanumeric: (value: string) =>
       /^[a-zA-Z0-9]+$/.test(value) || 'Please use alphanumeric characters only',
     numeric: (value: string) => /^[0-9]+$/.test(value) || 'Please use numbers only',
-    username: (value: string) =>
+    text: (value: string) =>
+      value === '' ||
       /^[a-zA-Z0-9\-_. \u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/.test(value) ||
       'Only letters, numbers, hyphens, underscores, dots, and spaces are allowed',
     password: (value: string) =>

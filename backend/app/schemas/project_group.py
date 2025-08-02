@@ -1,11 +1,12 @@
+from app.schemas import company as schema_company
 from pydantic import BaseModel
 
 
 class ProjectGroup(BaseModel):
     rid: int
-    rid_companies: int
     name: str
     detail: str
+    company: schema_company.Company
 
     class Config:
         orm_mode = True

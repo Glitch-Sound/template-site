@@ -6,10 +6,10 @@ import DeleteButton from '@/components/common/DeleteButton.vue'
 
 const emit = defineEmits(['submit', 'delete'])
 const { dialog, valid, form_data, form_ref, rules, submitData, deleteData } =
-  useFormDialog<UserUpdate>(emit)
+  useFormDialog<CompanyUpdate>(emit)
 
 defineExpose({
-  open(data: UserUpdate) {
+  open(data: CompanyUpdate) {
     dialog.value = true
     form_data.value = { ...data }
   },
@@ -30,12 +30,11 @@ defineExpose({
         <v-form ref="form_ref" v-model="valid" lazy-validation>
           <v-text-field
             v-model="form_data.name"
-            :rules="[rules.required, rules.username]"
+            :rules="[rules.required, rules.text]"
             label="Name"
-            required
           />
 
-          <v-textarea v-model="form_data.detail" label="Detail" />
+          <v-textarea v-model="form_data.detail" :rules="[rules.text]" label="Detail" />
         </v-form>
       </v-card-text>
 

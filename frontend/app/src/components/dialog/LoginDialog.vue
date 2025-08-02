@@ -33,7 +33,6 @@ defineExpose({
             :rules="[rules.required, rules.alphanumeric]"
             label="Username"
             autocomplete="current-user"
-            required
           />
 
           <v-text-field
@@ -42,7 +41,6 @@ defineExpose({
             label="Password"
             type="password"
             autocomplete="current-password"
-            required
           />
         </v-form>
       </v-card-text>

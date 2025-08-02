@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import type { CompanyCreate } from '@/types/Company'
+import { computed } from 'vue'
+
+import type { Company, CompanyCreate } from '@/types/Company'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
 
+import CompanySelect from '@/components/common/CompanySelect.vue'
+
 const emit = defineEmits(['submit'])
-const { dialog, valid, form_data, form_ref, rules, onSubmit } = useFormDialog<UserCreate>(emit)
+const { dialog, valid, form_data, form_ref, rules, onSubmit } = useFormDialog<CompanyCreate>(emit)
 
 defineExpose({
   open() {
     dialog.value = true
     form_data.value = {
+      rid_companies: null,
       name: '',
       detail: '',
     }
@@ -17,17 +22,29 @@ defineExpose({
     dialog.value = false
   },
 })
+
+const canSubmit = computed(() => form_data.value.rid_companies !== null)
+
+const handleCompanySelected = (company: Company) => {
+  form_data.value.rid_companies = company.rid
+}
 </script>
 
 <template>
   <v-dialog v-model="dialog" max-width="600px">
     <v-card>
       <v-card-title>
-        <span class="dialog-title">Add Company</span>
+        <span class="dialog-title">Add Project Group</span>
       </v-card-title>
 
       <v-card-text>
         <v-form ref="form_ref" v-model="valid" lazy-validation>
+          <CompanySelect
+            v-model="form_data.rid_companies"
+            @itemSelected="handleCompanySelected"
+            required
+          />
+
           <v-text-field
             v-model="form_data.name"
             :rules="[rules.required, rules.text]"
@@ -41,7 +58,7 @@ defineExpose({
       <v-card-actions>
         <v-spacer />
         <v-btn @click="dialog = false">Cancel</v-btn>
-        <v-btn color="primary" :disabled="!valid" @click="onSubmit">Submit</v-btn>
+        <v-btn color="primary" :disabled="!valid || !canSubmit" @click="onSubmit">Submit</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

@@ -1,6 +1,8 @@
+import type { Company } from '@/types/Company'
+
 export interface ProjectGroup {
   rid: number
-  rid_companies: number
+  company: Company
   name: string
   detail: string
 }
