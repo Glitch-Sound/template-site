@@ -16,13 +16,13 @@ const headers = [
   { title: '', width: '140px' },
 ]
 
-const store_project_group = useProjectStore()
+const store_project = useProjectStore()
 
 const dialog_project_group_create = ref()
 const dialog_project_group_update = ref()
 
 onMounted(() => {
-  store_project_group.fetchProjectGroups()
+  store_project.fetchProjectGroups()
 })
 
 SettingEvent.on('openCreateProjectGroupDialog', () => {
@@ -34,17 +34,17 @@ const openUpdateProjectGroupDialog = (data: ProjectGroup) => {
 }
 
 const handleCreate = async (data: ProjectGroupCreate) => {
-  await store_project_group.createProjectGroup(data)
+  await store_project.createProjectGroup(data)
   dialog_project_group_create.value?.close()
 }
 
 const handleUpdate = async (data: ProjectGroupUpdate) => {
-  await store_project_group.updateProjectGroup(data)
+  await store_project.updateProjectGroup(data)
   dialog_project_group_update.value?.close()
 }
 
 const handleDelete = async (data: ProjectGroupUpdate) => {
-  await store_project_group.deleteProjectGroup(data.rid)
+  await store_project.deleteProjectGroup(data.rid)
   dialog_project_group_update.value?.close()
 }
 </script>
@@ -52,7 +52,7 @@ const handleDelete = async (data: ProjectGroupUpdate) => {
 <template>
   <v-main>
     <v-sheet class="main">
-      <v-data-table class="bg-black" :items="store_project_group.project_groups" :headers="headers">
+      <v-data-table class="bg-black" :items="store_project.project_groups" :headers="headers">
         <template v-slot:item="{ item }">
           <tr>
             <td>{{ item.rid }}</td>
