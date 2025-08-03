@@ -1,25 +1,5 @@
-from enum import IntEnum
-
+from app.models import user as model_user
 from pydantic import BaseModel
-
-
-# fmt: off
-class TypePost(IntEnum):
-    NONE = 0
-    K    = 1
-    C    = 2
-    L    = 3
-    T    = 4
-    BP   = 5
-
-
-class TypeContract(IntEnum):
-    NONE      = 0
-    PROPER    = 1
-    TEMP      = 2
-    CONSIGN_C = 3
-    CONSIGN_M = 4
-# fmt: on
 
 
 class User(BaseModel):
@@ -28,8 +8,8 @@ class User(BaseModel):
     username: str
     name: str
     company: str
-    post: TypePost
-    contract: TypeContract
+    post: model_user.TypePost
+    contract: model_user.TypeContract
     price: int
     is_admin: bool
 
@@ -43,8 +23,8 @@ class UserCreate(BaseModel):
     password: str
     name: str
     company: str
-    post: TypePost
-    contract: TypeContract
+    post: model_user.TypePost
+    contract: model_user.TypeContract
     price: int
     is_admin: bool
 
@@ -59,8 +39,8 @@ class UserUpdate(BaseModel):
     password: str
     name: str
     company: str
-    post: TypePost
-    contract: TypeContract
+    post: model_user.TypePost
+    contract: model_user.TypeContract
     price: int
     is_admin: bool
 

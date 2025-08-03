@@ -112,3 +112,14 @@ def delete_project(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.get("/project/all", response_model=list[schema_project.ProjectList])
+def get_projects_all(
+    db: Session = Depends(get_db), _current_user=Depends(api_common.log_token_user)
+):
+    try:
+        return crud_project.get_projects_all(db)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e

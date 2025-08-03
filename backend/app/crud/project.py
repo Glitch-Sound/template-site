@@ -2,9 +2,9 @@ from typing import List
 
 from app.models import project as model_project
 from app.models import project_group as model_project_group
-from app.models import project_number as model_project_number
 from app.schemas import project as schema_project
-from sqlalchemy.orm import Session
+from sqlalchemy import and_
+from sqlalchemy.orm import Session, joinedload
 
 
 def get_project_groups(db: Session) -> List[model_project_group.ProjectGroup]:
@@ -69,9 +69,6 @@ def delete_project_group(db: Session, rid: int) -> None:
 
 
 def get_projects(db: Session) -> List[model_project.Project]:
-    model: model_project_number = None
-    print(model)
-
     # fmt: off
     query = db.query(
         model_project.Project
@@ -152,3 +149,23 @@ def delete_project(db: Session, rid: int) -> None:
 
     obj_project.is_deleted = True
     db.commit()
+
+
+def get_projects_all(db: Session) -> List[model_project_group.ProjectGroup]:
+    # fmt: off
+    query = db.query(
+        model_project_group.ProjectGroup
+    )\
+    .options(
+        joinedload(model_project_group.ProjectGroup.projects),
+        joinedload(model_project_group.ProjectGroup.projects).joinedload(model_project.Project.project_numbers)
+    )\
+    .filter(
+            and_(
+                ~model_project_group.ProjectGroup.is_deleted,
+                ~model_project.Project.is_deleted
+            )
+    )\
+    .order_by(model_project_group.ProjectGroup.rid, model_project.Project.rid)
+    # fmt: on
+    return query.all()

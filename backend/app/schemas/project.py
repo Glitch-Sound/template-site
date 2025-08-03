@@ -1,4 +1,9 @@
+from typing import List
+
+from app.models import project as model_project
+from app.models import project_number as model_project_number
 from app.schemas import company as schema_company
+from app.schemas import user as schema_user
 from pydantic import BaseModel
 
 
@@ -31,13 +36,53 @@ class ProjectGroupUpdate(BaseModel):
         orm_mode = True
 
 
+class ProjectNumber(BaseModel):
+    rid: int
+    type: model_project_number.TypeNumber
+    number: str
+    date_start: str
+    date_end: str
+
+    class Config:
+        orm_mode = True
+
+
+class ProjectNumberCreate(BaseModel):
+    rid_projects: int
+    type: model_project_number.TypeNumber
+    number: str
+    date_start: str
+    date_end: str
+
+    class Config:
+        orm_mode = True
+
+
+class ProjectNumberUpdate(BaseModel):
+    rid: int
+    rid_projects: int
+    type: model_project_number.TypeNumber
+    number: str
+    date_start: str
+    date_end: str
+
+    class Config:
+        orm_mode = True
+
+
 class Project(BaseModel):
     rid: int
-    rid_project_groups: int
-    rid_users_pm: int
-    rid_users_pl: int
-    rank: int
+    project_groups: ProjectGroup
+    user_pm: schema_user.User
+    user_pl: schema_user.User
+    rank: model_project.TypeRank
+    pre_approval: str
     title: str
+    number_parent: str
+    numbers: List[ProjectNumber]
+    number_m: bool
+    number_s: bool
+    number_o: bool
     amount_expected: int
     amount_order: int
     date_start: str
@@ -46,7 +91,6 @@ class Project(BaseModel):
     karte_plan: int
     karte_report: int
     checklist: int
-    no_parent: str
 
     class Config:
         orm_mode = True
@@ -58,7 +102,9 @@ class ProjectCreate(BaseModel):
     rid_users_pm: int
     rid_users_pl: int
     rank: int
+    pre_approval: str
     title: str
+    number_parent: str
     amount_expected: int
     amount_order: int
     date_start: str
@@ -67,7 +113,6 @@ class ProjectCreate(BaseModel):
     karte_plan: int
     karte_report: int
     checklist: int
-    no_parent: str
 
     class Config:
         orm_mode = True
@@ -75,11 +120,14 @@ class ProjectCreate(BaseModel):
 
 class ProjectUpdate(BaseModel):
     rid: int
+    rid_companies: int
     rid_project_groups: int
     rid_users_pm: int
     rid_users_pl: int
     rank: int
+    pre_approval: str
     title: str
+    number_parent: str
     amount_expected: int
     amount_order: int
     date_start: str
@@ -88,7 +136,17 @@ class ProjectUpdate(BaseModel):
     karte_plan: int
     karte_report: int
     checklist: int
-    no_parent: str
+
+    class Config:
+        orm_mode = True
+
+
+class ProjectList(BaseModel):
+    rid: int
+    name: str
+    detail: str
+    company: schema_company.Company
+    projects: List[Project]
 
     class Config:
         orm_mode = True

@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 
 
 # fmt: off
-class TypeCode(IntEnum):
+class TypeNumber(IntEnum):
     NONE = 0
     M    = 1
     S    = 1
@@ -19,8 +19,10 @@ class ProjectNumber(Base, TimestampMixin):
 
     rid          = Column(Integer, primary_key=True)
     rid_projects = Column(Integer, ForeignKey("projects.rid"))
-    type         = Column(Integer, default=TypeCode.NONE.value)
+    type         = Column(Integer, default=TypeNumber.NONE.value)
     number       = Column(String,  default="")
+    date_start   = Column(String,  default="")
+    date_end     = Column(String,  default="")
     is_deleted   = Column(Boolean, default=False)
 
     project = relationship("Project", back_populates="project_numbers", foreign_keys=[rid_projects])
