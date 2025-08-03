@@ -6,12 +6,11 @@ import useCompanyStore from '@/stores/CompanyStore'
 
 const props = defineProps<{
   modelValue?: number | null
-  initialValue?: number | null
 }>()
 
 const store_company = useCompanyStore()
 
-const selected_option = ref<number | null>(props.modelValue || props.initialValue || null)
+const selected_option = ref(props.modelValue || null)
 
 onMounted(() => {
   store_company.fetchCompanies()
