@@ -1,7 +1,9 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import MainContentMainView from '@/views/main/MainContentView.vue'
+</script>
 
 <template>
-  <v-main> Main </v-main>
+  <MainContentMainView />
 </template>
 
 <style scoped></style>

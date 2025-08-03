@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue'
 import type { ProjectGroup, ProjectGroupCreate, ProjectGroupUpdate } from '@/types/ProjectGroup'
 
 import SettingEvent from '@/views/setting/SettingEvent'
-import useProjectGroupStore from '@/stores/ProjectGroupStore'
+import useProjectStore from '@/stores/ProjectStore'
 import CreateProjectGroupDialog from '@/components/dialog/CreateProjectGroupDialog.vue'
 import UpdateProjectGroupDialog from '@/components/dialog/UpdateProjectGroupDialog.vue'
 
@@ -16,7 +16,7 @@ const headers = [
   { title: '', width: '140px' },
 ]
 
-const store_project_group = useProjectGroupStore()
+const store_project_group = useProjectStore()
 
 const dialog_project_group_create = ref()
 const dialog_project_group_update = ref()

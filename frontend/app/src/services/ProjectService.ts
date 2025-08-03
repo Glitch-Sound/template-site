@@ -1,7 +1,7 @@
 import apiClient from '@/services/ApiClient'
-import type { ProjectGroup, ProjectGroupCreate, ProjectGroupUpdate } from '@/types/ProjectGroup'
+import type { ProjectGroup, ProjectGroupCreate, ProjectGroupUpdate } from '@/types/Project'
 
-class ProjectGroupService {
+class ProjectService {
   public async fetchProjectGroups(): Promise<ProjectGroup[]> {
     try {
       const response = await apiClient.get<ProjectGroup[]>('/project_group')
@@ -42,5 +42,5 @@ class ProjectGroupService {
   }
 }
 
-const service_project_group = new ProjectGroupService()
-export default service_project_group
+const service_project = new ProjectService()
+export default service_project

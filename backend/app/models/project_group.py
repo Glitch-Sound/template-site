@@ -16,7 +16,7 @@ class ProjectGroup(Base, TimestampMixin):
 
     company = relationship("Company", back_populates="project_groups", foreign_keys=[rid_companies])
 
-    projects = relationship("Project", back_populates="project_group", foreign_keys="Project.rid_project_groups")
+    projects = relationship("Project", back_populates="project_group", foreign_keys="[Project.rid_project_groups]")
 
     __table_args__ = (
         Index("idx_project_groups_01", "is_deleted", "rid"),
