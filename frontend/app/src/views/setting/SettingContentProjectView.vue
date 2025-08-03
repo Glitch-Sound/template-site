@@ -58,7 +58,7 @@ const handleDelete = async (data: ProjectGroupUpdate) => {
             <td>{{ item.rid }}</td>
             <td>{{ item.company.name }}</td>
             <td>{{ item.name }}</td>
-            <td>{{ item.detrail }}</td>
+            <td>{{ item.detail }}</td>
             <td>
               <v-btn
                 size="small"

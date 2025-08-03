@@ -3,10 +3,13 @@ import { ref } from 'vue'
 
 import { TypePost } from '@/types/User'
 import { type EmitType } from '@/components/common/events'
-
 import UserPostLabel from '@/components/common/UserPostLabel.vue'
 
-const selected_post = ref(0)
+const props = defineProps<{
+  modelValue?: number
+}>()
+
+const selected_post = ref(props.modelValue ?? TypeContract.K)
 
 const emit = defineEmits<EmitType<'itemSelected', number>>()
 const emitSelected = () => {

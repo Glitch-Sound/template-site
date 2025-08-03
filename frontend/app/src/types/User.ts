@@ -4,8 +4,8 @@ export enum TypePost {
   K    = 1,
   C    = 2,
   L    = 3,
-  T    = 5,
-  BP   = 6,
+  T    = 4,
+  BP   = 5,
 }
 
 // prettier-ignore
@@ -26,6 +26,7 @@ export interface User {
   post: TypePost
   contract: TypeContract
   price: number
+  is_admin: boolean
 }
 
 export interface UserCreate {

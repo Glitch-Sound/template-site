@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import type { CompanyUpdate } from '@/types/Company'
+import type { ProjectGroupUpdate } from '@/types/ProjectGroup'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
 
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import CompanySelect from '@/components/common/CompanySelect.vue'
 
 const emit = defineEmits(['submit', 'delete'])
-const { dialog, valid, form_data, form_ref, rules, submitData, deleteData } =
-  useFormDialog<CompanyUpdate>(emit)
+const { dialog, valid, form_data, form_ref, rules, onSubmit, onDelete } =
+  useFormDialog<ProjectGroupUpdate>(emit)
 
 defineExpose({
-  open(data: CompanyUpdate) {
+  open(data: ProjectGroup) {
     dialog.value = true
-    form_data.value = { ...data }
+    form_data.value = {
+      rid: data.rid,
+      rid_companies: data.company.rid,
+      name: data.name,
+      detail: data.detail,
+    }
   },
   close() {
     dialog.value = false
@@ -33,7 +38,11 @@ const handleCompanySelected = (company: Company) => {
 
       <v-card-text>
         <v-form ref="form_ref" v-model="valid" lazy-validation>
-          <CompanySelect v-model="form_data.rid_companies" @itemSelected="handleCompanySelected" />
+          <CompanySelect
+            v-model="form_data.rid_companies"
+            :initialValue="form_data.rid_companies"
+            @itemSelected="handleCompanySelected"
+          />
 
           <v-text-field
             v-model="form_data.name"
@@ -46,10 +55,10 @@ const handleCompanySelected = (company: Company) => {
       </v-card-text>
 
       <v-card-actions>
-        <DeleteButton @delete="deleteData" />
+        <DeleteButton @delete="onDelete" />
         <v-spacer />
         <v-btn @click="dialog = false">Cancel</v-btn>
-        <v-btn color="primary" :disabled="!valid" @click="submitData">Submit</v-btn>
+        <v-btn color="primary" :disabled="!valid" @click="onSubmit">Submit</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

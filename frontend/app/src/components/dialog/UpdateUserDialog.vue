@@ -7,7 +7,7 @@ import UserPostSelect from '@/components/common/UserPostSelect.vue'
 import UserContractSelect from '@/components/common/UserContractSelect.vue'
 
 const emit = defineEmits(['submit', 'delete'])
-const { dialog, valid, form_data, form_ref, rules, submitData, deleteData } =
+const { dialog, valid, form_data, form_ref, rules, onSubmit, onDelete } =
   useFormDialog<UserUpdate>(emit)
 
 defineExpose({
@@ -38,6 +38,13 @@ const handleContractSelected = (contract: number) => {
 
       <v-card-text>
         <v-form ref="form_ref" v-model="valid" lazy-validation>
+          <v-text-field
+            v-model="form_data.eid"
+            :rules="[rules.required, rules.alphanumeric]"
+            label="EID"
+            autocomplete="current-user"
+          />
+
           <v-text-field
             v-model="form_data.username"
             :rules="[rules.required, rules.alphanumeric]"
@@ -79,10 +86,10 @@ const handleContractSelected = (contract: number) => {
       </v-card-text>
 
       <v-card-actions>
-        <DeleteButton @delete="deleteData" />
+        <DeleteButton @delete="onDelete" />
         <v-spacer />
         <v-btn @click="dialog = false">Cancel</v-btn>
-        <v-btn color="primary" :disabled="!valid" @click="submitData">Submit</v-btn>
+        <v-btn color="primary" :disabled="!valid" @click="onSubmit">Submit</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

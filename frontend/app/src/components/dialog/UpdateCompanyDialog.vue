@@ -5,7 +5,7 @@ import { useFormDialog } from '@/components/dialog/BaseDialog'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 
 const emit = defineEmits(['submit', 'delete'])
-const { dialog, valid, form_data, form_ref, rules, submitData, deleteData } =
+const { dialog, valid, form_data, form_ref, rules, onSubmit, onDelete } =
   useFormDialog<CompanyUpdate>(emit)
 
 defineExpose({
@@ -39,10 +39,10 @@ defineExpose({
       </v-card-text>
 
       <v-card-actions>
-        <DeleteButton @delete="deleteData" />
+        <DeleteButton @delete="onDelete" />
         <v-spacer />
         <v-btn @click="dialog = false">Cancel</v-btn>
-        <v-btn color="primary" :disabled="!valid" @click="submitData">Submit</v-btn>
+        <v-btn color="primary" :disabled="!valid" @click="onSubmit">Submit</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

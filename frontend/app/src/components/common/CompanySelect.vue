@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
 import { type EmitType } from '@/components/common/events'
-
 import useCompanyStore from '@/stores/CompanyStore'
+
+const props = defineProps<{
+  modelValue?: number | null
+  initialValue?: number | null
+}>()
 
 const store_company = useCompanyStore()
 
-const selected_option = ref<number | null>(null)
+const selected_option = ref<number | null>(props.modelValue || props.initialValue || null)
 
 onMounted(() => {
   store_company.fetchCompanies()

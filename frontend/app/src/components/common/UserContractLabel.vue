@@ -11,15 +11,6 @@ const props = defineProps<{
 <template>
   <v-chip
     size="small"
-    :value="TypeContract.NONE"
-    color="#cccccc"
-    v-if="props.contract == TypeContract.NONE"
-  >
-    NONE
-  </v-chip>
-
-  <v-chip
-    size="small"
     :value="TypeContract.PROPER"
     color="#b0e0e6"
     v-if="props.contract == TypeContract.PROPER"

@@ -56,7 +56,7 @@ const handleDelete = async (data: CompanyUpdate) => {
           <tr>
             <td>{{ item.rid }}</td>
             <td>{{ item.name }}</td>
-            <td>{{ item.detrail }}</td>
+            <td>{{ item.detail }}</td>
             <td>
               <v-btn
                 size="small"

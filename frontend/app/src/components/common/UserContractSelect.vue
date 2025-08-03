@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-import { TypeContract } from '@/types/User'
 import { type EmitType } from '@/components/common/events'
-
+import { TypeContract } from '@/types/User'
 import UserContractLabel from '@/components/common/UserContractLabel.vue'
 
-const selected_contract = ref(0)
+const props = defineProps<{
+  modelValue?: number
+}>()
+
+const selected_contract = ref(props.modelValue ?? TypeContract.PROPER)
 
 const emit = defineEmits<EmitType<'itemSelected', number>>()
 const emitSelected = () => {
@@ -17,6 +20,7 @@ const emitSelected = () => {
 <template>
   <div class="d-flex justify-center">
     <v-chip-group v-model="selected_contract" @update:modelValue="emitSelected">
+      <UserContractLabel :contract="TypeContract.NONE" />
       <UserContractLabel :contract="TypeContract.PROPER" />
       <UserContractLabel :contract="TypeContract.TEMP" />
       <UserContractLabel :contract="TypeContract.CONSIGN_C" />
