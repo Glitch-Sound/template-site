@@ -3,6 +3,7 @@ import { defineProps } from 'vue'
 
 import type { Project } from '@/types/Project'
 import RIDLabel from '@/components/common/RIDLabel.vue'
+import QuarterLabel from '@/components/common/QuarterLabel.vue'
 import RankLabelLarge from '@/components/common/RankLabelLarge.vue'
 import ProjectDateLabel from '@/components/common/ProjectDateLabel.vue'
 import AmountLabel from '@/components/common/AmountLabel.vue'
@@ -18,19 +19,18 @@ const props = defineProps<{
 <template>
   <v-sheet class="mr-5">
     <v-row>
-      <v-col cols="auto" class="d-flex align-center justify-center ml-5 mr-1 pa-1">
-        <RankLabelLarge :rank="props.project.rank" />
+      <v-col cols="auto" class="d-flex align-center justify-center ml-5">
+        <QuarterLabel :project="props.project" />
+      </v-col>
+      <v-col cols="auto" class="d-flex align-center justify-center mx-2 pa-1">
+        <RankLabelLarge :project="props.project" />
       </v-col>
       <v-col>
         <v-card>
-          <ProjectDateLabel
-            :start="props.project.date_start"
-            :delivery="props.project.date_delivery"
-            :end="props.project.date_end"
-          />
+          <ProjectDateLabel :project="props.project" />
         </v-card>
         <v-card>
-          <span class="text-subtitle-1 font-weight-bold">{{ props.project.name }}</span>
+          <span class="text-subtitle-1 font-weight-black">{{ props.project.name }}</span>
         </v-card>
       </v-col>
       <v-col cols="auto" class="mr-5">
@@ -45,7 +45,7 @@ const props = defineProps<{
         </v-card>
       </v-col>
       <v-col cols="auto" class="mr-2">
-        <UserLabel class="mb-1" :user="props.project.user_pm" />
+        <UserLabel :user="props.project.user_pm" class="mb-1" />
         <UserLabel :user="props.project.user_pl" />
       </v-col>
       <v-col cols="auto" class="d-flex align-center justify-center ga-5">

@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
+import type { Project } from '@/types/Project'
+
 const props = defineProps<{
-  start: string
-  delivery: string
-  end: string
+  project: Project
 }>()
 </script>
 
 <template>
   <span class="text-caption gray-dark">
-    {{ props.start }}
+    {{ props.project.date_start }}
     <v-icon size="x-small" class="mx-1">mdi-chevron-triple-right</v-icon>
-    {{ props.delivery }}
+    {{ props.project.date_delivery }}
     <v-icon size="x-small" class="mx-1">mdi-chevron-right</v-icon>
-    {{ props.end }}
+    {{ props.project.date_end }}
   </span>
 </template>
 
