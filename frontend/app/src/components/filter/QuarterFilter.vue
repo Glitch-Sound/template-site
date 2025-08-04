@@ -6,7 +6,7 @@ import { type EmitType } from '@/components/common/events'
 import { type FilterQuarter, TypeQuarter } from '@/types/Project'
 
 const props = defineProps<{
-  modelValue?: FilterQuarter
+  modelValue?: FilterQuarter[]
 }>()
 
 interface Filter {
@@ -27,22 +27,21 @@ const quarterOptions: FilterQuarter[] = [
 
 const selected_option = ref(props.modelValue || null)
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: FilterQuarter): void
-  (e: 'itemSelected', value: FilterQuarter): void
-}>()
-
-const itemSelected = (val: FilterQuarter) => {
-  const selectedItem = quarterOptions.find((item) => item.label === selected_option.value.label)
-  if (selectedItem) {
-    emit('update:modelValue', selectedItem.filter)
-    emit('itemSelected', selectedItem.filter)
-  }
+const emit = defineEmits<EmitType>()
+const itemSelected = (val: FilterQuarter[]) => {
+  const selectedFilters = quarterOptions
+    .filter((opt) => val.some((v) => v.label === opt.label))
+    .map((opt) => opt.filter)
+  emit('update:modelValue', selectedFilters)
+  emit('itemSelected', val)
 }
 </script>
 
 <template>
   <v-select
+    clearable
+    chips
+    multiple
     :items="quarterOptions"
     v-model="selected_option"
     label="Quarter"

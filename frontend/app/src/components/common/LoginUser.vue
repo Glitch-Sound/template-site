@@ -31,13 +31,13 @@ const onSubmitLogin = async (data: Login) => {
   </div>
   <div v-else>
     <div class="align-center d-flex">
-      <span class="mr-1">
-        {{ store_auth.user_login?.name }}
-      </span>
-
       <v-btn icon size="x-small" @click="openLoginDialog">
         <UserIcon :user="store_auth.user_login" :size="24" />
       </v-btn>
+
+      <span class="mx-2">
+        {{ store_auth.user_login?.name }}
+      </span>
     </div>
   </div>
 
