@@ -68,13 +68,23 @@ def delete_project_group(db: Session, rid: int) -> None:
     db.commit()
 
 
-def get_projects(db: Session) -> List[model_project.Project]:
+def get_projects(db: Session) -> List[model_project_group.ProjectGroup]:
     # fmt: off
     query = db.query(
-        model_project.Project
+        model_project_group.ProjectGroup
     )\
-    .filter(~model_project.Project.is_deleted)\
-    .order_by(model_project.Project.rid)
+    .options(
+        joinedload(model_project_group.ProjectGroup.projects),
+        joinedload(model_project_group.ProjectGroup.projects).joinedload(model_project.Project.project_numbers)
+    )\
+    .filter(
+            and_(
+                ~model_project_group.ProjectGroup.is_deleted,
+                model_project_group.ProjectGroup.projects.any(),
+                ~model_project.Project.is_deleted
+            )
+    )\
+    .order_by(model_project_group.ProjectGroup.rid, model_project.Project.rid)\
     # fmt: on
     return query.all()
 
@@ -88,16 +98,14 @@ def create_project(
         rid_users_pm=target.rid_users_pm,
         rid_users_pl=target.rid_users_pl,
         rank=target.rank,
-        title=target.title,
+        pre_approval=target.pre_approval,
+        name=target.name,
+        number_parent=target.number_parent,
         amount_expected=target.amount_expected,
         amount_order=target.amount_order,
         date_start=target.date_start,
         date_delivery=target.date_delivery,
-        date_end=target.date_end,
-        karte_plan=target.karte_plan,
-        karte_report=target.karte_report,
-        checklist=target.checklist,
-        no_parent=target.no_parent,
+        date_end=target.date_end
     )
     # fmt: on
 
@@ -121,16 +129,14 @@ def update_project(
     obj_project.rid_users_pm       = target.rid_users_pm
     obj_project.rid_users_pl       = target.rid_users_pl
     obj_project.rank               = target.rank
-    obj_project.title              = target.title
+    obj_project.pre_approval       = target.pre_approval
+    obj_project.name               = target.name
+    obj_project.number_parent      = target.number_parent
     obj_project.amount_expected    = target.amount_expected
     obj_project.amount_order       = target.amount_order
     obj_project.date_start         = target.date_start
     obj_project.date_delivery      = target.date_delivery
     obj_project.date_end           = target.date_end
-    obj_project.karte_plan         = target.karte_plan
-    obj_project.karte_report       = target.karte_report
-    obj_project.checklist          = target.checklist
-    obj_project.no_parent          = target.no_parent
     # fmt: on
 
     db.commit()
@@ -149,23 +155,3 @@ def delete_project(db: Session, rid: int) -> None:
 
     obj_project.is_deleted = True
     db.commit()
-
-
-def get_projects_all(db: Session) -> List[model_project_group.ProjectGroup]:
-    # fmt: off
-    query = db.query(
-        model_project_group.ProjectGroup
-    )\
-    .options(
-        joinedload(model_project_group.ProjectGroup.projects),
-        joinedload(model_project_group.ProjectGroup.projects).joinedload(model_project.Project.project_numbers)
-    )\
-    .filter(
-            and_(
-                ~model_project_group.ProjectGroup.is_deleted,
-                ~model_project.Project.is_deleted
-            )
-    )\
-    .order_by(model_project_group.ProjectGroup.rid, model_project.Project.rid)
-    # fmt: on
-    return query.all()

@@ -61,7 +61,7 @@ def delete_project_group(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.get("/project", response_model=list[schema_project.Project])
+@router.get("/project", response_model=list[schema_project.ProjectList])
 def get_projects(
     db: Session = Depends(get_db), _current_user=Depends(api_common.log_token_user)
 ):
@@ -109,17 +109,6 @@ def delete_project(
     try:
         crud_project.delete_project(db, rid)
         return {"result": "deleted"}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-
-@router.get("/project/all", response_model=list[schema_project.ProjectList])
-def get_projects_all(
-    db: Session = Depends(get_db), _current_user=Depends(api_common.log_token_user)
-):
-    try:
-        return crud_project.get_projects_all(db)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

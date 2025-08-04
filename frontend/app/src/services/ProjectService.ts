@@ -1,5 +1,13 @@
 import apiClient from '@/services/ApiClient'
-import type { ProjectGroup, ProjectGroupCreate, ProjectGroupUpdate } from '@/types/Project'
+import type {
+  ProjectGroup,
+  ProjectGroupCreate,
+  ProjectGroupUpdate,
+  Project,
+  ProjectCreate,
+  ProjectUpdate,
+  ProjectList,
+} from '@/types/Project'
 
 class ProjectService {
   public async fetchProjectGroups(): Promise<ProjectGroup[]> {
@@ -38,6 +46,45 @@ class ProjectService {
     } catch (error: any) {
       console.error(error)
       throw new Error(`deleteProjectGroup: ${error?.message || error}`)
+    }
+  }
+
+  public async fetchProjects(): Promise<ProjectList[]> {
+    try {
+      const response = await apiClient.get<ProjectList[]>('/project')
+      return response.data
+    } catch (error: any) {
+      console.error(error)
+      throw new Error(`fetchProjectGroups: ${error?.message || error}`)
+    }
+  }
+
+  public async createProject(project: ProjectCreate): Promise<Project> {
+    try {
+      const response = await apiClient.post<Project>('/project', project)
+      return response.data
+    } catch (error: any) {
+      console.error(error)
+      throw new Error(`createProject: ${error?.message || error}`)
+    }
+  }
+
+  public async updateProject(project: ProjectUpdate): Promise<Project> {
+    try {
+      const response = await apiClient.put<Project>('/project', project)
+      return response.data
+    } catch (error: any) {
+      console.error(error)
+      throw new Error(`updateProject: ${error?.message || error}`)
+    }
+  }
+
+  public async deleteProject(rid: number): Promise<void> {
+    try {
+      await apiClient.delete(`/project/${rid}`)
+    } catch (error: any) {
+      console.error(error)
+      throw new Error(`deleteProject: ${error?.message || error}`)
     }
   }
 }

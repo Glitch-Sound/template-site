@@ -10,8 +10,8 @@ from sqlalchemy.orm import relationship
 class TypeNumber(IntEnum):
     NONE = 0
     M    = 1
-    S    = 1
-    O    = 2  # noqa: E741
+    S    = 2
+    O    = 3  # noqa: E741
 
 
 class ProjectNumber(Base, TimestampMixin):

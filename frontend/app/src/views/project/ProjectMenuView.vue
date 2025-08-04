@@ -1,5 +1,9 @@
 <script setup lang="ts">
-const openCreatProjectDialog = () => {}
+import ProjectgEvent from '@/views/project/ProjectEvent'
+
+const handleAddProject = () => {
+  ProjectgEvent.emit('openCreateProjectDialog')
+}
 </script>
 
 <template>
@@ -10,7 +14,7 @@ const openCreatProjectDialog = () => {}
           width="250px"
           color="#940000"
           prepend-icon="mdi-plus-circle"
-          @click="openCreatProjectDialog"
+          @click="handleAddProject"
         >
           Project
         </v-btn>

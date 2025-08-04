@@ -12,10 +12,10 @@ const props = defineProps<{
 }>()
 
 const hash_user = computed(() => {
-  if (props.user.rid == null || props.user.name == null) {
+  if (props.user.rid == null || props.user.username == null) {
     return ''
   }
-  return CryptoJS.MD5(props.user.rid + props.user.name || '').toString()
+  return CryptoJS.MD5(props.user.rid + props.user.username || '').toString()
 })
 
 const identicon_user = computed(() => {

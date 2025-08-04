@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from app.models import project as model_project
 from app.models import project_number as model_project_number
@@ -72,14 +72,14 @@ class ProjectNumberUpdate(BaseModel):
 
 class Project(BaseModel):
     rid: int
-    project_groups: ProjectGroup
+    project_group: ProjectGroup
     user_pm: schema_user.User
     user_pl: schema_user.User
     rank: model_project.TypeRank
     pre_approval: str
-    title: str
+    name: str
     number_parent: str
-    numbers: List[ProjectNumber]
+    numbers: Optional[List[ProjectNumber]] = []
     number_m: bool
     number_s: bool
     number_o: bool
@@ -88,31 +88,27 @@ class Project(BaseModel):
     date_start: str
     date_delivery: str
     date_end: str
-    karte_plan: int
-    karte_report: int
-    checklist: int
+    karte_plan: bool
+    karte_report: bool
+    checklist: bool
 
     class Config:
         orm_mode = True
 
 
 class ProjectCreate(BaseModel):
-    rid_companies: int
     rid_project_groups: int
     rid_users_pm: int
     rid_users_pl: int
     rank: int
     pre_approval: str
-    title: str
+    name: str
     number_parent: str
     amount_expected: int
     amount_order: int
     date_start: str
     date_delivery: str
     date_end: str
-    karte_plan: int
-    karte_report: int
-    checklist: int
 
     class Config:
         orm_mode = True
@@ -120,22 +116,18 @@ class ProjectCreate(BaseModel):
 
 class ProjectUpdate(BaseModel):
     rid: int
-    rid_companies: int
     rid_project_groups: int
     rid_users_pm: int
     rid_users_pl: int
     rank: int
     pre_approval: str
-    title: str
+    name: str
     number_parent: str
     amount_expected: int
     amount_order: int
     date_start: str
     date_delivery: str
     date_end: str
-    karte_plan: int
-    karte_report: int
-    checklist: int
 
     class Config:
         orm_mode = True
@@ -144,7 +136,6 @@ class ProjectUpdate(BaseModel):
 class ProjectList(BaseModel):
     rid: int
     name: str
-    detail: str
     company: schema_company.Company
     projects: List[Project]
 

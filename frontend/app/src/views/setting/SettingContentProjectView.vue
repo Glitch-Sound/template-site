@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 
 import type { ProjectGroup, ProjectGroupCreate, ProjectGroupUpdate } from '@/types/ProjectGroup'
-
 import SettingEvent from '@/views/setting/SettingEvent'
 import useProjectStore from '@/stores/ProjectStore'
 import CreateProjectGroupDialog from '@/components/dialog/CreateProjectGroupDialog.vue'

@@ -25,7 +25,7 @@ class Project(Base, TimestampMixin):
     rid_users_pl       = Column(Integer, ForeignKey("users.rid"))
     rank               = Column(Integer, default=TypeRank.NONE.value)
     pre_approval       = Column(String,  default="")
-    title              = Column(String,  default="")
+    name               = Column(String,  default="")
     number_parent      = Column(String,  default="")
     number_m           = Column(Boolean, default=False)
     number_s           = Column(Boolean, default=False)
