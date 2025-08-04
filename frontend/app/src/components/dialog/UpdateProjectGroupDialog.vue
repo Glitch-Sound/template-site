@@ -38,11 +38,7 @@ const handleCompanySelected = (company: Company) => {
 
       <v-card-text>
         <v-form ref="form_ref" v-model="valid" lazy-validation>
-          <CompanySelect
-            v-model="form_data.rid_companies"
-            :initialValue="form_data.rid_companies"
-            @itemSelected="handleCompanySelected"
-          />
+          <CompanySelect v-model="form_data.rid_companies" @itemSelected="handleCompanySelected" />
 
           <v-text-field
             v-model="form_data.name"

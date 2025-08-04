@@ -67,7 +67,7 @@ export interface ProjectNumberUpdate {
 
 export interface Project {
   rid: number
-  project_groups: ProjectGroup
+  project_group: ProjectGroup
   user_pm: User
   user_pl: User
   rank: TypeRank
@@ -89,7 +89,7 @@ export interface Project {
 }
 
 export interface ProjectCreate {
-  rid_project_groups: number
+  rid_project_group: number
   rid_users_pm: number
   rid_users_pl: number
   rank: TypeRank
@@ -105,7 +105,7 @@ export interface ProjectCreate {
 
 export interface ProjectUpdate {
   rid: number
-  rid_project_groups: number
+  rid_project_group: number
   rid_users_pm: number
   rid_users_pl: number
   rank: TypeRank

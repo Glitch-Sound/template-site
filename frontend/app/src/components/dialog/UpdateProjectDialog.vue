@@ -1,48 +1,39 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
-import { TypeRank } from '@/types/Project'
-import type { User } from '@/types/user'
-import type { ProjectCreate, ProjectGroup } from '@/types/Project'
+import type { ProjectUpdate } from '@/types/Project'
+import type { User } from '@/types/User'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
+import DeleteButton from '@/components/common/DeleteButton.vue'
 import ProjectGroupSelect from '@/components/common/ProjectGroupSelect.vue'
 import UserSelect from '@/components/common/UserSelect.vue'
 import RankSelect from '@/components/common/RankSelect.vue'
 
-const emit = defineEmits(['submit'])
-const { dialog, valid, form_data, form_ref, rules, onSubmit } = useFormDialog<ProjectCreate>(emit)
+const emit = defineEmits(['submit', 'delete'])
+const { dialog, valid, form_data, form_ref, rules, onSubmit, onDelete } =
+  useFormDialog<ProjectUpdate>(emit)
 
 defineExpose({
-  open() {
+  open(data: Project) {
     dialog.value = true
     form_data.value = {
-      rid_project_group: null,
-      rid_users_pm: null,
-      rid_users_pl: null,
-      rank: TypeRank.E,
-      pre_approval: '',
-      name: '',
-      number_parent: '',
-      amount_expected: 0,
-      amount_order: 0,
-      date_start: '',
-      date_delivery: '',
-      date_end: '',
+      rid: data.rid,
+      rid_project_group: data.project_group.rid,
+      rid_users_pm: data.user_pm.rid,
+      rid_users_pl: data.user_pl.rid,
+      rank: data.rank,
+      pre_approval: data.pre_approval,
+      name: data.name,
+      number_parent: data.number_parent,
+      amount_expected: data.amount_expected,
+      amount_order: data.amount_order,
+      date_start: data.date_start,
+      date_delivery: data.date_delivery,
+      date_end: data.date_end,
     }
   },
   close() {
     dialog.value = false
   },
 })
-
-const canSubmit = computed(
-  () =>
-    form_data.value.rid_project_group !== null &&
-    form_data.value.rid_users_pm !== null &&
-    form_data.value.rid_users_pl !== null &&
-    form_data.value.rank !== null &&
-    form_data.value.name !== '',
-)
 
 const handleProjectGroupSelected = (project_group: ProjectGroup) => {
   form_data.value.rid_project_group = project_group.rid
@@ -65,7 +56,7 @@ const handleRankSelected = (rank: number) => {
   <v-dialog v-model="dialog" max-width="600px">
     <v-card>
       <v-card-title>
-        <span class="dialog-title">Add Project</span>
+        <span class="dialog-title">Update Project</span>
       </v-card-title>
 
       <v-card-text>
@@ -118,9 +109,10 @@ const handleRankSelected = (rank: number) => {
       </v-card-text>
 
       <v-card-actions>
+        <DeleteButton @delete="onDelete" />
         <v-spacer />
         <v-btn @click="dialog = false">Cancel</v-btn>
-        <v-btn color="primary" :disabled="!canSubmit" @click="onSubmit">Submit</v-btn>
+        <v-btn color="primary" :disabled="!valid" @click="onSubmit">Submit</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
