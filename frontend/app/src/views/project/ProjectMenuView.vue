@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import ProjectgEvent from '@/views/project/ProjectEvent'
+import { ref } from 'vue'
+
+import { FilterQuarter, TypeQuarter } from '@/types/Project'
+
+import ProjectEvent from '@/views/project/ProjectEvent'
+import QuarterFilter from '@/components/filter/QuarterFilter.vue'
+
+const filter_quarter = ref<FilterQuarter>()
 
 const handleAddProject = () => {
-  ProjectgEvent.emit('openCreateProjectDialog')
+  console.log(filter_quarter.value)
+  ProjectEvent.emit('openCreateProjectDialog')
 }
 </script>
 
@@ -20,7 +28,10 @@ const handleAddProject = () => {
         </v-btn>
       </v-list-item>
 
-      <v-list-item> FILTER 1 </v-list-item>
+      <v-list-item>
+        <QuarterFilter v-model="filter_quarter" />
+      </v-list-item>
+
       <v-list-item> FILTER 2 </v-list-item>
       <v-list-item> FILTER 3 </v-list-item>
     </v-sheet>

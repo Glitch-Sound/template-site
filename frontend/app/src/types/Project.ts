@@ -20,6 +20,15 @@ export enum TypeNumber {
   O    = 3
 }
 
+// prettier-ignore
+export enum TypeQuarter {
+  NONE = 0,
+  Q1   = 1,
+  Q2   = 2,
+  Q3   = 3,
+  Q4   = 4,
+}
+
 export interface ProjectGroup {
   rid: number
   name: string
@@ -124,4 +133,9 @@ export interface ProjectList {
   name: string
   company: Company
   projects: Project[]
+}
+
+export interface FilterQuarter {
+  year: number
+  quarter: TypeQuarter
 }
