@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import useAuthStore from '@/stores/AuthStore'
+import { useAuthStore } from '@/stores/AuthStore'
 
 import MainView from '@/views/main/MainView.vue'
 import ProjectView from '@/views/project/ProjectView.vue'
@@ -60,14 +60,11 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
-
-  if (requiresAuth && !authStore.user_login) {
-    next('/')
-  } else {
-    next()
+router.beforeEach((to) => {
+  const store_auth = useAuthStore()
+  const requiresAuth = to.matched.some((r) => r.meta.requiresAuth)
+  if (requiresAuth && !store_auth.is_logined) {
+    return { path: '/' }
   }
 })
 

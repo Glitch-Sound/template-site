@@ -1,42 +1,45 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import type { Login } from '@/types/Auth'
-
-import useAuthStore from '@/stores/AuthStore'
+import { useAuthStore } from '@/stores/AuthStore'
 import UserIcon from '@/components/common/UserIcon.vue'
 import LoginDialog from '@/components/dialog/LoginDialog.vue'
 
-const store_auth = useAuthStore()
+const auth = useAuthStore()
+
+const { user_logined, is_logined } = storeToRefs(auth)
+const { login } = auth
 
 const dialog_login = ref()
 
-const openLoginDialog = () => {
+function openLoginDialog() {
   dialog_login.value?.open()
 }
 
-const onSubmitLogin = async (data: Login) => {
+async function onSubmitLogin(data: Login) {
   try {
-    await store_auth.login(data)
+    await login(data)
     dialog_login.value?.close()
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 </script>
 
 <template>
-  <div v-if="!store_auth.isLogined()">
+  <div v-if="!is_logined">
     <v-btn variant="text" @click="openLoginDialog">Login</v-btn>
   </div>
   <div v-else>
     <div class="align-center d-flex">
       <v-btn icon size="x-small" @click="openLoginDialog">
-        <UserIcon :user="store_auth.user_login" :size="24" />
+        <UserIcon :user="user_logined!" :size="24" />
       </v-btn>
 
       <span class="mx-2">
-        {{ store_auth.user_login?.name }}
+        {{ user_logined?.name }}
       </span>
     </div>
   </div>
