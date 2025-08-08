@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProjectUpdate } from '@/types/Project'
+import type { ProjectGroup, Project, ProjectUpdate } from '@/types/Project'
 import type { User } from '@/types/User'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
 import DeleteButton from '@/components/common/DeleteButton.vue'
@@ -16,7 +16,7 @@ defineExpose({
     dialog.value = true
     form_data.value = {
       rid: data.rid,
-      rid_project_group: data.project_group.rid,
+      rid_project_groups: data.project_group.rid,
       rid_users_pm: data.user_pm.rid,
       rid_users_pl: data.user_pl.rid,
       rank: data.rank,
@@ -36,7 +36,7 @@ defineExpose({
 })
 
 const handleProjectGroupSelected = (project_group: ProjectGroup) => {
-  form_data.value.rid_project_group = project_group.rid
+  form_data.value.rid_project_groups = project_group.rid
 }
 
 const handleUserPMSelected = (user: User) => {
@@ -62,7 +62,7 @@ const handleRankSelected = (rank: number) => {
       <v-card-text>
         <v-form ref="form_ref" v-model="valid" lazy-validation>
           <ProjectGroupSelect
-            v-model="form_data.rid_project_group"
+            v-model="form_data.rid_project_groups"
             @itemSelected="handleProjectGroupSelected"
           />
 

@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 import { TypeRank } from '@/types/Project'
-import type { User } from '@/types/user'
+import type { User } from '@/types/User'
 import type { ProjectCreate, ProjectGroup } from '@/types/Project'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
 import ProjectGroupSelect from '@/components/common/ProjectGroupSelect.vue'
@@ -16,10 +16,10 @@ defineExpose({
   open() {
     dialog.value = true
     form_data.value = {
-      rid_project_group: null,
-      rid_users_pm: null,
-      rid_users_pl: null,
-      rank: TypeRank.E,
+      rid_project_groups: 0,
+      rid_users_pm: 0,
+      rid_users_pl: 0,
+      rank: TypeRank.NONE,
       pre_approval: '',
       name: '',
       number_parent: '',
@@ -37,15 +37,15 @@ defineExpose({
 
 const canSubmit = computed(
   () =>
-    form_data.value.rid_project_group !== null &&
-    form_data.value.rid_users_pm !== null &&
-    form_data.value.rid_users_pl !== null &&
-    form_data.value.rank !== null &&
+    form_data.value.rid_project_groups !== 0 &&
+    form_data.value.rid_users_pm !== 0 &&
+    form_data.value.rid_users_pl !== 0 &&
+    form_data.value.rank !== TypeRank.NONE &&
     form_data.value.name !== '',
 )
 
 const handleProjectGroupSelected = (project_group: ProjectGroup) => {
-  form_data.value.rid_project_group = project_group.rid
+  form_data.value.rid_project_groups = project_group.rid
 }
 
 const handleUserPMSelected = (user: User) => {
@@ -71,7 +71,7 @@ const handleRankSelected = (rank: number) => {
       <v-card-text>
         <v-form ref="form_ref" v-model="valid" lazy-validation>
           <ProjectGroupSelect
-            v-model="form_data.rid_project_group"
+            v-model="form_data.rid_project_groups"
             @itemSelected="handleProjectGroupSelected"
           />
 
