@@ -1,40 +1,57 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
-import { type EmitType } from '@/components/common/events'
-import useProjectStore from '@/stores/ProjectStore'
+import type { ProjectGroup } from '@/types/Project'
+import { useProjectStore } from '@/stores/ProjectStore'
 
 const props = defineProps<{
   modelValue?: number | null
 }>()
 
+const emit = defineEmits<{
+  'update:modelValue': [value: number | null]
+  itemSelected: [projectGroup: ProjectGroup]
+}>()
+
 const store_project = useProjectStore()
+const { project_groups, is_loading_groups } = storeToRefs(store_project)
+const { fetchProjectGroups, getGroupByRid } = store_project
 
-const selected_option = ref(props.modelValue || null)
+const selected_option = ref<number | null>(props.modelValue ?? null)
 
-onMounted(() => {
-  store_project.fetchProjectGroups()
+watch(
+  () => props.modelValue,
+  (v) => {
+    selected_option.value = v ?? null
+  },
+)
+
+watch(selected_option, (v) => {
+  emit('update:modelValue', v ?? null)
+  const item = v != null ? getGroupByRid(v) : undefined
+  if (item) emit('itemSelected', item)
 })
 
-const emit = defineEmits<EmitType>()
-const itemSelected = () => {
-  const selectedItem = store_project.project_groups.find(
-    (item) => item.rid === selected_option.value,
-  )
-  if (selectedItem) {
-    emit('itemSelected', selectedItem)
+onMounted(async () => {
+  try {
+    await fetchProjectGroups()
+  } catch (e) {
+    console.error(e)
   }
-}
+})
 </script>
 
 <template>
   <v-select
-    :items="store_project.project_groups"
+    :items="project_groups"
     v-model="selected_option"
     label="Project Group"
     item-title="name"
     item-value="rid"
-    @update:modelValue="itemSelected"
+    :loading="is_loading_groups"
+    :disabled="is_loading_groups"
+    hide-details="auto"
   />
 </template>
 

@@ -1,28 +1,46 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
-import { type EmitType } from '@/components/common/events'
-import useUserStore from '@/stores/UserStore'
+import type { User } from '@/types/User'
+import { useUserStore } from '@/stores/UserStore'
 
 const props = defineProps<{
   modelValue?: number[] | null
   label?: string
 }>()
 
+const emit = defineEmits<{
+  'update:modelValue': [value: number[]]
+  itemSelected: [users: User[]]
+}>()
+
 const store_user = useUserStore()
+const { users, is_loading } = storeToRefs(store_user)
+const { fetchUsers } = store_user
 
 const selected_option = ref<number[]>(props.modelValue ?? [])
 
-onMounted(() => {
-  store_user.fetchUsers()
+onMounted(async () => {
+  try {
+    await fetchUsers()
+  } catch (e) {
+    console.error(e)
+  }
 })
 
-const emit = defineEmits<EmitType>()
-const itemSelected = (val: number[]) => {
-  const selectedFilters = store_user.users.filter((user) => val.includes(user.rid))
-  emit('itemSelected', selectedFilters)
+watch(
+  () => props.modelValue,
+  (v) => {
+    selected_option.value = v ?? []
+  },
+)
+
+watch(selected_option, (val) => {
   emit('update:modelValue', val)
-}
+  const selectedFilters = users.value.filter((user) => val.includes(user.rid))
+  emit('itemSelected', selectedFilters)
+})
 </script>
 
 <template>
@@ -30,12 +48,14 @@ const itemSelected = (val: number[]) => {
     clearable
     chips
     multiple
-    :items="store_user.users"
+    :items="users"
     v-model="selected_option"
     :label="props.label ?? 'User'"
     item-title="name"
     item-value="rid"
-    @update:modelValue="itemSelected"
+    :loading="is_loading"
+    :disabled="is_loading"
+    hide-details="auto"
   />
 </template>
 

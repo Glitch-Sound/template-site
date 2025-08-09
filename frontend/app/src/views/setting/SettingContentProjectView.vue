@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 
-import type { ProjectGroup, ProjectGroupCreate, ProjectGroupUpdate } from '@/types/ProjectGroup'
+import type { ProjectGroup, ProjectGroupCreate, ProjectGroupUpdate } from '@/types/Project'
+import { useProjectStore } from '@/stores/ProjectStore'
 import SettingEvent from '@/views/setting/SettingEvent'
-import useProjectStore from '@/stores/ProjectStore'
 import CreateProjectGroupDialog from '@/components/dialog/CreateProjectGroupDialog.vue'
 import UpdateProjectGroupDialog from '@/components/dialog/UpdateProjectGroupDialog.vue'
 
@@ -16,12 +17,19 @@ const headers = [
 ]
 
 const store_project = useProjectStore()
+const { project_groups, is_loading_groups } = storeToRefs(store_project)
+const { fetchProjectGroups, createProjectGroup, updateProjectGroup, deleteProjectGroup } =
+  store_project
 
 const dialog_project_group_create = ref()
 const dialog_project_group_update = ref()
 
-onMounted(() => {
-  store_project.fetchProjectGroups()
+onMounted(async () => {
+  try {
+    await fetchProjectGroups()
+  } catch (e) {
+    console.error(e)
+  }
 })
 
 SettingEvent.on('openCreateProjectGroupDialog', () => {
@@ -33,26 +41,44 @@ const openUpdateProjectGroupDialog = (data: ProjectGroup) => {
 }
 
 const handleCreate = async (data: ProjectGroupCreate) => {
-  await store_project.createProjectGroup(data)
-  dialog_project_group_create.value?.close()
+  try {
+    await createProjectGroup(data)
+    dialog_project_group_create.value?.close()
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleUpdate = async (data: ProjectGroupUpdate) => {
-  await store_project.updateProjectGroup(data)
-  dialog_project_group_update.value?.close()
+  try {
+    await updateProjectGroup(data)
+    dialog_project_group_update.value?.close()
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleDelete = async (data: ProjectGroupUpdate) => {
-  await store_project.deleteProjectGroup(data.rid)
-  dialog_project_group_update.value?.close()
+  try {
+    await deleteProjectGroup(data.rid)
+    dialog_project_group_update.value?.close()
+  } catch (e) {
+    console.error(e)
+  }
 }
 </script>
 
 <template>
   <v-main>
     <v-sheet class="main">
-      <v-data-table class="bg-black" :items="store_project.project_groups" :headers="headers">
-        <template v-slot:item="{ item }">
+      <v-data-table
+        class="bg-black"
+        :items="project_groups"
+        :headers="headers"
+        :loading="is_loading_groups"
+        loading-text="Loading project groups..."
+      >
+        <template #item="{ item }">
           <tr>
             <td>{{ item.rid }}</td>
             <td>{{ item.company.name }}</td>
@@ -63,6 +89,7 @@ const handleDelete = async (data: ProjectGroupUpdate) => {
                 size="small"
                 prepend-icon="mdi-pencil"
                 variant="outlined"
+                :disabled="is_loading_groups"
                 @click="openUpdateProjectGroupDialog(item)"
               >
                 UPDATE

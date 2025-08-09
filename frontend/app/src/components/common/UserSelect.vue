@@ -1,39 +1,58 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
-import { type EmitType } from '@/components/common/events'
-import useUserStore from '@/stores/UserStore'
+import type { User } from '@/types/User'
+import { useUserStore } from '@/stores/UserStore'
 
 const props = defineProps<{
   modelValue?: number | null
   label?: string
 }>()
 
+const emit = defineEmits<{
+  'update:modelValue': [value: number | null]
+  itemSelected: [user: User]
+}>()
+
 const store_user = useUserStore()
+const { users, is_loading } = storeToRefs(store_user)
+const { fetchUsers, getByRid } = store_user
 
-const selected_option = ref(props.modelValue || null)
+const selected_option = ref<number | null>(props.modelValue ?? null)
 
-onMounted(() => {
-  store_user.fetchUsers()
+watch(
+  () => props.modelValue,
+  (v) => {
+    selected_option.value = v ?? null
+  },
+)
+
+watch(selected_option, (v) => {
+  emit('update:modelValue', v ?? null)
+  const item = v != null ? getByRid(v) : undefined
+  if (item) emit('itemSelected', item)
 })
 
-const emit = defineEmits<EmitType>()
-const itemSelected = () => {
-  const selectedItem = store_user.users.find((item) => item.rid === selected_option.value)
-  if (selectedItem) {
-    emit('itemSelected', selectedItem)
+onMounted(async () => {
+  try {
+    await fetchUsers()
+  } catch (e) {
+    console.error(e)
   }
-}
+})
 </script>
 
 <template>
   <v-select
-    :items="store_user.users"
+    :items="users"
     v-model="selected_option"
     :label="props.label ?? 'User'"
     item-title="name"
     item-value="rid"
-    @update:modelValue="itemSelected"
+    :loading="is_loading"
+    :disabled="is_loading"
+    hide-details="auto"
   />
 </template>
 

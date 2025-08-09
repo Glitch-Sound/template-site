@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { defineProps, ref } from 'vue'
+import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import type { Project, ProjectUpdate } from '@/types/Project'
-import useProjectStore from '@/stores/ProjectStore'
-import RIDLabel from '@/components/common/RIDLabel.vue'
+import { useProjectStore } from '@/stores/ProjectStore'
+
 import QuarterLabel from '@/components/common/QuarterLabel.vue'
 import RankLabelLarge from '@/components/common/RankLabelLarge.vue'
 import ProjectDateLabel from '@/components/common/ProjectDateLabel.vue'
@@ -18,16 +19,24 @@ const props = defineProps<{
 }>()
 
 const store_project = useProjectStore()
+const { is_loading_projects } = storeToRefs(store_project)
+const { updateProject } = store_project
 
 const dialog_project_update = ref()
 
-const openUpdateProjectDialog = () => {
-  dialog_project_update.value?.open(props.project)
+function openUpdateProjectDialog() {
+  if (!is_loading_projects.value) {
+    dialog_project_update.value?.open(props.project)
+  }
 }
 
-const handleUpdate = async (data: ProjectUpdate) => {
-  await store_project.updateProject(data)
-  dialog_project_update.value?.close()
+async function handleUpdate(data: ProjectUpdate) {
+  try {
+    await updateProject(data)
+    dialog_project_update.value?.close()
+  } catch (e) {
+    console.error(e)
+  }
 }
 </script>
 
@@ -74,9 +83,21 @@ const handleUpdate = async (data: ProjectUpdate) => {
       <v-col cols="auto" class="d-flex align-center justify-center ga-5">
         <v-icon color="#c0c0c0">mdi-message-bulleted</v-icon>
 
-        <v-icon color="#c0c0c0" @click="openUpdateProjectDialog" style="cursor: pointer">
-          mdi-pencil
-        </v-icon>
+        <v-tooltip text="Update Project" location="top">
+          <template #activator="{ props: vprops }">
+            <v-icon
+              v-bind="vprops"
+              color="#c0c0c0"
+              :class="[
+                { 'opacity-50': is_loading_projects, 'cursor-pointer': !is_loading_projects },
+              ]"
+              :disabled="is_loading_projects"
+              @click="openUpdateProjectDialog"
+            >
+              mdi-pencil
+            </v-icon>
+          </template>
+        </v-tooltip>
       </v-col>
     </v-row>
   </v-sheet>
@@ -86,4 +107,10 @@ const handleUpdate = async (data: ProjectUpdate) => {
 
 <style scoped>
 @import '@/assets/main.css';
+.cursor-pointer {
+  cursor: pointer;
+}
+.opacity-50 {
+  opacity: 0.5;
+}
 </style>

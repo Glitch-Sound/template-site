@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
-import type { ProjectGroup } from '@/types/Project'
+import type { ProjectList } from '@/types/Project'
 
 const props = defineProps<{
-  project_group: ProjectGroup
+  project_group: ProjectList
 }>()
 </script>
 

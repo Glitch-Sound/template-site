@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import type { User, UserCreate, UserUpdate } from '@/types/User'
-
+import { useUserStore } from '@/stores/UserStore'
 import SettingEvent from '@/views/setting/SettingEvent'
-import useUserStore from '@/stores/UserStore'
 import UserPostLabel from '@/components/common/UserPostLabel.vue'
 import UserContractLabel from '@/components/common/UserContractLabel.vue'
 import UserPriceLavel from '@/components/common/UserPriceLabel.vue'
@@ -24,12 +24,18 @@ const headers = [
 ]
 
 const store_user = useUserStore()
+const { users, is_loading } = storeToRefs(store_user)
+const { fetchUsers, createUser, updateUser, deleteUser } = store_user
 
 const dialog_user_create = ref()
 const dialog_user_update = ref()
 
-onMounted(() => {
-  store_user.fetchUsers()
+onMounted(async () => {
+  try {
+    await fetchUsers()
+  } catch (e) {
+    console.error(e)
+  }
 })
 
 SettingEvent.on('openCreateUserDialog', () => {
@@ -41,26 +47,44 @@ const openUpdateUserDialog = (data: User) => {
 }
 
 const handleCreate = async (data: UserCreate) => {
-  await store_user.createUser(data)
-  dialog_user_create.value?.close()
+  try {
+    await createUser(data)
+    dialog_user_create.value?.close()
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleUpdate = async (data: UserUpdate) => {
-  await store_user.updateUser(data)
-  dialog_user_update.value?.close()
+  try {
+    await updateUser(data)
+    dialog_user_update.value?.close()
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const handleDelete = async (data: UserUpdate) => {
-  await store_user.deleteUser(data.rid)
-  dialog_user_update.value?.close()
+  try {
+    await deleteUser(data.rid)
+    dialog_user_update.value?.close()
+  } catch (e) {
+    console.error(e)
+  }
 }
 </script>
 
 <template>
   <v-main>
     <v-sheet class="main">
-      <v-data-table class="bg-black" :items="store_user.users" :headers="headers">
-        <template v-slot:item="{ item }">
+      <v-data-table
+        class="bg-black"
+        :items="users"
+        :headers="headers"
+        :loading="is_loading"
+        loading-text="Loading users..."
+      >
+        <template #item="{ item }">
           <tr>
             <td>{{ item.rid }}</td>
             <td>{{ item.eid }}</td>
@@ -75,6 +99,7 @@ const handleDelete = async (data: UserUpdate) => {
                 size="small"
                 prepend-icon="mdi-pencil"
                 variant="outlined"
+                :disabled="is_loading"
                 @click="openUpdateUserDialog(item)"
               >
                 UPDATE
@@ -90,6 +115,4 @@ const handleDelete = async (data: UserUpdate) => {
   <UpdateUserDialog ref="dialog_user_update" @submit="handleUpdate" @delete="handleDelete" />
 </template>
 
-<style scoped>
-@import '@/assets/main.css';
-</style>
+<style scoped></style>

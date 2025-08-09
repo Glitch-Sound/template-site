@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 
 // prettier-ignore
 const TOKEN_ACCESS_KEY  = 'token_access'
@@ -34,7 +34,7 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token_access = getAccessToken()
   if (token_access && config.headers) {
-    ;(config.headers as any)['Authorization'] = `Bearer ${token_access}`
+    config.headers['Authorization'] = `Bearer ${token_access}`
   }
   return config
 })
@@ -59,16 +59,22 @@ function onRrefreshed(token: string) {
 }
 
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response) => response,
   async (error) => {
-    const originalRequest = error.config
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    if (error.response?.status === 401 && !originalRequest._retry && getRefreshToken()) {
+    if (!error.response) {
+      console.error('Network/CORS error:', error)
+      return Promise.reject(error)
+    }
+
+    if (error.response.status === 401 && !originalRequest._retry && getRefreshToken()) {
       originalRequest._retry = true
 
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           subscribeTokenRefresh((newToken: string) => {
+            originalRequest.headers = originalRequest.headers || {}
             originalRequest.headers['Authorization'] = `Bearer ${newToken}`
             resolve(apiClient(originalRequest))
           })
@@ -77,22 +83,22 @@ apiClient.interceptors.response.use(
 
       isRefreshing = true
       try {
-        const refreshRes = await axios.post(
-          `${API_BASE_URL}/refresh`,
-          { token_refresh: getRefreshToken() },
-          { headers: { 'Content-Type': 'application/json' } },
-        )
+        const refreshRes = await axios.post('/refresh', {
+          token_refresh: getRefreshToken(),
+        })
+
         const { token_access, token_refresh } = refreshRes.data
         setTokens(token_access, token_refresh)
 
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token_access}`
-        onRrefreshed(token_access)
+        onRrefreshed(token_access) // キューを解放
 
+        originalRequest.headers = originalRequest.headers || {}
         originalRequest.headers['Authorization'] = `Bearer ${token_access}`
         return apiClient(originalRequest)
       } catch (refreshErr) {
         clearTokens()
-        if (onAuthError) onAuthError()
+        onAuthError?.()
         return Promise.reject(refreshErr)
       } finally {
         isRefreshing = false
