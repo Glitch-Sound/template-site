@@ -30,6 +30,11 @@ export enum TypeQuarter {
 }
 
 export interface ProjectGroup {
+  year: number
+  quarter: TypeQuarter
+}
+
+export interface ProjectGroup {
   rid: number
   name: string
   detail: string
@@ -72,6 +77,21 @@ export interface ProjectNumberUpdate {
   number: string
   date_start: string
   date_end: string
+}
+
+export interface TargetQuarter {
+  year: number
+  quarter: TypeQuarter
+}
+
+export interface SearchCondition {
+  target: TargetQuarter[]
+  users_pm: number[]
+  rid_users_pl: number[]
+  is_none_pre_approval: boolean
+  is_none_number_m: boolean
+  is_none_number_s: boolean
+  is_none_number_o: boolean
 }
 
 export interface Project {

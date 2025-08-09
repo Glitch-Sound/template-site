@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 router = APIRouter(tags=["Project"])
 
 
-@router.get("/project_group", response_model=list[schema_project.ProjectGroup])
+@router.get("/project_groups", response_model=list[schema_project.ProjectGroup])
 def get_project_groups(
     db: Session = Depends(get_db), _current_user=Depends(api_common.log_token_user)
 ):
@@ -19,7 +19,7 @@ def get_project_groups(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.post("/project_group", response_model=schema_project.ProjectGroup)
+@router.post("/project_groups", response_model=schema_project.ProjectGroup)
 def create_project_group(
     target: schema_project.ProjectGroupCreate,
     db: Session = Depends(get_db),
@@ -33,7 +33,7 @@ def create_project_group(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.put("/project_group", response_model=schema_project.ProjectGroup)
+@router.put("/project_groups", response_model=schema_project.ProjectGroup)
 def update_project_group(
     target: schema_project.ProjectGroupUpdate,
     db: Session = Depends(get_db),
@@ -47,7 +47,7 @@ def update_project_group(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.delete("/project_group/{rid}", response_model=None)
+@router.delete("/project_groups/{rid}", response_model=None)
 def delete_project_group(
     rid: int,
     db: Session = Depends(get_db),
@@ -61,18 +61,20 @@ def delete_project_group(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.get("/project", response_model=list[schema_project.ProjectList])
+@router.post("/projects/search", response_model=list[schema_project.ProjectList])
 def get_projects(
-    db: Session = Depends(get_db), _current_user=Depends(api_common.log_token_user)
+    condition: schema_project.SearchCondition,
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
 ):
     try:
-        return crud_project.get_projects(db)
+        return crud_project.get_projects(db, condition)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.post("/project", response_model=schema_project.Project)
+@router.post("/projects", response_model=schema_project.Project)
 def create_project(
     target: schema_project.ProjectCreate,
     db: Session = Depends(get_db),
@@ -86,7 +88,7 @@ def create_project(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.put("/project", response_model=schema_project.Project)
+@router.put("/projects", response_model=schema_project.Project)
 def update_project(
     target: schema_project.ProjectUpdate,
     db: Session = Depends(get_db),
@@ -100,7 +102,7 @@ def update_project(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.delete("/project/{rid}", response_model=None)
+@router.delete("/projects/{rid}", response_model=None)
 def delete_project(
     rid: int,
     db: Session = Depends(get_db),

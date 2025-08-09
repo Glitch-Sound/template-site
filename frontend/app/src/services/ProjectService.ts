@@ -3,6 +3,7 @@ import type {
   ProjectGroup,
   ProjectGroupCreate,
   ProjectGroupUpdate,
+  SearchCondition,
   Project,
   ProjectCreate,
   ProjectUpdate,
@@ -12,79 +13,87 @@ import type {
 class ProjectService {
   public async fetchProjectGroups(): Promise<ProjectGroup[]> {
     try {
-      const response = await apiClient.get<ProjectGroup[]>('/project_group')
+      const response = await apiClient.get<ProjectGroup[]>('/project_groups')
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`fetchProjectGroups: ${error?.message || error}`)
+      throw new Error(
+        `fetchProjectGroups: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 
   public async createProjectGroup(project_group: ProjectGroupCreate): Promise<ProjectGroup> {
     try {
-      const response = await apiClient.post<ProjectGroup>('/project_group', project_group)
+      const response = await apiClient.post<ProjectGroup>('/project_groups', project_group)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`createProjectGroup: ${error?.message || error}`)
+      throw new Error(
+        `createProjectGroup: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 
   public async updateProjectGroup(project_group: ProjectGroupUpdate): Promise<ProjectGroup> {
     try {
-      const response = await apiClient.put<ProjectGroup>('/project_group', project_group)
+      const response = await apiClient.put<ProjectGroup>('/project_groups', project_group)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`updateProjectGroup: ${error?.message || error}`)
+      throw new Error(
+        `updateProjectGroup: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 
   public async deleteProjectGroup(rid: number): Promise<void> {
     try {
-      await apiClient.delete(`/project_group/${rid}`)
-    } catch (error: any) {
+      await apiClient.delete(`/project_groups/${rid}`)
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`deleteProjectGroup: ${error?.message || error}`)
+      throw new Error(
+        `deleteProjectGroup: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 
-  public async fetchProjects(): Promise<ProjectList[]> {
+  public async fetchProjects(condition: SearchCondition): Promise<ProjectList[]> {
     try {
-      const response = await apiClient.get<ProjectList[]>('/project')
+      const response = await apiClient.post<ProjectList[]>('/projects/search', condition)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`fetchProjectGroups: ${error?.message || error}`)
+      throw new Error(`fetchProjects: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
   public async createProject(project: ProjectCreate): Promise<Project> {
     try {
-      const response = await apiClient.post<Project>('/project', project)
+      const response = await apiClient.post<Project>('/projects', project)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`createProject: ${error?.message || error}`)
+      throw new Error(`createProject: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
   public async updateProject(project: ProjectUpdate): Promise<Project> {
     try {
-      const response = await apiClient.put<Project>('/project', project)
+      const response = await apiClient.put<Project>('/projects', project)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`updateProject: ${error?.message || error}`)
+      throw new Error(`updateProject: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
   public async deleteProject(rid: number): Promise<void> {
     try {
-      await apiClient.delete(`/project/${rid}`)
-    } catch (error: any) {
+      await apiClient.delete(`/projects/${rid}`)
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`deleteProject: ${error?.message || error}`)
+      throw new Error(`deleteProject: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 }

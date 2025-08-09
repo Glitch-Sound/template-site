@@ -70,6 +70,21 @@ class ProjectNumberUpdate(BaseModel):
         orm_mode = True
 
 
+class TargetQuarter(BaseModel):
+    year: int
+    quarter: model_project.Quarter
+
+
+class SearchCondition(BaseModel):
+    target: List[TargetQuarter]
+    users_pm: List[int]
+    rid_users_pl: List[int]
+    is_none_pre_approval: bool
+    is_none_number_m: bool
+    is_none_number_s: bool
+    is_none_number_o: bool
+
+
 class Project(BaseModel):
     rid: int
     project_group: ProjectGroup

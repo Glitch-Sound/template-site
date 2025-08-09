@@ -68,7 +68,11 @@ def delete_project_group(db: Session, rid: int) -> None:
     db.commit()
 
 
-def get_projects(db: Session) -> List[model_project_group.ProjectGroup]:
+def get_projects(
+    db: Session, condition: schema_project.SearchCondition
+) -> List[model_project_group.ProjectGroup]:
+    print(condition)
+
     # fmt: off
     query = db.query(
         model_project_group.ProjectGroup

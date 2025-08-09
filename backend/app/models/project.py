@@ -16,6 +16,14 @@ class TypeRank(IntEnum):
     E    = 5
 
 
+class Quarter(IntEnum):
+    NONE = 0
+    Q1   = 1
+    Q2   = 2
+    Q3   = 3
+    Q4   = 4
+
+
 class Project(Base, TimestampMixin):
     __tablename__ = "projects"
 

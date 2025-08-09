@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 router = APIRouter(tags=["User"])
 
 
-@router.get("/user", response_model=list[schema_user.User])
+@router.get("/users", response_model=list[schema_user.User])
 def get_users(
     db: Session = Depends(get_db), _current_user=Depends(api_common.log_token_user)
 ):
@@ -19,7 +19,7 @@ def get_users(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.get("/user/{rid}", response_model=schema_user.User)
+@router.get("/users/{rid}", response_model=schema_user.User)
 def get_user_by_rid(
     rid: int,
     db: Session = Depends(get_db),
@@ -32,7 +32,7 @@ def get_user_by_rid(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.post("/user", response_model=schema_user.User)
+@router.post("/users", response_model=schema_user.User)
 def create_user(
     target: schema_user.UserCreate,
     db: Session = Depends(get_db),
@@ -46,7 +46,7 @@ def create_user(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.put("/user", response_model=schema_user.User)
+@router.put("/users", response_model=schema_user.User)
 def update_user(
     target: schema_user.UserUpdate,
     db: Session = Depends(get_db),
@@ -60,7 +60,7 @@ def update_user(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.delete("/user/{rid}", response_model=None)
+@router.delete("/users/{rid}", response_model=None)
 def delete_user(
     rid: int,
     db: Session = Depends(get_db),

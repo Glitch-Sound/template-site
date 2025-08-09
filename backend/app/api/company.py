@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 router = APIRouter(tags=["Company"])
 
 
-@router.get("/company", response_model=list[schema_company.Company])
+@router.get("/companies", response_model=list[schema_company.Company])
 def get_companies(
     db: Session = Depends(get_db), _current_user=Depends(api_common.log_token_user)
 ):
@@ -19,7 +19,7 @@ def get_companies(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.post("/company", response_model=schema_company.Company)
+@router.post("/companies", response_model=schema_company.Company)
 def create_company(
     target: schema_company.CompanyCreate,
     db: Session = Depends(get_db),
@@ -33,7 +33,7 @@ def create_company(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.put("/company", response_model=schema_company.Company)
+@router.put("/companies", response_model=schema_company.Company)
 def update_company(
     target: schema_company.CompanyUpdate,
     db: Session = Depends(get_db),
@@ -47,7 +47,7 @@ def update_company(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@router.delete("/company/{rid}", response_model=None)
+@router.delete("/companies/{rid}", response_model=None)
 def delete_company(
     rid: int,
     db: Session = Depends(get_db),

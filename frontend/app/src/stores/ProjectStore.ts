@@ -5,6 +5,7 @@ import type {
   ProjectGroup,
   ProjectGroupCreate,
   ProjectGroupUpdate,
+  SearchCondition,
   Project,
   ProjectCreate,
   ProjectUpdate,
@@ -17,6 +18,7 @@ export const useProjectStore = defineStore('project', () => {
   // state.
   const project_groups = ref<ProjectGroup[]>([])
   const projects = ref<ProjectList[]>([])
+  const condition = ref<SearchCondition>(defaultCondition())
 
   const is_loading_groups = ref(false)
   const is_loading_projects = ref(false)
@@ -36,10 +38,34 @@ export const useProjectStore = defineStore('project', () => {
     return by_rid_project.value.get(rid)
   }
 
-  function upsert_group(g: ProjectGroup) {
+  function upsertGroup(g: ProjectGroup) {
     const i = project_groups.value.findIndex((x) => x.rid === g.rid)
     if (i >= 0) project_groups.value[i] = g
     else project_groups.value.push(g)
+  }
+
+  function setCondition(cond: SearchCondition) {
+    condition.value = cond
+  }
+
+  function patchCondition(patch: Partial<SearchCondition>) {
+    condition.value = { ...(condition.value ?? defaultCondition()), ...patch }
+  }
+
+  function clearCondition() {
+    condition.value = defaultCondition()
+  }
+
+  function defaultCondition(): SearchCondition {
+    return {
+      target: [],
+      users_pm: [],
+      rid_users_pl: [],
+      is_none_pre_approval: false,
+      is_none_number_m: false,
+      is_none_number_s: false,
+      is_none_number_o: false,
+    }
   }
 
   // actions: groups.
@@ -59,13 +85,13 @@ export const useProjectStore = defineStore('project', () => {
 
   async function createProjectGroup(payload: ProjectGroupCreate): Promise<ProjectGroup> {
     const created = await service_project.createProjectGroup(payload)
-    upsert_group(created)
+    upsertGroup(created)
     return created
   }
 
   async function updateProjectGroup(payload: ProjectGroupUpdate): Promise<ProjectGroup> {
     const updated = await service_project.updateProjectGroup(payload)
-    upsert_group(updated)
+    upsertGroup(updated)
     return updated
   }
 
@@ -81,7 +107,7 @@ export const useProjectStore = defineStore('project', () => {
     is_loading_projects.value = true
     inflight_projects = (async () => {
       try {
-        projects.value = await service_project.fetchProjects()
+        projects.value = await service_project.fetchProjects(condition.value)
       } finally {
         is_loading_projects.value = false
         inflight_projects = null
@@ -111,12 +137,14 @@ export const useProjectStore = defineStore('project', () => {
   function reset(): void {
     project_groups.value = []
     projects.value = []
+    condition.value = defaultCondition()
   }
 
   return {
     // state
     project_groups,
     projects,
+    condition,
     is_loading_groups,
     is_loading_projects,
 
@@ -131,6 +159,11 @@ export const useProjectStore = defineStore('project', () => {
     createProjectGroup,
     updateProjectGroup,
     deleteProjectGroup,
+
+    setCondition,
+    patchCondition,
+    clearCondition,
+    defaultCondition,
 
     fetchProjects,
     createProject,

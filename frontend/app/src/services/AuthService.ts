@@ -1,4 +1,4 @@
-import apiClient, { setTokens, getAccessToken } from '@/services/ApiClient'
+import apiClient, { setTokens } from '@/services/ApiClient'
 
 import type { Status, Token, Login } from '@/types/Auth'
 import type { User, UserCreate } from '@/types/User'
@@ -8,9 +8,9 @@ class AuthService {
     try {
       const response = await apiClient.get<Status>('/setup/status')
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`fetchStatus: ${error?.message || error}`)
+      throw new Error(`fetchStatus: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -18,9 +18,9 @@ class AuthService {
     try {
       const response = await apiClient.post<User>('/setup/admin', user)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`createUser: ${error?.message || error}`)
+      throw new Error(`createUser: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -29,9 +29,9 @@ class AuthService {
       const response = await apiClient.post<Token>('/login', login)
       setTokens(response.data.token_access, response.data.token_refresh)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      throw new Error(`login: ${error?.message || error}`)
+      throw new Error(`login: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 }
