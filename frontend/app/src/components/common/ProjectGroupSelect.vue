@@ -18,7 +18,9 @@ const store_project = useProjectStore()
 const { project_groups, is_loading_groups } = storeToRefs(store_project)
 const { fetchProjectGroups, getGroupByRid } = store_project
 
-const selected_option = ref<number | null>(props.modelValue ?? null)
+const selected_option = ref<number | null>(
+  props.modelValue && props.modelValue !== 0 ? props.modelValue : null,
+)
 
 watch(
   () => props.modelValue,

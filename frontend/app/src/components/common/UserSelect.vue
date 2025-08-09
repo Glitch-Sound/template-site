@@ -19,7 +19,9 @@ const store_user = useUserStore()
 const { users, is_loading } = storeToRefs(store_user)
 const { fetchUsers, getByRid } = store_user
 
-const selected_option = ref<number | null>(props.modelValue ?? null)
+const selected_option = ref<number | null>(
+  props.modelValue && props.modelValue !== 0 ? props.modelValue : null,
+)
 
 watch(
   () => props.modelValue,
