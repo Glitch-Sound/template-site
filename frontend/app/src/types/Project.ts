@@ -154,8 +154,3 @@ export interface ProjectList {
   company: Company
   projects: Project[]
 }
-
-export interface FilterQuarter {
-  year: number
-  quarter: TypeQuarter
-}

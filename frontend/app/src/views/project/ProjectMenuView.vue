@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { FilterQuarter } from '@/types/Project'
+import type { TargetQuarter } from '@/types/Project'
 import ProjectEvent from '@/views/project/ProjectEvent'
 import QuarterFilter from '@/components/common/QuarterFilter.vue'
 import UserFilter from '@/components/common/UserFilter.vue'
 
-const filter_quarters = ref<FilterQuarter[]>([])
+const filter_quarters = ref<TargetQuarter[]>([])
 const filter_users_pm = ref<number[]>([])
 const filter_users_pl = ref<number[]>([])
 const filter_none_pre_approval = ref(false)
