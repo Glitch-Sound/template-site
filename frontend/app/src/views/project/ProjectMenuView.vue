@@ -17,8 +17,8 @@ const model_quarters = computed<TargetQuarter[]>({
 })
 
 const model_users_pm = computed<number[]>({
-  get: () => condition.value.users_pm ?? [],
-  set: (v) => store.patchCondition({ users_pm: v ?? [] }),
+  get: () => condition.value.rid_users_pm ?? [],
+  set: (v) => store.patchCondition({ rid_users_pm: v ?? [] }),
 })
 
 const model_users_pl = computed<number[]>({

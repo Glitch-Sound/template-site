@@ -59,7 +59,7 @@ export const useProjectStore = defineStore('project', () => {
   function defaultCondition(): SearchCondition {
     return {
       target: [],
-      users_pm: [],
+      rid_users_pm: [],
       rid_users_pl: [],
       is_none_pre_approval: false,
       is_none_number_m: false,
