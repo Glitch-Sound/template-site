@@ -75,4 +75,6 @@ const selectionText = computed(() => {
   </v-select>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

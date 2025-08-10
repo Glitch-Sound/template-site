@@ -1,31 +1,57 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import type { TargetQuarter } from '@/types/Project'
 import ProjectEvent from '@/views/project/ProjectEvent'
 import QuarterFilter from '@/components/common/QuarterFilter.vue'
 import UserFilter from '@/components/common/UserFilter.vue'
+import { useProjectStore } from '@/stores/ProjectStore'
 
-const filter_quarters = ref<TargetQuarter[]>([])
-const filter_users_pm = ref<number[]>([])
-const filter_users_pl = ref<number[]>([])
-const filter_none_pre_approval = ref(false)
-const filter_none_number_m = ref(false)
-const filter_none_number_s = ref(false)
-const filter_none_number_o = ref(false)
+const store = useProjectStore()
+const { condition } = storeToRefs(store)
+
+const model_quarters = computed<TargetQuarter[]>({
+  get: () => condition.value.target ?? [],
+  set: (v) => store.patchCondition({ target: v ?? [] }),
+})
+
+const model_users_pm = computed<number[]>({
+  get: () => condition.value.users_pm ?? [],
+  set: (v) => store.patchCondition({ users_pm: v ?? [] }),
+})
+
+const model_users_pl = computed<number[]>({
+  get: () => condition.value.rid_users_pl ?? [],
+  set: (v) => store.patchCondition({ rid_users_pl: v ?? [] }),
+})
+
+const model_none_pre_approval = computed<boolean>({
+  get: () => condition.value.is_none_pre_approval ?? false,
+  set: (v) => store.patchCondition({ is_none_pre_approval: !!v }),
+})
+
+const model_none_number_m = computed<boolean>({
+  get: () => condition.value.is_none_number_m ?? false,
+  set: (v) => store.patchCondition({ is_none_number_m: !!v }),
+})
+
+const model_none_number_s = computed<boolean>({
+  get: () => condition.value.is_none_number_s ?? false,
+  set: (v) => store.patchCondition({ is_none_number_s: !!v }),
+})
+
+const model_none_number_o = computed<boolean>({
+  get: () => condition.value.is_none_number_o ?? false,
+  set: (v) => store.patchCondition({ is_none_number_o: !!v }),
+})
 
 const handleAddProject = () => {
   ProjectEvent.emit('openCreateProjectDialog')
 }
 
-const handleFilter = () => {
-  console.log(filter_quarters.value)
-  console.log(filter_users_pm.value)
-  console.log(filter_users_pl.value)
-  console.log(filter_none_pre_approval.value)
-  console.log(filter_none_number_m.value)
-  console.log(filter_none_number_s.value)
-  console.log(filter_none_number_o.value)
+const handleFilter = async () => {
+  await store.fetchProjects()
 }
 </script>
 
@@ -44,22 +70,22 @@ const handleFilter = () => {
       </v-list-item>
 
       <v-list-item>
-        <QuarterFilter v-model="filter_quarters" />
+        <QuarterFilter v-model="model_quarters" />
       </v-list-item>
 
       <v-list-item>
-        <UserFilter v-model="filter_users_pm" label="PM" />
+        <UserFilter v-model="model_users_pm" label="PM" />
       </v-list-item>
 
       <v-list-item>
-        <UserFilter v-model="filter_users_pl" label="PL" />
+        <UserFilter v-model="model_users_pl" label="PL" />
       </v-list-item>
 
       <v-list-item>
-        <v-checkbox v-model="filter_none_pre_approval" hide-details label="None Pre-Approval" />
-        <v-checkbox v-model="filter_none_number_m" hide-details label="None Number M" />
-        <v-checkbox v-model="filter_none_number_s" hide-details label="None Number S" />
-        <v-checkbox v-model="filter_none_number_o" hide-details label="None Number Official" />
+        <v-checkbox v-model="model_none_pre_approval" hide-details label="None Pre-Approval" />
+        <v-checkbox v-model="model_none_number_m" hide-details label="None Number M" />
+        <v-checkbox v-model="model_none_number_s" hide-details label="None Number S" />
+        <v-checkbox v-model="model_none_number_o" hide-details label="None Number Official" />
       </v-list-item>
 
       <v-list-item>

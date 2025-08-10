@@ -12,4 +12,6 @@ const rid = computed(() => String(props.rid).padStart(4, '0'))
   <span class="mx-3"> #{{ rid }} </span>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

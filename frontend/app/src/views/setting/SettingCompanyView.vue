@@ -8,4 +8,6 @@ import SettingContentCompanyView from '@/views/setting/SettingContentCompanyView
   <SettingContentCompanyView />
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

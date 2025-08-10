@@ -115,4 +115,6 @@ const handleDelete = async (data: UserUpdate) => {
   <UpdateUserDialog ref="dialog_user_update" @submit="handleUpdate" @delete="handleDelete" />
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

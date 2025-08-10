@@ -47,4 +47,6 @@ async function onSubmitLogin(data: Login) {
   <LoginDialog ref="dialog_login" @submit="onSubmitLogin" />
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

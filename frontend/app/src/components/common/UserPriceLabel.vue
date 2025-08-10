@@ -10,4 +10,6 @@ const props = defineProps<{
   <div style="width: 90px; text-align: right">{{ props.price.toLocaleString() }}</div>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

@@ -4,4 +4,6 @@
   <v-main> Account </v-main>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

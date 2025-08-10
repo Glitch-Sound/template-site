@@ -47,4 +47,6 @@ const route = useRoute()
   </v-app-bar>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

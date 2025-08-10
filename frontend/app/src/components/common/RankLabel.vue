@@ -30,4 +30,6 @@ const props = defineProps<{
   </v-chip>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

@@ -30,6 +30,8 @@ const emitSelected = () => {
 </template>
 
 <style scoped>
+@import '@/assets/main.css';
+
 .v-chip-group {
   margin: 0 0 15px 0;
 }

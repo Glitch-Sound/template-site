@@ -107,6 +107,7 @@ async function handleUpdate(data: ProjectUpdate) {
 
 <style scoped>
 @import '@/assets/main.css';
+
 .cursor-pointer {
   cursor: pointer;
 }

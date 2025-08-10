@@ -55,4 +55,6 @@ watch(selected_option, (v) => {
   />
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

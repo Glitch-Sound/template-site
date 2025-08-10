@@ -18,4 +18,6 @@ const props = defineProps<{
   </span>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

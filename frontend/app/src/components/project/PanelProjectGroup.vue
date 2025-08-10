@@ -18,4 +18,6 @@ const props = defineProps<{
   </v-sheet>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

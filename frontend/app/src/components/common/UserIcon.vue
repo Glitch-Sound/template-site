@@ -31,4 +31,6 @@ const identicon_user = computed(() => {
   <img :src="identicon_user" :width="props.size" :height="props.size" />
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

@@ -8,4 +8,6 @@ import SettingContentMainView from '@/views/setting/SettingContentMainView.vue'
   <SettingContentMainView />
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

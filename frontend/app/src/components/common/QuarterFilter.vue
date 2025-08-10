@@ -17,8 +17,6 @@ interface Filter {
 }
 
 const quarterOptions: Filter[] = [
-  { label: '2025 1Q', filter: { year: 2025, quarter: TypeQuarter.Q1 } },
-  { label: '2025 2Q', filter: { year: 2025, quarter: TypeQuarter.Q2 } },
   { label: '2025 3Q', filter: { year: 2025, quarter: TypeQuarter.Q3 } },
   { label: '2025 4Q', filter: { year: 2025, quarter: TypeQuarter.Q4 } },
   { label: '2026 1Q', filter: { year: 2026, quarter: TypeQuarter.Q1 } },
@@ -60,7 +58,7 @@ watch(
 )
 
 watch(
-  () => selected_option.value.map((x) => `${x.filter.year}-${x.filter.quarter}`), // 参照ではなくキーを監視
+  () => selected_option.value.map((x) => `${x.filter.year}-${x.filter.quarter}`),
   () => {
     const nextFQ = selected_option.value.map((v) => v.filter)
     const current = props.modelValue ?? []
@@ -98,4 +96,6 @@ const selectionText = computed(() => {
   </v-select>
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>

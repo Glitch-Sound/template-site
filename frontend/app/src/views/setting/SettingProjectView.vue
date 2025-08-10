@@ -8,4 +8,6 @@ import SettingContentProjectView from '@/views/setting/SettingContentProjectView
   <SettingContentProjectView />
 </template>
 
-<style scoped></style>
+<style scoped>
+@import '@/assets/main.css';
+</style>
