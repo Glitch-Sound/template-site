@@ -48,11 +48,17 @@ const handleProjectGroupSelected = (project_group: ProjectGroup) => {
   form_data.value.rid_project_groups = project_group.rid
 }
 
-const handleUserPMSelected = (user: User) => {
+const handleUserPMSelected = (user: User | null) => {
+  if (!user) {
+    return
+  }
   form_data.value.rid_users_pm = user.rid
 }
 
-const handleUserPLSelected = (user: User) => {
+const handleUserPLSelected = (user: User | null) => {
+  if (!user) {
+    return
+  }
   form_data.value.rid_users_pl = user.rid
 }
 

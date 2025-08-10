@@ -6,13 +6,13 @@ import type { User } from '@/types/User'
 import { useUserStore } from '@/stores/UserStore'
 
 const props = defineProps<{
-  modelValue?: number | null
+  modelValue: number | null
   label?: string
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: number | null]
-  itemSelected: [user: User]
+  itemSelected: [user: User | null]
 }>()
 
 const store_user = useUserStore()
@@ -23,37 +23,34 @@ const selected_option = ref<number | null>(
   props.modelValue && props.modelValue !== 0 ? props.modelValue : null,
 )
 
+onMounted(async () => {
+  await fetchUsers()
+})
+
 watch(
   () => props.modelValue,
   (v) => {
-    selected_option.value = v ?? null
+    selected_option.value = v && v !== 0 ? v : null
   },
 )
 
 watch(selected_option, (v) => {
-  emit('update:modelValue', v ?? null)
-  const item = v != null ? getByRid(v) : undefined
-  if (item) emit('itemSelected', item)
-})
-
-onMounted(async () => {
-  try {
-    await fetchUsers()
-  } catch (e) {
-    console.error(e)
-  }
+  emit('update:modelValue', v)
+  const item = v != null ? (getByRid(v) ?? null) : null
+  emit('itemSelected', item)
 })
 </script>
 
 <template>
   <v-select
-    :items="users"
     v-model="selected_option"
+    :items="users"
     :label="props.label ?? 'User'"
     item-title="name"
     item-value="rid"
     :loading="is_loading"
     :disabled="is_loading"
+    clearable
     hide-details="auto"
   />
 </template>

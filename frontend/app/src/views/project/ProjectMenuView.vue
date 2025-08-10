@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { FilterQuarter, TypeQuarter } from '@/types/Project'
-
+import type { FilterQuarter } from '@/types/Project'
 import ProjectEvent from '@/views/project/ProjectEvent'
 import QuarterFilter from '@/components/filter/QuarterFilter.vue'
 import UserFilter from '@/components/filter/UserFilter.vue'
