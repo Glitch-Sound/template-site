@@ -12,7 +12,7 @@ class ProjectGroup(Base, TimestampMixin):
     rid_companies = Column(Integer, ForeignKey("companies.rid"))
     name          = Column(String,  default="")
     detail        = Column(String,  default="")
-    is_deleted    = Column(Boolean, default=False)
+    is_deleted    = Column(Boolean, default=0)
 
     company = relationship("Company", back_populates="project_groups", foreign_keys=[rid_companies])
 

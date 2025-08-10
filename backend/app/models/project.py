@@ -35,25 +35,26 @@ class Project(Base, TimestampMixin):
     pre_approval       = Column(String,  default="")
     name               = Column(String,  default="")
     number_parent      = Column(String,  default="")
-    number_m           = Column(Boolean, default=False)
-    number_s           = Column(Boolean, default=False)
-    number_o           = Column(Boolean, default=False)
+    number_m           = Column(Boolean, default=0)
+    number_s           = Column(Boolean, default=0)
+    number_o           = Column(Boolean, default=0)
     amount_expected    = Column(Integer, default=0)
     amount_order       = Column(Integer, default=0)
     date_start         = Column(String,  default="")
     date_delivery      = Column(String,  default="")
     date_end           = Column(String,  default="")
     target_quarter     = Column(Integer, default=0)
-    karte_plan         = Column(Boolean, default=False)
-    karte_report       = Column(Boolean, default=False)
-    checklist          = Column(Boolean, default=False)
-    is_deleted         = Column(Boolean, default=False)
+    karte_plan         = Column(Boolean, default=0)
+    karte_report       = Column(Boolean, default=0)
+    checklist          = Column(Boolean, default=0)
+    is_deleted         = Column(Boolean, default=0)
 
     project_group = relationship("ProjectGroup", back_populates="projects",    foreign_keys=[rid_project_groups])
     user_pm       = relationship("User",         back_populates="projects_pm", foreign_keys=[rid_users_pm])
     user_pl       = relationship("User",         back_populates="projects_pl", foreign_keys=[rid_users_pl])
 
     project_numbers = relationship("ProjectNumber", back_populates="project", foreign_keys="[ProjectNumber.rid_projects]")
+    threads         = relationship("Thread",        back_populates="project", foreign_keys="[Thread.rid_projects]")
 
     __table_args__ = (
         Index("idx_projects_01", "is_deleted", "rid"),

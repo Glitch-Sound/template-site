@@ -131,10 +131,10 @@ def get_project_condition(db: Session) -> schema_project.SearchCondition:
         target=targets,
         rid_users_pm=rid_users_pm,
         rid_users_pl=rid_users_pl,
-        is_none_pre_approval=False,
-        is_none_number_m=False,
-        is_none_number_s=False,
-        is_none_number_o=False,
+        is_none_pre_approval=0,
+        is_none_number_m=0,
+        is_none_number_s=0,
+        is_none_number_o=0,
     )
 
 
@@ -229,11 +229,11 @@ def get_projects(
         )
 
     if condition.is_none_number_m:
-        child_preds.append(model_project.Project.number_m.is_(False))
+        child_preds.append(model_project.Project.number_m.is_(0))
     if condition.is_none_number_s:
-        child_preds.append(model_project.Project.number_s.is_(False))
+        child_preds.append(model_project.Project.number_s.is_(0))
     if condition.is_none_number_o:
-        child_preds.append(model_project.Project.number_o.is_(False))
+        child_preds.append(model_project.Project.number_o.is_(0))
 
     group_preds = [
         model_project_group.ProjectGroup.is_deleted == 0,

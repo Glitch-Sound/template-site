@@ -23,7 +23,7 @@ class ProjectNumber(Base, TimestampMixin):
     number       = Column(String,  default="")
     date_start   = Column(String,  default="")
     date_end     = Column(String,  default="")
-    is_deleted   = Column(Boolean, default=False)
+    is_deleted   = Column(Boolean, default=0)
 
     project = relationship("Project", back_populates="project_numbers", foreign_keys=[rid_projects])
 

@@ -36,11 +36,13 @@ class User(Base, TimestampMixin):
     post       = Column(Integer, default=TypePost.NONE.value)
     contract   = Column(Integer, default=TypeContract.NONE.value)
     price      = Column(Integer, default=0)
-    is_admin   = Column(Boolean, default=False)
-    is_deleted = Column(Boolean, default=False)
+    is_admin   = Column(Boolean, default=0)
+    is_deleted = Column(Boolean, default=0)
 
     projects_pm = relationship("Project", back_populates="user_pm", foreign_keys="Project.rid_users_pm")
     projects_pl = relationship("Project", back_populates="user_pl", foreign_keys="Project.rid_users_pl")
+
+    threads     = relationship("Thread",  back_populates="user")
 
     __table_args__ = (
         Index("idx_users_01", "is_deleted", "rid"),

@@ -14,7 +14,7 @@ def get_users(db: Session) -> List[model_user.User]:
     query = db.query(
         model_user.User
     )\
-    .filter(~model_user.User.is_deleted)\
+    .filter(model_user.User.is_deleted == 0)\
     .order_by(model_user.User.rid)
     # fmt: on
     return query.all()
@@ -27,7 +27,7 @@ def get_user_by_rid(db: Session, rid: int) -> model_user.User:
         .filter(
             and_(
                 model_user.User.rid == rid,
-                ~model_user.User.is_deleted
+                model_user.User.is_deleted == 0
             )
         )
     )
@@ -42,7 +42,7 @@ def get_user_by_username(db: Session, username: str) -> model_user.User:
         .filter(
             and_(
                 model_user.User.username == username,
-                ~model_user.User.is_deleted
+                model_user.User.is_deleted == 0
             )
         )
     )
@@ -104,5 +104,5 @@ def delete_user(db: Session, rid: int) -> None:
     .first()
     # fmt: on
 
-    obj_user.is_deleted = True
+    obj_user.is_deleted = 1
     db.commit()

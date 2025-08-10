@@ -11,7 +11,7 @@ class Company(Base, TimestampMixin):
     rid        = Column(Integer, primary_key=True)
     name       = Column(String,  default="")
     detail     = Column(String,  default="")
-    is_deleted = Column(Boolean, default=False)
+    is_deleted = Column(Boolean, default=0)
 
     project_groups = relationship("ProjectGroup", back_populates="company", foreign_keys="ProjectGroup.rid_companies")
 

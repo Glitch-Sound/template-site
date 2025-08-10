@@ -10,7 +10,7 @@ def get_companies(db: Session) -> List[model_company.Company]:
     query = db.query(
         model_company.Company
     )\
-    .filter(~model_company.Company.is_deleted)\
+    .filter(model_company.Company.is_deleted == 0)\
     .order_by(model_company.Company.rid)
     # fmt: on
     return query.all()
@@ -60,5 +60,5 @@ def delete_company(db: Session, rid: int) -> None:
     .first()
     # fmt: on
 
-    obj_company.is_deleted = True
+    obj_company.is_deleted = 1
     db.commit()
