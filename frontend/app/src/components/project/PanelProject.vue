@@ -20,7 +20,7 @@ const props = defineProps<{
 
 const store_project = useProjectStore()
 const { is_loading_projects } = storeToRefs(store_project)
-const { updateProject } = store_project
+const { updateProject, deleteProject } = store_project
 
 const dialog_project_update = ref()
 
@@ -31,12 +31,13 @@ function openUpdateProjectDialog() {
 }
 
 async function handleUpdate(data: ProjectUpdate) {
-  try {
-    await updateProject(data)
-    dialog_project_update.value?.close()
-  } catch (e) {
-    console.error(e)
-  }
+  await updateProject(data)
+  dialog_project_update.value?.close()
+}
+
+const handleDelete = async (data: ProjectUpdate) => {
+  await deleteProject(data.rid)
+  dialog_project_update.value?.close()
 }
 </script>
 
@@ -102,7 +103,7 @@ async function handleUpdate(data: ProjectUpdate) {
     </v-row>
   </v-sheet>
 
-  <UpdateProjectDialog ref="dialog_project_update" @submit="handleUpdate" />
+  <UpdateProjectDialog ref="dialog_project_update" @submit="handleUpdate" @delete="handleDelete" />
 </template>
 
 <style scoped>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { ProjectGroupUpdate } from '@/types/ProjectGroup'
+import type { ProjectGroup, ProjectGroupUpdate } from '@/types/ProjectGroup'
+import type { Company } from '@/types/Company'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
 
 import DeleteButton from '@/components/common/DeleteButton.vue'
