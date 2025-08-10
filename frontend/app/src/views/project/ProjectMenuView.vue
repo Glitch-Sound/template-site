@@ -3,8 +3,8 @@ import { ref } from 'vue'
 
 import type { FilterQuarter } from '@/types/Project'
 import ProjectEvent from '@/views/project/ProjectEvent'
-import QuarterFilter from '@/components/filter/QuarterFilter.vue'
-import UserFilter from '@/components/filter/UserFilter.vue'
+import QuarterFilter from '@/components/common/QuarterFilter.vue'
+import UserFilter from '@/components/common/UserFilter.vue'
 
 const filter_quarters = ref<FilterQuarter[]>([])
 const filter_users_pm = ref<number[]>([])
