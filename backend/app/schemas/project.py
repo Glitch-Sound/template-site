@@ -72,7 +72,7 @@ class ProjectNumberUpdate(BaseModel):
 
 class TargetQuarter(BaseModel):
     year: int
-    quarter: model_project.Quarter
+    quarter: model_project.TypeQuarter
 
 
 class SearchCondition(BaseModel):
@@ -103,6 +103,7 @@ class Project(BaseModel):
     date_start: str
     date_delivery: str
     date_end: str
+    target_quarter: int
     karte_plan: bool
     karte_report: bool
     checklist: bool

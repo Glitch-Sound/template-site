@@ -16,7 +16,7 @@ class TypeRank(IntEnum):
     E    = 5
 
 
-class Quarter(IntEnum):
+class TypeQuarter(IntEnum):
     NONE = 0
     Q1   = 1
     Q2   = 2
@@ -43,6 +43,7 @@ class Project(Base, TimestampMixin):
     date_start         = Column(String,  default="")
     date_delivery      = Column(String,  default="")
     date_end           = Column(String,  default="")
+    target_quarter     = Column(Integer, default=0)
     karte_plan         = Column(Boolean, default=False)
     karte_report       = Column(Boolean, default=False)
     checklist          = Column(Boolean, default=False)
@@ -56,5 +57,9 @@ class Project(Base, TimestampMixin):
 
     __table_args__ = (
         Index("idx_projects_01", "is_deleted", "rid"),
+        Index("idx_projects_02", "is_deleted", "target_quarter", "rid_users_pm", "rid_users_pl"),
+        Index("idx_projects_03", "is_deleted", "target_quarter"),
+        Index("idx_projects_04", "is_deleted", "rid_users_pm"),
+        Index("idx_projects_05", "is_deleted", "rid_users_pl"),
     )
 # fmt: on

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useProjectStore } from '@/stores/ProjectStore'
 import { type TargetQuarter, TypeQuarter } from '@/types/Project'
 
 const props = defineProps<{
@@ -11,22 +13,26 @@ const emit = defineEmits<{
   (e: 'itemSelected', v: TargetQuarter[]): void
 }>()
 
+const projectStore = useProjectStore()
+const { project_targets } = storeToRefs(projectStore)
+
+const Q_LABEL: Record<Exclude<TypeQuarter, TypeQuarter.NONE>, string> = {
+  [TypeQuarter.Q1]: '1Q',
+  [TypeQuarter.Q2]: '2Q',
+  [TypeQuarter.Q3]: '3Q',
+  [TypeQuarter.Q4]: '4Q',
+} as const
+const quarterLabel = (q: TypeQuarter) => (q === TypeQuarter.NONE ? '' : Q_LABEL[q])
+
 interface Filter {
   label: string
   filter: TargetQuarter
 }
-
-const quarterOptions: Filter[] = [
-  { label: '2025 3Q', filter: { year: 2025, quarter: TypeQuarter.Q3 } },
-  { label: '2025 4Q', filter: { year: 2025, quarter: TypeQuarter.Q4 } },
-  { label: '2026 1Q', filter: { year: 2026, quarter: TypeQuarter.Q1 } },
-  { label: '2026 2Q', filter: { year: 2026, quarter: TypeQuarter.Q2 } },
-  { label: '2026 3Q', filter: { year: 2026, quarter: TypeQuarter.Q3 } },
-  { label: '2026 4Q', filter: { year: 2026, quarter: TypeQuarter.Q4 } },
-]
-
-const toOption = (fq: TargetQuarter): Filter | undefined =>
-  quarterOptions.find((o) => o.filter.year === fq.year && o.filter.quarter === fq.quarter)
+const options = computed<Filter[]>(() =>
+  project_targets.value
+    .filter((fq) => fq.quarter !== TypeQuarter.NONE)
+    .map((fq) => ({ label: `${fq.year} ${quarterLabel(fq.quarter)}`.trim(), filter: fq })),
+)
 
 const sameFQArray = (a: TargetQuarter[], b: TargetQuarter[]) => {
   if (a.length !== b.length) return false
@@ -35,12 +41,13 @@ const sameFQArray = (a: TargetQuarter[], b: TargetQuarter[]) => {
   for (const s of b.map(key)) if (!A.has(s)) return false
   return true
 }
-
 const sameFilterArray = (a: Filter[], b: Filter[]) =>
   sameFQArray(
     a.map((x) => x.filter),
     b.map((x) => x.filter),
   )
+const toOption = (fq: TargetQuarter): Filter | undefined =>
+  options.value.find((o) => o.filter.year === fq.year && o.filter.quarter === fq.quarter)
 
 const selected_option = ref<Filter[]>(
   (props.modelValue ?? []).map(toOption).filter((v): v is Filter => !!v),
@@ -50,11 +57,8 @@ watch(
   () => props.modelValue,
   (v) => {
     const next = (v ?? []).map(toOption).filter((x): x is Filter => !!x)
-    if (!sameFilterArray(selected_option.value, next)) {
-      selected_option.value = next
-    }
+    if (!sameFilterArray(selected_option.value, next)) selected_option.value = next
   },
-  { deep: false },
 )
 
 watch(
@@ -70,7 +74,7 @@ watch(
 )
 
 const selectionText = computed(() => {
-  const total = quarterOptions.length
+  const total = options.value.length
   const count = selected_option.value.length
   if (count === 0) return ''
   if (total > 0 && count === total) return 'ALL'
@@ -83,7 +87,7 @@ const selectionText = computed(() => {
   <v-select
     clearable
     multiple
-    :items="quarterOptions"
+    :items="options"
     v-model="selected_option"
     label="Quarter"
     item-title="label"

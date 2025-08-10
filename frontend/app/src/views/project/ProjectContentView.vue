@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import type { ProjectCreate } from '@/types/Project'
@@ -12,20 +12,12 @@ import CreateProjectDialog from '@/components/dialog/CreateProjectDialog.vue'
 
 const store_project = useProjectStore()
 const { projects, is_loading_projects } = storeToRefs(store_project)
-const { fetchProjects, createProject } = store_project
+const { createProject } = store_project
 
 const dialog_project_create = ref()
 
 ProjectEvent.on('openCreateProjectDialog', () => {
   dialog_project_create.value?.open()
-})
-
-onMounted(async () => {
-  try {
-    await fetchProjects()
-  } catch (e) {
-    console.error(e)
-  }
 })
 
 async function handleCreate(data: ProjectCreate) {

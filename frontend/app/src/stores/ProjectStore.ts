@@ -1,17 +1,18 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
+import type { User } from '@/types/User'
 import type {
   ProjectGroup,
   ProjectGroupCreate,
   ProjectGroupUpdate,
   SearchCondition,
+  TargetQuarter,
   Project,
   ProjectCreate,
   ProjectUpdate,
   ProjectList,
 } from '@/types/Project'
-
 import service_project from '@/services/ProjectService'
 
 export const useProjectStore = defineStore('project', () => {
@@ -19,6 +20,8 @@ export const useProjectStore = defineStore('project', () => {
   const project_groups = ref<ProjectGroup[]>([])
   const projects = ref<ProjectList[]>([])
   const condition = ref<SearchCondition>(defaultCondition())
+  const project_targets = ref<TargetQuarter[]>([])
+  const project_users = ref<User[]>([])
 
   const is_loading_groups = ref(false)
   const is_loading_projects = ref(false)
@@ -68,6 +71,14 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
+  async function fetchProjectTargets(): Promise<void> {
+    project_targets.value = await service_project.fetchProjectTargets()
+  }
+
+  async function fetchProjectUsers(): Promise<void> {
+    project_users.value = await service_project.fetchProjectUsers()
+  }
+
   // actions: groups.
   async function fetchProjectGroups(): Promise<void> {
     if (inflight_groups) return inflight_groups
@@ -104,10 +115,13 @@ export const useProjectStore = defineStore('project', () => {
   // actions: projects.
   async function fetchProjects(): Promise<void> {
     if (inflight_projects) return inflight_projects
+
     is_loading_projects.value = true
     inflight_projects = (async () => {
       try {
         projects.value = await service_project.fetchProjects(condition.value)
+        await fetchProjectTargets()
+        await fetchProjectUsers()
       } finally {
         is_loading_projects.value = false
         inflight_projects = null
@@ -134,6 +148,13 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   //utils.
+  async function initSearchCondition(): Promise<void> {
+    await fetchProjectTargets()
+    await fetchProjectUsers()
+    const condition = await service_project.fetchProjectCondition()
+    patchCondition(condition)
+  }
+
   function reset(): void {
     project_groups.value = []
     projects.value = []
@@ -145,6 +166,8 @@ export const useProjectStore = defineStore('project', () => {
     project_groups,
     projects,
     condition,
+    project_targets,
+    project_users,
     is_loading_groups,
     is_loading_projects,
 
@@ -159,18 +182,17 @@ export const useProjectStore = defineStore('project', () => {
     createProjectGroup,
     updateProjectGroup,
     deleteProjectGroup,
-
     setCondition,
     patchCondition,
     clearCondition,
     defaultCondition,
-
     fetchProjects,
     createProject,
     updateProject,
     deleteProject,
 
     // utils
+    initSearchCondition,
     reset,
   }
 })

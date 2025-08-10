@@ -6,10 +6,11 @@ import ProjectMenuView from '@/views/project/ProjectMenuView.vue'
 import ProjectContentMainView from '@/views/project/ProjectContentView.vue'
 
 const store_project = useProjectStore()
-const { fetchProjects } = store_project
+const { initSearchCondition, fetchProjects } = store_project
 
 onMounted(async () => {
   try {
+    await initSearchCondition()
     await fetchProjects()
   } catch (e) {
     console.error(e)

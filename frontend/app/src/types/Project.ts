@@ -112,6 +112,7 @@ export interface Project {
   date_start: string
   date_delivery: string
   date_end: string
+  target_quarter: number
   karte_plan: boolean
   karte_report: boolean
   checklist: boolean

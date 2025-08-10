@@ -1,9 +1,12 @@
+from datetime import date
 from typing import List
 
 from app.models import project as model_project
 from app.models import project_group as model_project_group
+from app.models import user as model_user
 from app.schemas import project as schema_project
-from sqlalchemy import and_
+from app.schemas import user as schema_user
+from sqlalchemy import Integer, and_, cast, func, not_, or_
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -68,29 +71,188 @@ def delete_project_group(db: Session, rid: int) -> None:
     db.commit()
 
 
+def get_project_condition(db: Session) -> schema_project.SearchCondition:
+    # fmt: off
+    year_expr    = cast(func.strftime('%Y', model_project.Project.date_end), Integer)
+    month_expr   = cast(func.strftime('%m', model_project.Project.date_end), Integer)
+    quarter_expr = cast((month_expr + 2) / 3.0, Integer)
+
+    query_target = db.query(
+        year_expr.label('year'),
+        quarter_expr.label('quarter'),
+    )\
+    .filter(
+        and_(
+            model_project.Project.date_end.isnot(None),
+            ~model_project.Project.is_deleted,
+        )
+    )\
+    .distinct()\
+    .order_by(year_expr.asc(), quarter_expr.asc())
+    rows_target = query_target.all()
+    # fmt: on
+
+    targets = [
+        schema_project.TargetQuarter(year=int(r.year), quarter=int(r.quarter))
+        for r in rows_target
+    ]
+
+    # fmt: off
+    query_pm = db.query(
+        model_project.Project.rid_users_pm
+    )\
+    .filter(
+        and_(
+            model_project.Project.rid_users_pm.isnot(None),
+            ~model_project.Project.is_deleted,
+        )
+    )\
+    .distinct()\
+    .order_by(model_project.Project.rid_users_pm.asc())
+    rid_users_pm = [int(x[0]) for x in query_pm.all()]
+    # fmt: on
+
+    # fmt: off
+    query_pl = db.query(
+        model_project.Project.rid_users_pl
+    )\
+    .filter(
+        and_(
+            model_project.Project.rid_users_pl.isnot(None),
+            ~model_project.Project.is_deleted,
+        )
+    )\
+    .distinct()\
+    .order_by(model_project.Project.rid_users_pl.asc())
+    rid_users_pl = [int(x[0]) for x in query_pl.all()]
+    # fmt: on
+
+    return schema_project.SearchCondition(
+        target=targets,
+        rid_users_pm=rid_users_pm,
+        rid_users_pl=rid_users_pl,
+        is_none_pre_approval=False,
+        is_none_number_m=False,
+        is_none_number_s=False,
+        is_none_number_o=False,
+    )
+
+
+def get_project_targets(db: Session) -> schema_project.TargetQuarter:
+    # fmt: off
+    year_expr    = cast(func.strftime('%Y', model_project.Project.date_end), Integer)
+    month_expr   = cast(func.strftime('%m', model_project.Project.date_end), Integer)
+    quarter_expr = cast((month_expr + 2) / 3.0, Integer)
+
+    query_target = db.query(
+        year_expr.label('year'),
+        quarter_expr.label('quarter'),
+    )\
+    .filter(
+        and_(
+            model_project.Project.date_end.isnot(None),
+            ~model_project.Project.is_deleted,
+        )
+    )\
+    .distinct()\
+    .order_by(year_expr.asc(), quarter_expr.asc())
+    rows_target = query_target.all()
+    # fmt: on
+
+    targets = [
+        schema_project.TargetQuarter(year=int(r.year), quarter=int(r.quarter))
+        for r in rows_target
+    ]
+
+    return targets
+
+
+def get_project_users(db: Session) -> schema_user.User:
+    # fmt: off
+    query_pm = db.query(
+        model_project.Project.rid_users_pm.label("rid")
+    )\
+    .filter(
+        and_(
+            model_project.Project.rid_users_pm.isnot(None),
+            ~model_project.Project.is_deleted,
+        )
+    )
+
+    query_pl = db.query(
+        model_project.Project.rid_users_pl.label("rid")
+    )\
+    .filter(
+        and_(
+            model_project.Project.rid_users_pl.isnot(None),
+            ~model_project.Project.is_deleted,
+        )
+    )
+    # fmt: on
+
+    rids_sq = query_pm.union(query_pl).subquery("rids")
+
+    # fmt: off
+    q_users = (
+        db.query(
+            model_user.User
+        )
+        .join(rids_sq, model_user.User.rid == rids_sq.c.rid)
+        .order_by(model_user.User.rid)
+    )
+    # fmt: on
+
+    q_users = q_users.filter(~model_user.User.is_deleted)
+
+    return q_users.all()
+
+
 def get_projects(
     db: Session, condition: schema_project.SearchCondition
 ) -> List[model_project_group.ProjectGroup]:
     print(condition)
 
-    # fmt: off
-    query = db.query(
-        model_project_group.ProjectGroup
-    )\
-    .options(
-        joinedload(model_project_group.ProjectGroup.projects),
-        joinedload(model_project_group.ProjectGroup.projects).joinedload(model_project.Project.project_numbers)
-    )\
-    .filter(
-            and_(
-                ~model_project_group.ProjectGroup.is_deleted,
-                model_project_group.ProjectGroup.projects.any(),
-                ~model_project.Project.is_deleted
+    project_preds = [not_(model_project.Project.is_deleted)]
+    project_preds.append(model_project.Project.rid_users_pm.in_(condition.rid_users_pm))
+    project_preds.append(model_project.Project.rid_users_pl.in_(condition.rid_users_pl))
+
+    if condition.is_none_pre_approval:
+        project_preds.append(
+            or_(
+                model_project.Project.number_parent.is_(None),
+                model_project.Project.number_parent == "",
             )
-    )\
-    .order_by(model_project_group.ProjectGroup.rid, model_project.Project.rid)\
-    # fmt: on
+        )
+    if condition.is_none_number_m:
+        project_preds.append(model_project.Project.number_m.is_(False))
+    if condition.is_none_number_s:
+        project_preds.append(model_project.Project.number_s.is_(False))
+    if condition.is_none_number_o:
+        project_preds.append(model_project.Project.number_o.is_(False))
+
+    group_preds = [
+        not_(model_project_group.ProjectGroup.is_deleted),
+        model_project_group.ProjectGroup.projects.any(and_(*project_preds)),
+    ]
+
+    query = (
+        db.query(model_project_group.ProjectGroup)
+        .options(
+            joinedload(model_project_group.ProjectGroup.projects),
+            joinedload(model_project_group.ProjectGroup.projects).joinedload(
+                model_project.Project.project_numbers
+            ),
+        )
+        .filter(and_(*group_preds))
+        .order_by(model_project_group.ProjectGroup.rid)
+    )
+
     return query.all()
+
+
+def _get_target(date_end: str) -> int:
+    date_end = date.fromisoformat(date_end)
+    return date_end.year * 10 + (date_end.month + 2) // 3
 
 
 def create_project(
@@ -109,7 +271,8 @@ def create_project(
         amount_order=target.amount_order,
         date_start=target.date_start,
         date_delivery=target.date_delivery,
-        date_end=target.date_end
+        date_end=target.date_end,
+        target_quarter=_get_target(target.date_end)
     )
     # fmt: on
 
@@ -141,6 +304,7 @@ def update_project(
     obj_project.date_start         = target.date_start
     obj_project.date_delivery      = target.date_delivery
     obj_project.date_end           = target.date_end
+    obj_project.target_quarter     = _get_target(target.date_end)
     # fmt: on
 
     db.commit()

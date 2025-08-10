@@ -1,9 +1,11 @@
 import apiClient from '@/services/ApiClient'
+import type { User } from '@/types/User'
 import type {
   ProjectGroup,
   ProjectGroupCreate,
   ProjectGroupUpdate,
   SearchCondition,
+  TargetQuarter,
   Project,
   ProjectCreate,
   ProjectUpdate,
@@ -54,6 +56,42 @@ class ProjectService {
       console.error(error)
       throw new Error(
         `deleteProjectGroup: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async fetchProjectCondition(): Promise<SearchCondition> {
+    try {
+      const response = await apiClient.get<SearchCondition>('/projects/condition')
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `fetchProjectCondition: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async fetchProjectTargets(): Promise<TargetQuarter[]> {
+    try {
+      const response = await apiClient.get<TargetQuarter[]>('/projects/targets')
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `fetchProjectTargets: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async fetchProjectUsers(): Promise<User[]> {
+    try {
+      const response = await apiClient.get<User[]>('/projects/users')
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `fetchProjectUsers: ${error instanceof Error ? error.message : String(error)}`,
       )
     }
   }
