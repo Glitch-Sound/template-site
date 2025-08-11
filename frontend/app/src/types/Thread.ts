@@ -10,20 +10,23 @@ export enum TypeThreadState {
 
 export interface Thread {
   rid: number
+  depth: number
   user: User
   state: TypeThreadState
   note: string
+  created_at: string
 }
 
 export interface ThreadCreate {
   rid_projects: number
-  rid_parent: number
+  rid_parent: number | null
   state: TypeThreadState
   note: string
 }
 
 export interface ThreadUpdate {
   rid: number
+  rid_projects: number
   state: TypeThreadState
   note: string
 }

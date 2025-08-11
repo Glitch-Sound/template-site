@@ -10,13 +10,6 @@ export const useThreadStore = defineStore('thread', () => {
 
   let inflight: Promise<void> | null = null
 
-  // getters / helpers.
-  function upsert_thread(u: Thread) {
-    const i = threads.value.findIndex((x) => x.rid === u.rid)
-    if (i >= 0) threads.value[i] = u
-    else threads.value.push(u)
-  }
-
   // actions.
   async function fetchThreadsByRID(rid: number): Promise<void> {
     if (inflight) return inflight
@@ -34,20 +27,19 @@ export const useThreadStore = defineStore('thread', () => {
 
   async function createThread(payload: ThreadCreate): Promise<Thread> {
     const created = await service_thread.createThread(payload)
-    upsert_thread(created)
+    await fetchThreadsByRID(payload.rid_projects)
     return created
   }
 
   async function updateThread(payload: ThreadUpdate): Promise<Thread> {
     const updated = await service_thread.updateThread(payload)
-    upsert_thread(updated)
+    await fetchThreadsByRID(payload.rid_projects)
     return updated
   }
 
-  async function deleteThread(rid: number): Promise<void> {
+  async function deleteThread(rid_projects: number, rid: number): Promise<void> {
     await service_thread.deleteThread(rid)
-    const i = threads.value.findIndex((x) => x.rid === rid)
-    if (i >= 0) threads.value.splice(i, 1)
+    await fetchThreadsByRID(rid_projects)
   }
 
   function reset(): void {

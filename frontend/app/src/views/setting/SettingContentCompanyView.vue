@@ -39,30 +39,18 @@ const openUpdateCompanyDialog = (data: Company) => {
 }
 
 const handleCreate = async (data: CompanyCreate) => {
-  try {
-    await createCompany(data)
-    dialog_company_create.value?.close()
-  } catch (e) {
-    console.error(e)
-  }
+  await createCompany(data)
+  dialog_company_create.value?.close()
 }
 
 const handleUpdate = async (data: CompanyUpdate) => {
-  try {
-    await updateCompany(data)
-    dialog_company_update.value?.close()
-  } catch (e) {
-    console.error(e)
-  }
+  await updateCompany(data)
+  dialog_company_update.value?.close()
 }
 
 const handleDelete = async (data: CompanyUpdate) => {
-  try {
-    await deleteCompany(data.rid)
-    dialog_company_update.value?.close()
-  } catch (e) {
-    console.error(e)
-  }
+  await deleteCompany(data.rid)
+  dialog_company_update.value?.close()
 }
 </script>
 

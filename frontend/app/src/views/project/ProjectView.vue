@@ -9,12 +9,8 @@ const store_project = useProjectStore()
 const { initSearchCondition, fetchProjects } = store_project
 
 onMounted(async () => {
-  try {
-    await initSearchCondition()
-    await fetchProjects()
-  } catch (e) {
-    console.error(e)
-  }
+  await initSearchCondition()
+  await fetchProjects()
 })
 </script>
 

@@ -61,16 +61,13 @@ export const useNoFormDialog = <T>(emits: any) => {
 
 export const useDisplayDialog = (emits: any) => {
   const dialog = ref(false)
-  const target = ref()
 
-  const onEdit = () => {
-    emits('edit')
+  const onClose = () => {
     dialog.value = false
   }
 
   return {
     dialog,
-    target,
-    onEdit,
+    onClose,
   }
 }

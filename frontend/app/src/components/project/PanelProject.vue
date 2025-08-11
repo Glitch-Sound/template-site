@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { storeToRefs } from 'pinia'
 
 import type { Project, ProjectUpdate } from '@/types/Project'
 import { useProjectStore } from '@/stores/ProjectStore'
-
 import QuarterLabel from '@/components/common/QuarterLabel.vue'
 import RankLabelLarge from '@/components/common/RankLabelLarge.vue'
 import ProjectDateLabel from '@/components/common/ProjectDateLabel.vue'
@@ -13,21 +11,24 @@ import UserLabel from '@/components/common/UserLabel.vue'
 import NumberLabel from '@/components/common/NumberLabel.vue'
 import KarteLabel from '@/components/common/KarteLabel.vue'
 import UpdateProjectDialog from '@/components/dialog/UpdateProjectDialog.vue'
+import ThreadDialog from '@/components/dialog/ThreadDialog.vue'
 
 const props = defineProps<{
   project: Project
 }>()
 
 const store_project = useProjectStore()
-const { is_loading_projects } = storeToRefs(store_project)
 const { updateProject, deleteProject } = store_project
 
 const dialog_project_update = ref()
+const dialog_thread = ref()
 
 function openUpdateProjectDialog() {
-  if (!is_loading_projects.value) {
-    dialog_project_update.value?.open(props.project)
-  }
+  dialog_project_update.value?.open(props.project)
+}
+
+function openThreadDialog() {
+  dialog_thread.value?.open(props.project)
 }
 
 async function handleUpdate(data: ProjectUpdate) {
@@ -82,28 +83,14 @@ const handleDelete = async (data: ProjectUpdate) => {
       </v-col>
 
       <v-col cols="auto" class="d-flex align-center justify-center ga-5">
-        <v-icon color="#c0c0c0">mdi-message-bulleted</v-icon>
-
-        <v-tooltip text="Update Project" location="top">
-          <template #activator="{ props: vprops }">
-            <v-icon
-              v-bind="vprops"
-              color="#c0c0c0"
-              :class="[
-                { 'opacity-50': is_loading_projects, 'cursor-pointer': !is_loading_projects },
-              ]"
-              :disabled="is_loading_projects"
-              @click="openUpdateProjectDialog"
-            >
-              mdi-pencil
-            </v-icon>
-          </template>
-        </v-tooltip>
+        <v-icon color="#c0c0c0" @click="openThreadDialog()"> mdi-message-bulleted </v-icon>
+        <v-icon color="#c0c0c0" @click="openUpdateProjectDialog()"> mdi-pencil </v-icon>
       </v-col>
     </v-row>
   </v-sheet>
 
   <UpdateProjectDialog ref="dialog_project_update" @submit="handleUpdate" @delete="handleDelete" />
+  <ThreadDialog ref="dialog_thread" />
 </template>
 
 <style scoped>

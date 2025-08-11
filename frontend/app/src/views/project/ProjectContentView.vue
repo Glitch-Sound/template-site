@@ -5,7 +5,6 @@ import { storeToRefs } from 'pinia'
 import type { ProjectCreate } from '@/types/Project'
 import ProjectEvent from '@/views/project/ProjectEvent'
 import { useProjectStore } from '@/stores/ProjectStore'
-
 import PanelProject from '@/components/project/PanelProject.vue'
 import PanelProjectGroup from '@/components/project/PanelProjectGroup.vue'
 import CreateProjectDialog from '@/components/dialog/CreateProjectDialog.vue'
@@ -21,12 +20,8 @@ ProjectEvent.on('openCreateProjectDialog', () => {
 })
 
 async function handleCreate(data: ProjectCreate) {
-  try {
-    await createProject(data)
-    dialog_project_create.value?.close()
-  } catch (e) {
-    console.error(e)
-  }
+  await createProject(data)
+  dialog_project_create.value?.close()
 }
 </script>
 

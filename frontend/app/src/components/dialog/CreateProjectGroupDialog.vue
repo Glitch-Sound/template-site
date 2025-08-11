@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { Company, CompanyCreate } from '@/types/Company'
+import type { Company } from '@/types/Company'
+import type { ProjectGroupCreate } from '@/types/Project'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
-
 import CompanySelect from '@/components/common/CompanySelect.vue'
 
 const emit = defineEmits(['submit'])
-const { dialog, valid, form_data, form_ref, rules, onSubmit } = useFormDialog<CompanyCreate>(emit)
+const { dialog, valid, form_data, form_ref, rules, onSubmit } =
+  useFormDialog<ProjectGroupCreate>(emit)
 
 defineExpose({
   open() {
     dialog.value = true
     form_data.value = {
-      rid_companies: null,
+      rid_companies: 0,
       name: '',
       detail: '',
     }

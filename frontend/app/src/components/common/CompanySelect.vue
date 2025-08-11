@@ -18,7 +18,9 @@ const store_company = useCompanyStore()
 const { companies, is_loading } = storeToRefs(store_company)
 const { fetchCompanies, getByRid } = store_company
 
-const selected_option = ref<number | null>(props.modelValue ?? null)
+const selected_option = ref<number | null>(
+  props.modelValue && props.modelValue !== 0 ? props.modelValue : null,
+)
 
 onMounted(() => {
   fetchCompanies()
