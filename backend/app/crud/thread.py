@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
 from typing import List
 
 from app.models import thread as model_thread
 from app.schemas import thread as schema_thread
 from app.schemas import user as schema_user
-from sqlalchemy import and_, func, literal, select
+from sqlalchemy import and_, func, literal, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -52,10 +53,18 @@ def get_threads_by_rid(db: Session, rid_projects: int) -> List[model_thread.Thre
 
     tree = tree.union_all(children)
 
+    cutoff = datetime.utcnow() - timedelta(days=10)
+
     rows = (
         db.query(model_thread.Thread, tree.c.depth)
           .join(tree, model_thread.Thread.rid == tree.c.rid)
           .options(joinedload(model_thread.Thread.user))
+          .filter(
+              or_(
+                  model_thread.Thread.state != model_thread.TypeThreadState.COMPLETED,
+                  cutoff <= model_thread.Thread.updated_at
+              )
+          )
           .order_by(tree.c.sort_path.asc(), model_thread.Thread.rid.asc())
           .all()
     )
