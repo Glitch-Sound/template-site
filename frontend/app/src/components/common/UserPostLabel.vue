@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 import { TypePost } from '@/types/User'
 
 const props = defineProps<{

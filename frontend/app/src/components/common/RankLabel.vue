@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 import { TypeRank } from '@/types/Project'
 
 const props = defineProps<{

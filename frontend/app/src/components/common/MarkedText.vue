@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 
-import { defineProps } from 'vue'
-
 marked.setOptions({
   breaks: true,
 })

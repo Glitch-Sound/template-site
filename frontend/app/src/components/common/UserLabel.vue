@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 import { type User } from '@/types/User'
 import UserIcon from '@/components/common/UserIcon.vue'
 
