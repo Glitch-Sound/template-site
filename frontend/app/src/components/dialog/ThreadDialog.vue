@@ -109,7 +109,7 @@ const handleDelete = async (data: ThreadUpdate) => {
 </script>
 
 <template>
-  <v-dialog v-model="dialog" max-width="1200px" min-height="700px">
+  <v-dialog v-model="dialog" max-width="1500px" min-height="700px">
     <v-card class="d-flex flex-column" style="max-height: 80vh">
       <v-card-title>
         <span class="dialog-title">{{ title }}</span>

@@ -5,12 +5,12 @@ import { useProjectStore } from '@/stores/ProjectStore'
 import { type TargetQuarter, TypeQuarter } from '@/types/Project'
 
 const props = defineProps<{
-  modelValue?: TargetQuarter[] | null
+  modelValue?: number[] | null
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', v: TargetQuarter[]): void
-  (e: 'itemSelected', v: TargetQuarter[]): void
+  (e: 'update:modelValue', v: number[]): void
+  (e: 'itemSelected', v: number[]): void
 }>()
 
 const projectStore = useProjectStore()
@@ -24,6 +24,21 @@ const Q_LABEL: Record<Exclude<TypeQuarter, TypeQuarter.NONE>, string> = {
 } as const
 const quarterLabel = (q: TypeQuarter) => (q === TypeQuarter.NONE ? '' : Q_LABEL[q])
 
+const fqToNumber = (fq: TargetQuarter) => fq.year * 10 + fq.quarter
+const numberToFQ = (n: number): TargetQuarter | undefined => {
+  const year = Math.trunc(n / 10)
+  const qNum = n % 10
+  if (
+    qNum === TypeQuarter.Q1 ||
+    qNum === TypeQuarter.Q2 ||
+    qNum === TypeQuarter.Q3 ||
+    qNum === TypeQuarter.Q4
+  ) {
+    return { year, quarter: qNum }
+  }
+  return undefined
+}
+
 interface Filter {
   label: string
   filter: TargetQuarter
@@ -34,41 +49,46 @@ const options = computed<Filter[]>(() =>
     .map((fq) => ({ label: `${fq.year} ${quarterLabel(fq.quarter)}`.trim(), filter: fq })),
 )
 
-const sameFQArray = (a: TargetQuarter[], b: TargetQuarter[]) => {
+const toOptionByNumber = (n: number): Filter | undefined => {
+  const fq = numberToFQ(n)
+  if (!fq) return undefined
+  return options.value.find((o) => o.filter.year === fq.year && o.filter.quarter === fq.quarter)
+}
+
+const sameFilterArray = (a: Filter[], b: Filter[]) => {
+  const key = (x: Filter) => `${x.filter.year}-${x.filter.quarter}`
   if (a.length !== b.length) return false
-  const key = (x: TargetQuarter) => `${x.year}-${x.quarter}`
   const A = new Set(a.map(key))
   for (const s of b.map(key)) if (!A.has(s)) return false
   return true
 }
-const sameFilterArray = (a: Filter[], b: Filter[]) =>
-  sameFQArray(
-    a.map((x) => x.filter),
-    b.map((x) => x.filter),
-  )
-const toOption = (fq: TargetQuarter): Filter | undefined =>
-  options.value.find((o) => o.filter.year === fq.year && o.filter.quarter === fq.quarter)
+const sameNumberArray = (a: number[], b: number[]) => {
+  if (a.length !== b.length) return false
+  const A = new Set(a)
+  for (const x of b) if (!A.has(x)) return false
+  return true
+}
 
 const selected_option = ref<Filter[]>(
-  (props.modelValue ?? []).map(toOption).filter((v): v is Filter => !!v),
+  (props.modelValue ?? []).map(toOptionByNumber).filter((v): v is Filter => !!v),
 )
 
 watch(
   () => props.modelValue,
   (v) => {
-    const next = (v ?? []).map(toOption).filter((x): x is Filter => !!x)
+    const next = (v ?? []).map(toOptionByNumber).filter((x): x is Filter => !!x)
     if (!sameFilterArray(selected_option.value, next)) selected_option.value = next
   },
 )
 
 watch(
-  () => selected_option.value.map((x) => `${x.filter.year}-${x.filter.quarter}`),
+  () => selected_option.value.map((x) => fqToNumber(x.filter)),
   () => {
-    const nextFQ = selected_option.value.map((v) => v.filter)
+    const nextNums = selected_option.value.map((v) => fqToNumber(v.filter))
     const current = props.modelValue ?? []
-    if (!sameFQArray(current, nextFQ)) {
-      emit('update:modelValue', nextFQ)
-      emit('itemSelected', nextFQ)
+    if (!sameNumberArray(current, nextNums)) {
+      emit('update:modelValue', nextNums)
+      emit('itemSelected', nextNums)
     }
   },
 )

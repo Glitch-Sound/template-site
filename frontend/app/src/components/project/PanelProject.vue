@@ -43,7 +43,7 @@ const handleDelete = async (data: ProjectUpdate) => {
 </script>
 
 <template>
-  <v-sheet class="mr-5">
+  <v-sheet class="mb-1 mr-5">
     <v-row>
       <v-col cols="auto" class="d-flex align-center justify-center ml-5">
         <QuarterLabel :project="props.project" />
@@ -77,7 +77,7 @@ const handleDelete = async (data: ProjectUpdate) => {
         </v-card>
       </v-col>
 
-      <v-col cols="auto" class="mr-2">
+      <v-col cols="auto" class="mr-2 user">
         <UserLabel :user="props.project.user_pm" class="mb-1" />
         <UserLabel :user="props.project.user_pl" />
       </v-col>
@@ -95,6 +95,11 @@ const handleDelete = async (data: ProjectUpdate) => {
 
 <style scoped>
 @import '@/assets/main.css';
+
+.user {
+  min-width: 150px;
+  max-width: 150px;
+}
 
 .cursor-pointer {
   cursor: pointer;

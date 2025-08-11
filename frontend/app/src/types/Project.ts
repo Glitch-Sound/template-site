@@ -85,7 +85,7 @@ export interface TargetQuarter {
 }
 
 export interface SearchCondition {
-  target: TargetQuarter[]
+  target: number[]
   rid_users_pm: number[]
   rid_users_pl: number[]
   is_none_pre_approval: boolean

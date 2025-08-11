@@ -31,6 +31,13 @@ const vuetify = createVuetify({
       },
     },
   },
+
+  defaults: {
+    VDialog: {
+      scrim: 'rgba(45, 45, 45, 0.95)',
+    },
+  },
+
   icons: {
     defaultSet: 'mdi',
     aliases,

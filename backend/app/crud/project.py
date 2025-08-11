@@ -7,7 +7,7 @@ from app.models import user as model_user
 from app.schemas import project as schema_project
 from app.schemas import user as schema_user
 from sqlalchemy import Integer, and_, cast, func, or_
-from sqlalchemy.orm import Session, joinedload, with_loader_criteria
+from sqlalchemy.orm import Session, joinedload
 
 
 def get_project_groups(db: Session) -> List[model_project_group.ProjectGroup]:
@@ -78,8 +78,7 @@ def get_project_condition(db: Session) -> schema_project.SearchCondition:
     quarter_expr = cast((month_expr + 2) / 3.0, Integer)
 
     query_target = db.query(
-        year_expr.label('year'),
-        quarter_expr.label('quarter'),
+        year_expr.label('year') * 10 + quarter_expr.label('quarter'),
     )\
     .filter(
         and_(
@@ -89,13 +88,8 @@ def get_project_condition(db: Session) -> schema_project.SearchCondition:
     )\
     .distinct()\
     .order_by(year_expr.asc(), quarter_expr.asc())
-    rows_target = query_target.all()
+    targets = [int(x[0]) for x in query_target.all()]
     # fmt: on
-
-    targets = [
-        schema_project.TargetQuarter(year=int(r.year), quarter=int(r.quarter))
-        for r in rows_target
-    ]
 
     # fmt: off
     query_pm = db.query(
@@ -207,14 +201,17 @@ def get_project_users(db: Session) -> schema_user.User:
     return q_users.all()
 
 
-def get_projects(
-    db: Session, condition: schema_project.SearchCondition
-) -> List[model_project_group.ProjectGroup]:
+def get_projects(db: Session, condition: schema_project.SearchCondition):
     child_preds = [model_project.Project.is_deleted == 0]
+
+    if condition.target:
+        child_preds.append(model_project.Project.target_quarter.in_(condition.target))
+
     if condition.rid_users_pm:
         child_preds.append(
             model_project.Project.rid_users_pm.in_(condition.rid_users_pm)
         )
+
     if condition.rid_users_pl:
         child_preds.append(
             model_project.Project.rid_users_pl.in_(condition.rid_users_pl)
@@ -229,11 +226,13 @@ def get_projects(
         )
 
     if condition.is_none_number_m:
-        child_preds.append(model_project.Project.number_m.is_(0))
+        child_preds.append(model_project.Project.number_m == 0)
+
     if condition.is_none_number_s:
-        child_preds.append(model_project.Project.number_s.is_(0))
+        child_preds.append(model_project.Project.number_s == 0)
+
     if condition.is_none_number_o:
-        child_preds.append(model_project.Project.number_o.is_(0))
+        child_preds.append(model_project.Project.number_o == 0)
 
     group_preds = [
         model_project_group.ProjectGroup.is_deleted == 0,
@@ -243,19 +242,15 @@ def get_projects(
     query = (
         db.query(model_project_group.ProjectGroup)
         .options(
-            joinedload(model_project_group.ProjectGroup.projects),
-            joinedload(model_project_group.ProjectGroup.projects).joinedload(
-                model_project.Project.project_numbers
-            ),
-            with_loader_criteria(
-                model_project.Project,
-                and_(*child_preds),
-                include_aliases=True,
-            ),
+            joinedload(
+                model_project_group.ProjectGroup.projects.and_(and_(*child_preds))
+            ).joinedload(model_project.Project.project_numbers)
         )
         .filter(and_(*group_preds))
         .order_by(model_project_group.ProjectGroup.rid)
     )
+
+    print(query)
 
     return query.all()
 

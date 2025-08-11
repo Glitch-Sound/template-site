@@ -48,6 +48,7 @@ const handleCompanySelected = (company: Company) => {
 
           <v-text-field
             v-model="form_data.name"
+            class="mt-5"
             :rules="[rules.required, rules.text]"
             label="Name"
           />

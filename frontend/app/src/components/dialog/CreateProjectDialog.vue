@@ -68,7 +68,7 @@ const handleRankSelected = (rank: number) => {
 </script>
 
 <template>
-  <v-dialog v-model="dialog" max-width="600px">
+  <v-dialog v-model="dialog" max-width="1000px">
     <v-card>
       <v-card-title>
         <span class="dialog-title">Add Project</span>
@@ -81,17 +81,23 @@ const handleRankSelected = (rank: number) => {
             @itemSelected="handleProjectGroupSelected"
           />
 
-          <UserSelect
-            v-model="form_data.rid_users_pm"
-            label="PM"
-            @itemSelected="handleUserPMSelected"
-          />
+          <v-row dense class="my-4">
+            <v-col cols="6">
+              <UserSelect
+                v-model="form_data.rid_users_pm"
+                label="PM"
+                @itemSelected="handleUserPMSelected"
+              />
+            </v-col>
 
-          <UserSelect
-            v-model="form_data.rid_users_pl"
-            label="PL"
-            @itemSelected="handleUserPLSelected"
-          />
+            <v-col cols="6">
+              <UserSelect
+                v-model="form_data.rid_users_pl"
+                label="PL"
+                @itemSelected="handleUserPLSelected"
+              />
+            </v-col>
+          </v-row>
 
           <RankSelect v-model="form_data.rank" @itemSelected="handleRankSelected" />
 
@@ -105,21 +111,37 @@ const handleRankSelected = (rank: number) => {
             label="Number Parent"
           />
 
-          <v-text-field
-            v-model="form_data.amount_expected"
-            :rules="[rules.numeric]"
-            label="Amount Expected"
-          />
+          <v-row dense class="mb-4">
+            <v-col cols="6">
+              <v-text-field
+                v-model="form_data.amount_expected"
+                :rules="[rules.numeric]"
+                label="Amount Expected"
+              />
+            </v-col>
 
-          <v-text-field
-            v-model="form_data.amount_order"
-            :rules="[rules.numeric]"
-            label="Amount Order"
-          />
+            <v-col cols="6">
+              <v-text-field
+                v-model="form_data.amount_order"
+                :rules="[rules.numeric]"
+                label="Amount Order"
+              />
+            </v-col>
+          </v-row>
 
-          <v-text-field v-model="form_data.date_start" label="Date Start" type="date" />
-          <v-text-field v-model="form_data.date_delivery" label="Date Delivery" type="date" />
-          <v-text-field v-model="form_data.date_end" label="Date End" type="date" />
+          <v-row dense class="mb-4">
+            <v-col cols="4">
+              <v-text-field v-model="form_data.date_start" label="Date Start" type="date" />
+            </v-col>
+
+            <v-col cols="4">
+              <v-text-field v-model="form_data.date_delivery" label="Date Delivery" type="date" />
+            </v-col>
+
+            <v-col cols="4">
+              <v-text-field v-model="form_data.date_end" label="Date End" type="date" />
+            </v-col>
+          </v-row>
         </v-form>
       </v-card-text>
 

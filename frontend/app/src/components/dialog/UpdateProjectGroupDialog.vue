@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProjectGroup, ProjectGroupUpdate } from '@/types/ProjectGroup'
+import type { ProjectGroup, ProjectGroupUpdate } from '@/types/Project'
 import type { Company } from '@/types/Company'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
 
@@ -43,6 +43,7 @@ const handleCompanySelected = (company: Company) => {
 
           <v-text-field
             v-model="form_data.name"
+            class="mt-5"
             :rules="[rules.required, rules.text]"
             label="Name"
           />

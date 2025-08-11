@@ -76,7 +76,7 @@ class TargetQuarter(BaseModel):
 
 
 class SearchCondition(BaseModel):
-    target: List[TargetQuarter]
+    target: List[int]
     rid_users_pm: List[int]
     rid_users_pl: List[int]
     is_none_pre_approval: bool

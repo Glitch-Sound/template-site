@@ -35,8 +35,8 @@ async function handleCreate(data: ProjectCreate) {
       />
 
       <template v-else>
-        <template v-for="project_group in projects" :key="project_group.rid">
-          <PanelProjectGroup :project_group="project_group" />
+        <template v-for="(project_group, i) in projects" :key="project_group.rid">
+          <PanelProjectGroup :project_group="project_group" :class="{ 'mt-10': 0 < i }" />
           <template v-for="project in project_group.projects" :key="project.rid">
             <PanelProject :project="project" />
           </template>

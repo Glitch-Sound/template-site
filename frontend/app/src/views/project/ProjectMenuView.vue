@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
-import type { TargetQuarter } from '@/types/Project'
 import ProjectEvent from '@/views/project/ProjectEvent'
 import QuarterFilter from '@/components/common/QuarterFilter.vue'
 import UserFilter from '@/components/common/UserFilter.vue'
@@ -11,7 +10,7 @@ import { useProjectStore } from '@/stores/ProjectStore'
 const store = useProjectStore()
 const { condition } = storeToRefs(store)
 
-const model_quarters = computed<TargetQuarter[]>({
+const model_quarters = computed<number[]>({
   get: () => condition.value.target ?? [],
   set: (v) => store.patchCondition({ target: v ?? [] }),
 })

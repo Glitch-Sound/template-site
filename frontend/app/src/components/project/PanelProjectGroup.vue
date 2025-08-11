@@ -7,7 +7,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <v-sheet>
+  <v-sheet class="mb-2">
     <v-chip class="mr-3 text-overline font-weight-bold">
       {{ props.project_group.company.name }}
     </v-chip>
