@@ -35,7 +35,7 @@ const canSubmit = computed(() => form_data.value.note !== '')
 
       <v-card-text>
         <v-form ref="form_ref" v-model="valid" lazy-validation>
-          <v-textarea v-model="form_data.note" :rules="[rules.text]" label="Note" />
+          <v-textarea v-model="form_data.note" :rules="[rules.required]" label="Note" />
         </v-form>
       </v-card-text>
 

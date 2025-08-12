@@ -12,6 +12,7 @@ import NumberLabel from '@/components/common/NumberLabel.vue'
 import KarteLabel from '@/components/common/KarteLabel.vue'
 import UpdateProjectDialog from '@/components/dialog/UpdateProjectDialog.vue'
 import ThreadDialog from '@/components/dialog/ThreadDialog.vue'
+import ProjectNumberDialog from '@/components/dialog/ProjectNumberDialog.vue'
 
 const props = defineProps<{
   project: Project
@@ -22,6 +23,7 @@ const { updateProject, deleteProject } = store_project
 
 const dialog_project_update = ref()
 const dialog_thread = ref()
+const dialog_project_number = ref()
 
 function openUpdateProjectDialog() {
   dialog_project_update.value?.open(props.project)
@@ -29,6 +31,10 @@ function openUpdateProjectDialog() {
 
 function openThreadDialog() {
   dialog_thread.value?.open(props.project)
+}
+
+function openProjectNumberDialog() {
+  dialog_project_number.value?.open(props.project)
 }
 
 async function handleUpdate(data: ProjectUpdate) {
@@ -69,7 +75,11 @@ const handleDelete = async (data: ProjectUpdate) => {
 
       <v-col cols="auto" class="mr-5">
         <v-card>
-          <NumberLabel :project="props.project" />
+          <NumberLabel
+            :project="props.project"
+            class="cursor-pointer"
+            @click="openProjectNumberDialog()"
+          />
         </v-card>
 
         <v-card>
@@ -91,6 +101,7 @@ const handleDelete = async (data: ProjectUpdate) => {
 
   <UpdateProjectDialog ref="dialog_project_update" @submit="handleUpdate" @delete="handleDelete" />
   <ThreadDialog ref="dialog_thread" />
+  <ProjectNumberDialog ref="dialog_project_number" />
 </template>
 
 <style scoped>

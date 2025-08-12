@@ -53,7 +53,7 @@ function subscribeTokenRefresh(cb: (token: string) => void) {
   refreshSubscribers.push(cb)
 }
 
-function onRrefreshed(token: string) {
+function onRefreshed(token: string) {
   refreshSubscribers.forEach((cb) => cb(token))
   refreshSubscribers = []
 }
@@ -83,7 +83,7 @@ apiClient.interceptors.response.use(
 
       isRefreshing = true
       try {
-        const refreshRes = await axios.post('/refresh', {
+        const refreshRes = await apiClient.post('/refresh', {
           token_refresh: getRefreshToken(),
         })
 
@@ -91,7 +91,7 @@ apiClient.interceptors.response.use(
         setTokens(token_access, token_refresh)
 
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token_access}`
-        onRrefreshed(token_access) // キューを解放
+        onRefreshed(token_access)
 
         originalRequest.headers = originalRequest.headers || {}
         originalRequest.headers['Authorization'] = `Bearer ${token_access}`

@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 
 import jwt
 from app.models import user as model_user
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt import ExpiredSignatureError, InvalidTokenError
 from passlib.context import CryptContext
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -34,28 +35,35 @@ def create_jwt_token_pair(rid_user: int) -> tuple[str, str]:
 
 
 def decode_jwt_token(token: str) -> dict:
-    decoded = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-    return decoded
+    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 
 def get_token_user(
     db: Session, token: HTTPAuthorizationCredentials = Depends(security)
 ) -> model_user.User:
-    decoded = jwt.decode(token.credentials, SECRET_KEY, algorithms=ALGORITHM)
-    rid_user = decoded.get("sub")
+    try:
+        decoded = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
 
-    # fmt: off
-    query = (
+    except ExpiredSignatureError as exc:
+        raise HTTPException(
+            status_code=401,
+            detail="Token expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+    except InvalidTokenError as exc:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+    rid_user = decoded.get("sub")
+    return (
         db.query(model_user.User)
-        .filter(
-            and_(
-                model_user.User.rid == rid_user,
-                ~model_user.User.is_deleted
-            )
-        )
+        .filter(and_(model_user.User.rid == rid_user, ~model_user.User.is_deleted))
+        .first()
     )
-    # fmt: on
-    return query.first()
 
 
 def _create_jwt_token(data: dict, expires_delta: int) -> str:
