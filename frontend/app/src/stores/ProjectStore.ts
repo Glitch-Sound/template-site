@@ -200,11 +200,13 @@ export const useProjectStore = defineStore('project', () => {
   return {
     // state
     project_groups,
+    project_numbers,
     projects,
     condition,
     project_targets,
     project_users,
     is_loading_groups,
+    is_loading_numbers,
     is_loading_projects,
 
     // getters

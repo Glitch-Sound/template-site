@@ -2,15 +2,15 @@
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
-import type { Project } from '@/types/Project'
+import { TypeNumber, type Project } from '@/types/Project'
 import { useDisplayDialog } from '@/components/dialog/BaseDialog'
 import { useProjectStore } from '@/stores/ProjectStore'
 
 const headers = [
   { title: 'RID', width: '50px' },
-  { title: 'TYPE', width: '50px' },
+  { title: 'TYPE', width: '20px' },
   { title: 'NUMBER', width: '100px' },
-  { title: 'NOTE', width: '300px' },
+  { title: 'NOTE', width: '330px' },
   { title: 'START', width: '100px' },
   { title: 'END', width: '100px' },
 ]
@@ -56,11 +56,15 @@ defineExpose({
         <template #item="{ item }">
           <tr>
             <td>{{ item.rid }}</td>
-            <td>{{ item.type }}</td>
+            <td>
+              <template v-if="item.type == TypeNumber.M"> M </template>
+              <template v-if="item.type == TypeNumber.S"> S </template>
+              <template v-if="item.type == TypeNumber.O"> O </template>
+            </td>
             <td>{{ item.number }}</td>
             <td>{{ item.note }}</td>
-            <td>{{ item.start }}</td>
-            <td>{{ item.end }}</td>
+            <td>{{ item.date_start }}</td>
+            <td>{{ item.date_end }}</td>
           </tr>
         </template>
       </v-data-table>

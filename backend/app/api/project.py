@@ -160,11 +160,7 @@ def get_projects(
     _current_user=Depends(api_common.log_token_user),
 ):
     try:
-        print("start")
-        hoge = crud_project.get_projects(db, condition)
-        print("end")
-        print(hoge)
-        return hoge
+        return crud_project.get_projects(db, condition)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
