@@ -21,6 +21,7 @@ class ProjectNumber(Base, TimestampMixin):
     rid_projects = Column(Integer, ForeignKey("projects.rid"))
     type         = Column(Integer, default=TypeNumber.NONE.value)
     number       = Column(String,  default="")
+    note         = Column(String,  default="")
     date_start   = Column(String,  default="")
     date_end     = Column(String,  default="")
     is_deleted   = Column(Boolean, default=0)

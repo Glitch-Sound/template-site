@@ -58,6 +58,7 @@ export interface ProjectNumber {
   rid: number
   type: TypeNumber
   number: string
+  note: string
   date_start: string
   date_end: string
 }
@@ -66,6 +67,7 @@ export interface ProjectNumberCreate {
   rid_projects: number
   type: TypeNumber
   number: string
+  note: string
   date_start: string
   date_end: string
 }
@@ -75,6 +77,7 @@ export interface ProjectNumberUpdate {
   rid_projects: number
   type: TypeNumber
   number: string
+  note: string
   date_start: string
   date_end: string
 }

@@ -6,6 +6,9 @@ import type {
   ProjectGroup,
   ProjectGroupCreate,
   ProjectGroupUpdate,
+  ProjectNumber,
+  ProjectNumberCreate,
+  ProjectNumberUpdate,
   SearchCondition,
   TargetQuarter,
   Project,
@@ -18,15 +21,18 @@ import service_project from '@/services/ProjectService'
 export const useProjectStore = defineStore('project', () => {
   // state.
   const project_groups = ref<ProjectGroup[]>([])
+  const project_numbers = ref<ProjectNumber[]>([])
   const projects = ref<ProjectList[]>([])
   const condition = ref<SearchCondition>(defaultCondition())
   const project_targets = ref<TargetQuarter[]>([])
   const project_users = ref<User[]>([])
 
   const is_loading_groups = ref(false)
+  const is_loading_numbers = ref(false)
   const is_loading_projects = ref(false)
 
   let inflight_groups: Promise<void> | null = null
+  let inflight_numbers: Promise<void> | null = null
   let inflight_projects: Promise<void> | null = null
 
   // getters.
@@ -112,6 +118,36 @@ export const useProjectStore = defineStore('project', () => {
     if (0 <= i) project_groups.value.splice(i, 1)
   }
 
+  // actions: numbers.
+  async function fetchProjectNumbers(rid: number): Promise<void> {
+    if (inflight_numbers) return inflight_numbers
+    is_loading_numbers.value = true
+    inflight_numbers = (async () => {
+      try {
+        project_numbers.value = await service_project.fetchProjectNumbers(rid)
+      } finally {
+        is_loading_numbers.value = false
+        inflight_numbers = null
+      }
+    })()
+    return inflight_numbers
+  }
+
+  async function createProjectNumber(payload: ProjectNumberCreate): Promise<ProjectNumber> {
+    // for batch.
+    return await service_project.createProjectNumber(payload)
+  }
+
+  async function updateProjectNumber(payload: ProjectNumberUpdate): Promise<ProjectNumber> {
+    // for batch.
+    return await service_project.updateProjectNumber(payload)
+  }
+
+  async function deleteProjectNumber(rid: number): Promise<void> {
+    // for batch.
+    await service_project.deleteProjectNumber(rid)
+  }
+
   // actions: projects.
   async function fetchProjects(): Promise<void> {
     if (inflight_projects) return inflight_projects
@@ -182,6 +218,10 @@ export const useProjectStore = defineStore('project', () => {
     createProjectGroup,
     updateProjectGroup,
     deleteProjectGroup,
+    fetchProjectNumbers,
+    createProjectNumber,
+    updateProjectNumber,
+    deleteProjectNumber,
     setCondition,
     patchCondition,
     clearCondition,

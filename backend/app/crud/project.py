@@ -3,6 +3,7 @@ from typing import List
 
 from app.models import project as model_project
 from app.models import project_group as model_project_group
+from app.models import project_number as model_project_number
 from app.models import user as model_user
 from app.schemas import project as schema_project
 from app.schemas import user as schema_user
@@ -68,6 +69,80 @@ def delete_project_group(db: Session, rid: int) -> None:
     # fmt: on
 
     obj_project_group.is_deleted = 1
+    db.commit()
+
+
+def get_project_numbers(
+    db: Session, rid: int
+) -> List[model_project_number.ProjectNumber]:
+    # fmt: off
+    query = db.query(
+        model_project_number.ProjectNumber
+    )\
+    .filter(
+        and_(
+            model_project_number.ProjectNumber.is_deleted == 0,
+            model_project_number.ProjectNumber.rid_projects == rid
+        )
+    )\
+    .order_by(model_project_number.ProjectNumber.rid)
+    # fmt: on
+    return query.all()
+
+
+def create_project_number(
+    db: Session, target: schema_project.ProjectNumberCreate
+) -> model_project_number.ProjectNumber:
+    # fmt: off
+    obj_project_number = model_project_number.ProjectNumber(
+        rid_projects=target.rid_projects,
+        type=target.type,
+        number=target.number,
+        note=target.note,
+        date_start=target.date_start,
+        date_end=target.date_end
+    )
+    # fmt: on
+
+    db.add(obj_project_number)
+    db.commit()
+    db.refresh(obj_project_number)
+    return obj_project_number
+
+
+def update_project_number(
+    db: Session, target: schema_project.ProjectNumberUpdate
+) -> model_project_number.ProjectNumber:
+    # fmt: off
+    obj_project_number = db.query(
+        model_project_number.ProjectNumber
+    )\
+    .filter(model_project_number.ProjectNumber.rid == target.rid)\
+    .first()
+
+    obj_project_number.rid_projects = target.rid_projects
+    obj_project_number.type         = target.type
+    obj_project_number.number       = target.number
+    obj_project_number.note         = target.note
+    obj_project_number.date_start   = target.date_start
+    obj_project_number.date_end     = target.date_end
+    # fmt: on
+
+    db.commit()
+    db.refresh(obj_project_number)
+    return obj_project_number
+
+
+def delete_project_number(db: Session, rid: int) -> None:
+    # fmt: off
+    obj_project_number = db.query(
+        model_project_number.ProjectNumber
+    )\
+    .filter(model_project_number.ProjectNumber.rid == rid)\
+    .first()
+    # fmt: on
+
+    obj_project_number.is_deleted = 1
     db.commit()
 
 
@@ -249,8 +324,6 @@ def get_projects(db: Session, condition: schema_project.SearchCondition):
         .filter(and_(*group_preds))
         .order_by(model_project_group.ProjectGroup.rid)
     )
-
-    print(query)
 
     return query.all()
 

@@ -40,6 +40,7 @@ class ProjectNumber(BaseModel):
     rid: int
     type: model_project_number.TypeNumber
     number: str
+    note: str
     date_start: str
     date_end: str
 
@@ -51,6 +52,7 @@ class ProjectNumberCreate(BaseModel):
     rid_projects: int
     type: model_project_number.TypeNumber
     number: str
+    note: str
     date_start: str
     date_end: str
 
@@ -63,6 +65,7 @@ class ProjectNumberUpdate(BaseModel):
     rid_projects: int
     type: model_project_number.TypeNumber
     number: str
+    note: str
     date_start: str
     date_end: str
 

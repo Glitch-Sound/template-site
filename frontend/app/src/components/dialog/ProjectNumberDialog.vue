@@ -1,8 +1,23 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 
-import { useDisplayDialog } from '@/components/dialog/BaseDialog'
 import type { Project } from '@/types/Project'
+import { useDisplayDialog } from '@/components/dialog/BaseDialog'
+import { useProjectStore } from '@/stores/ProjectStore'
+
+const headers = [
+  { title: 'RID', width: '50px' },
+  { title: 'TYPE', width: '50px' },
+  { title: 'NUMBER', width: '100px' },
+  { title: 'NOTE', width: '300px' },
+  { title: 'START', width: '100px' },
+  { title: 'END', width: '100px' },
+]
+
+const store_project = useProjectStore()
+const { project_numbers, is_loading_numbers } = storeToRefs(store_project)
+const { fetchProjectNumbers } = store_project
 
 const emit = defineEmits(['submit'])
 const { dialog, onClose } = useDisplayDialog(emit)
@@ -14,6 +29,8 @@ defineExpose({
   async open(data: Project) {
     dialog.value = true
     project.value = data
+
+    await fetchProjectNumbers(data.rid)
   },
   close() {
     dialog.value = false
@@ -29,7 +46,24 @@ defineExpose({
         <span class="dialog-title">{{ title }}</span>
       </v-card-title>
 
-      <v-card-text class="flex-grow-1 overflow-y-auto"> aaa </v-card-text>
+      <v-data-table
+        class="bg-black"
+        :items="project_numbers"
+        :headers="headers"
+        :loading="is_loading_numbers"
+        loading-text="Loading project numbers..."
+      >
+        <template #item="{ item }">
+          <tr>
+            <td>{{ item.rid }}</td>
+            <td>{{ item.type }}</td>
+            <td>{{ item.number }}</td>
+            <td>{{ item.note }}</td>
+            <td>{{ item.start }}</td>
+            <td>{{ item.end }}</td>
+          </tr>
+        </template>
+      </v-data-table>
 
       <v-card-actions>
         <v-spacer />

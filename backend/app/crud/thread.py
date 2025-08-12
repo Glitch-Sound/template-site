@@ -82,8 +82,6 @@ def create_thread(
     target: schema_thread.ThreadCreate,
     current_user: schema_user.User,
 ) -> model_thread.Thread:
-    print(target)
-
     # fmt: off
     obj_thread = model_thread.Thread(
         rid_projects=target.rid_projects,

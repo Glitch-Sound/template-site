@@ -4,7 +4,6 @@ import { useAuthStore } from '@/stores/AuthStore'
 
 import MainView from '@/views/main/MainView.vue'
 import ProjectView from '@/views/project/ProjectView.vue'
-import AccountView from '@/views/account/AccountView.vue'
 import VizView from '@/views/viz/VizView.vue'
 
 import SettingMainView from '@/views/setting/SettingMainView.vue'
@@ -23,11 +22,6 @@ const router = createRouter({
     {
       path: '/project',
       component: ProjectView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/account',
-      component: AccountView,
       meta: { requiresAuth: true },
     },
     {

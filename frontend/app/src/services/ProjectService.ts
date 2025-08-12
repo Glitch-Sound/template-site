@@ -4,6 +4,9 @@ import type {
   ProjectGroup,
   ProjectGroupCreate,
   ProjectGroupUpdate,
+  ProjectNumber,
+  ProjectNumberCreate,
+  ProjectNumberUpdate,
   SearchCondition,
   TargetQuarter,
   Project,
@@ -56,6 +59,53 @@ class ProjectService {
       console.error(error)
       throw new Error(
         `deleteProjectGroup: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async fetchProjectNumbers(rid: number): Promise<ProjectNumber[]> {
+    try {
+      const response = await apiClient.get<ProjectNumber[]>(`/project_numbers/${rid}`)
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `fetchProjectNumbers: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async createProjectNumber(project_number: ProjectNumberCreate): Promise<ProjectNumber> {
+    try {
+      const response = await apiClient.post<ProjectNumber>('/project_numbers', project_number)
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `createProjectNumber: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async updateProjectNumber(project_number: ProjectNumberUpdate): Promise<ProjectNumber> {
+    try {
+      const response = await apiClient.put<ProjectNumber>('/project_numbers', project_number)
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `updateProjectNumber: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async deleteProjectNumber(rid: number): Promise<void> {
+    try {
+      await apiClient.delete(`/project_numbers/${rid}`)
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `deleteProjectNumber: ${error instanceof Error ? error.message : String(error)}`,
       )
     }
   }

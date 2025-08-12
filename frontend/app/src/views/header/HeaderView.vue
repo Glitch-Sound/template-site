@@ -27,10 +27,6 @@ const route = useRoute()
       <v-icon>mdi-view-list</v-icon>
     </v-btn>
 
-    <v-btn icon to="/account" :color="route.path === '/account' ? 'primary' : 'icon'">
-      <v-icon>mdi-account-tag</v-icon>
-    </v-btn>
-
     <v-btn icon variant="text" to="/viz" :color="route.path === '/viz' ? 'primary' : 'icon'">
       <v-icon>mdi-chart-scatter-plot-hexbin</v-icon>
     </v-btn>

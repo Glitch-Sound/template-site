@@ -62,6 +62,61 @@ def delete_project_group(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@router.get("/project_numbers/{rid}", response_model=list[schema_project.ProjectNumber])
+def get_project_numbers(
+    rid: int,
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_project.get_project_numbers(db, rid)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/project_numbers", response_model=schema_project.ProjectNumber)
+def create_project_number(
+    target: schema_project.ProjectNumberCreate,
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        result = crud_project.create_project_number(db, target)
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.put("/project_numbers", response_model=schema_project.ProjectNumber)
+def update_project_number(
+    target: schema_project.ProjectNumberUpdate,
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        result = crud_project.update_project_number(db, target)
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.delete("/project_numbers/{rid}", response_model=None)
+def delete_project_number(
+    rid: int,
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        crud_project.delete_project_number(db, rid)
+        return {"result": "deleted"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
 @router.get("/projects/condition", response_model=schema_project.SearchCondition)
 def get_project_condition(
     db: Session = Depends(get_db),
@@ -105,7 +160,11 @@ def get_projects(
     _current_user=Depends(api_common.log_token_user),
 ):
     try:
-        return crud_project.get_projects(db, condition)
+        print("start")
+        hoge = crud_project.get_projects(db, condition)
+        print("end")
+        print(hoge)
+        return hoge
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
