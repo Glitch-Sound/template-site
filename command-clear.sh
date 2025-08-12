@@ -8,6 +8,3 @@ else
   docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
   rm -f ./backend/app/db.sqlite3
 fi
-
-
-
