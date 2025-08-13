@@ -34,7 +34,7 @@ defineExpose({
             label="Name"
           />
 
-          <v-textarea v-model="form_data.detail" :rules="[rules.text]" label="Detail" />
+          <v-textarea v-model="form_data.detail" :rules="[]" label="Detail" />
         </v-form>
       </v-card-text>
 

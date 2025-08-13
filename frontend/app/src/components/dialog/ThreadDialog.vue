@@ -132,20 +132,20 @@ const handleDelete = async (data: ThreadUpdate) => {
         </div>
 
         <v-list v-else density="compact" class="py-0">
-          <v-list-item v-for="t in threads" :key="t.rid">
+          <v-list-item v-for="t in threads" :key="t.rid" density="compact" class="py-0 my-0">
             <v-row class="ma-0 pa-0 no-gutter">
               <v-col class="pa-0">
                 <div :style="{ paddingLeft: indent_depth(t.depth) }">
                   <template v-if="t.state == TypeThreadState.COMPLETED">
-                    <MarkedText class="note-check" :src="t.note" />
+                    <MarkedText class="text-body-2 note-check" :src="t.note" />
                   </template>
 
                   <template v-else-if="t.state == TypeThreadState.IMPORTANT">
-                    <MarkedText class="note-notice" :src="t.note" />
+                    <MarkedText class="text-body-2 note-notice" :src="t.note" />
                   </template>
 
                   <template v-else>
-                    <MarkedText :src="t.note" />
+                    <MarkedText class="text-body-2" :src="t.note" />
                   </template>
                 </div>
               </v-col>

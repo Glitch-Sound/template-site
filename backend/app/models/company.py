@@ -9,9 +9,9 @@ class Company(Base, TimestampMixin):
     __tablename__ = "companies"
 
     rid        = Column(Integer, primary_key=True)
-    name       = Column(String,  default="")
-    detail     = Column(String,  default="")
-    is_deleted = Column(Boolean, default=0)
+    name       = Column(String,  nullable=False, default="")
+    detail     = Column(String,  nullable=False, default="")
+    is_deleted = Column(Boolean, nullable=False, default=0)
 
     project_groups = relationship("ProjectGroup", back_populates="company", foreign_keys="ProjectGroup.rid_companies")
 

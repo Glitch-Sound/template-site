@@ -111,7 +111,6 @@ def update_thread(
     .filter(model_thread.Thread.rid == target.rid)\
     .first()
 
-    obj_thread.rid_users = current_user.rid
     obj_thread.state     = target.state
     obj_thread.note      = target.note
     # fmt: on

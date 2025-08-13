@@ -27,7 +27,7 @@ const canSubmit = computed(() => form_data.value.note !== '')
 </script>
 
 <template>
-  <v-dialog v-model="dialog" max-width="600px">
+  <v-dialog v-model="dialog" max-width="1000px">
     <v-card>
       <v-card-title>
         <span class="dialog-title">Add Thread</span>

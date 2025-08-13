@@ -19,12 +19,12 @@ class ProjectNumber(Base, TimestampMixin):
 
     rid          = Column(Integer, primary_key=True)
     rid_projects = Column(Integer, ForeignKey("projects.rid"))
-    type         = Column(Integer, default=TypeNumber.NONE.value)
-    number       = Column(String,  default="")
-    note         = Column(String,  default="")
-    date_start   = Column(String,  default="")
-    date_end     = Column(String,  default="")
-    is_deleted   = Column(Boolean, default=0)
+    type         = Column(Integer, nullable=False, default=TypeNumber.NONE.value)
+    number       = Column(String,  nullable=False, default="")
+    note         = Column(String,  nullable=False, default="")
+    date_start   = Column(String,  nullable=False, default="")
+    date_end     = Column(String,  nullable=False, default="")
+    is_deleted   = Column(Boolean, nullable=False, default=0)
 
     project = relationship("Project", back_populates="project_numbers", foreign_keys=[rid_projects])
 

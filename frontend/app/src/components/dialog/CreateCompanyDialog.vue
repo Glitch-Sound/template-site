@@ -3,7 +3,7 @@ import type { CompanyCreate } from '@/types/Company'
 import { useFormDialog } from '@/components/dialog/BaseDialog'
 
 const emit = defineEmits(['submit'])
-const { dialog, valid, form_data, form_ref, rules, onSubmit } = useFormDialog<UserCreate>(emit)
+const { dialog, valid, form_data, form_ref, rules, onSubmit } = useFormDialog<CompanyCreate>(emit)
 
 defineExpose({
   open() {
@@ -34,7 +34,7 @@ defineExpose({
             label="Name"
           />
 
-          <v-textarea v-model="form_data.detail" :rules="[rules.text]" label="Detail" />
+          <v-textarea v-model="form_data.detail" :rules="[]" label="Detail" />
         </v-form>
       </v-card-text>
 

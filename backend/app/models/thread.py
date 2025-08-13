@@ -21,9 +21,9 @@ class Thread(Base, TimestampMixin):
     rid_projects = Column(Integer, ForeignKey("projects.rid"))
     rid_parent   = Column(Integer, ForeignKey("threads.rid"))
     rid_users    = Column(Integer, ForeignKey("users.rid"))
-    state        = Column(Integer, default=TypeThreadState.NONE.value)
-    note         = Column(String,  default="")
-    is_deleted   = Column(Boolean, default=0)
+    state        = Column(Integer, nullable=False, default=TypeThreadState.NONE.value)
+    note         = Column(String,  nullable=False, default="")
+    is_deleted   = Column(Boolean, nullable=False, default=0)
 
     project = relationship("Project", back_populates="threads", foreign_keys=[rid_projects])
     user    = relationship("User",    back_populates="threads", foreign_keys=[rid_users])

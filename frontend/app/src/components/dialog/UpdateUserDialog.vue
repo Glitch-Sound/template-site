@@ -67,11 +67,7 @@ const handleContractSelected = (contract: number) => {
             required
           />
 
-          <v-text-field
-            v-model="form_data.company"
-            :rules="[rules.required, rules.text]"
-            label="Company"
-          />
+          <v-text-field v-model="form_data.company" :rules="[rules.required]" label="Company" />
 
           <UserPostSelect v-model="form_data.post" @itemSelected="handlePostSelected" />
           <UserContractSelect v-model="form_data.contract" @itemSelected="handleContractSelected" />
