@@ -35,7 +35,6 @@ class User(Base, TimestampMixin):
     company    = Column(String,  nullable=False, default="")
     post       = Column(Integer, nullable=False, default=TypePost.NONE.value)
     contract   = Column(Integer, nullable=False, default=TypeContract.NONE.value)
-    price      = Column(Integer, nullable=False, default=0)
     is_admin   = Column(Boolean, nullable=False, default=0)
     is_deleted = Column(Boolean, nullable=False, default=0)
 

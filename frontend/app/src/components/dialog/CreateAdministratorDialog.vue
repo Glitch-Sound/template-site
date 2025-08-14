@@ -16,7 +16,6 @@ defineExpose({
       company: '-',
       post: 0,
       contract: 0,
-      price: 0,
       is_admin: true,
     }
   },

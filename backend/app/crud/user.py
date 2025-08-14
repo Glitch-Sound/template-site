@@ -60,7 +60,6 @@ def create_user(db: Session, target: schema_user.UserCreate) -> model_user.User:
         company=target.company,
         post=target.post,
         contract=target.contract,
-        price=target.price,
         is_admin=target.is_admin
     )
     # fmt: on
@@ -86,7 +85,6 @@ def update_user(db: Session, target: schema_user.UserUpdate) -> model_user.User:
     obj_user.company  = target.company
     obj_user.post     = target.post
     obj_user.contract = target.contract
-    obj_user.price    = target.price
     obj_user.is_admin = target.is_admin
     # fmt: on
 

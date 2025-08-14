@@ -27,10 +27,6 @@ const route = useRoute()
       <v-icon>mdi-view-list</v-icon>
     </v-btn>
 
-    <v-btn icon to="/member/main" :color="route.path.startsWith('/member') ? 'primary' : 'icon'">
-      <v-icon>mdi-human-handsup</v-icon>
-    </v-btn>
-
     <v-btn icon to="/viz/main" :color="route.path.startsWith('/viz') ? 'primary' : 'icon'">
       <v-icon>mdi-chart-scatter-plot-hexbin</v-icon>
     </v-btn>

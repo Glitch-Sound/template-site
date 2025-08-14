@@ -20,7 +20,6 @@ defineExpose({
       company: '',
       post: TypePost.NONE,
       contract: TypeContract.NONE,
-      price: 0,
       is_admin: false,
     }
   },
@@ -78,12 +77,6 @@ const handleContractSelected = (contract: number) => {
 
           <UserPostSelect v-model="form_data.post" @itemSelected="handlePostSelected" />
           <UserContractSelect v-model="form_data.contract" @itemSelected="handleContractSelected" />
-
-          <v-text-field
-            v-model="form_data.price"
-            :rules="[rules.required, rules.numeric]"
-            label="Price"
-          />
         </v-form>
       </v-card-text>
 

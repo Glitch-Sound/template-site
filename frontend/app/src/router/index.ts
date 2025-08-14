@@ -4,7 +4,6 @@ import { useAuthStore } from '@/stores/AuthStore'
 
 import MainView from '@/views/main/MainView.vue'
 import ProjectView from '@/views/project/ProjectView.vue'
-import MemberMainView from '@/views/member/MemberMainView.vue'
 import VizMainView from '@/views/viz/VizMainView.vue'
 import SettingMainView from '@/views/setting/SettingMainView.vue'
 import SettingUserView from '@/views/setting/SettingUserView.vue'
@@ -22,16 +21,6 @@ const router = createRouter({
     {
       path: '/project',
       component: ProjectView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/member',
-      children: [
-        {
-          path: 'main',
-          component: MemberMainView,
-        },
-      ],
       meta: { requiresAuth: true },
     },
     {

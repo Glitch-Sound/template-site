@@ -10,7 +10,6 @@ class User(BaseModel):
     company: str
     post: model_user.TypePost
     contract: model_user.TypeContract
-    price: int
     is_admin: bool
 
     class Config:
@@ -25,7 +24,6 @@ class UserCreate(BaseModel):
     company: str
     post: model_user.TypePost
     contract: model_user.TypeContract
-    price: int
     is_admin: bool
 
     class Config:
@@ -41,7 +39,6 @@ class UserUpdate(BaseModel):
     company: str
     post: model_user.TypePost
     contract: model_user.TypeContract
-    price: int
     is_admin: bool
 
     class Config:

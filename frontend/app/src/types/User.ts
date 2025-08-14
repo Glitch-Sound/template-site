@@ -25,7 +25,6 @@ export interface User {
   company: string
   post: TypePost
   contract: TypeContract
-  price: number
   is_admin: boolean
 }
 
@@ -37,7 +36,6 @@ export interface UserCreate {
   company: string
   post: TypePost
   contract: TypeContract
-  price: number
   is_admin: boolean
 }
 
@@ -50,6 +48,5 @@ export interface UserUpdate {
   company: string
   post: TypePost
   contract: TypeContract
-  price: number
   is_admin: boolean
 }

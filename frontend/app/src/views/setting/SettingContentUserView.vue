@@ -7,7 +7,6 @@ import { useUserStore } from '@/stores/UserStore'
 import SettingEvent from '@/views/setting/SettingEvent'
 import UserPostLabel from '@/components/common/UserPostLabel.vue'
 import UserContractLabel from '@/components/common/UserContractLabel.vue'
-import UserPriceLavel from '@/components/common/UserPriceLabel.vue'
 import CreateUserDialog from '@/components/dialog/CreateUserDialog.vue'
 import UpdateUserDialog from '@/components/dialog/UpdateUserDialog.vue'
 
@@ -19,7 +18,6 @@ const headers = [
   { title: 'COMPANY', width: '150px' },
   { title: 'POST', width: '30px' },
   { title: 'CONTRACT', width: '30px' },
-  { title: 'PRICE', width: '100px' },
   { title: '', width: '140px' },
 ]
 
@@ -93,7 +91,6 @@ const handleDelete = async (data: UserUpdate) => {
             <td>{{ item.company }}</td>
             <td><UserPostLabel :post="item.post" /></td>
             <td><UserContractLabel :contract="item.contract" /></td>
-            <td><UserPriceLavel :price="item.price" /></td>
             <td>
               <v-btn
                 size="small"
