@@ -1,7 +1,9 @@
 <script setup lang="ts"></script>
 
 <template>
-  <v-main> Viz </v-main>
+  <v-main>
+    <v-sheet class="main"> Viz </v-sheet>
+  </v-main>
 </template>
 
 <style scoped>
