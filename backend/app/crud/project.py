@@ -11,7 +11,7 @@ from sqlalchemy import Integer, and_, cast, func, or_
 from sqlalchemy.orm import Session, joinedload
 
 
-def get_project_groups(db: Session) -> List[model_project_group.ProjectGroup]:
+def get_project_groups(db: Session) -> List[schema_project.ProjectGroup]:
     # fmt: off
     query = db.query(
         model_project_group.ProjectGroup
@@ -24,7 +24,7 @@ def get_project_groups(db: Session) -> List[model_project_group.ProjectGroup]:
 
 def create_project_group(
     db: Session, target: schema_project.ProjectGroupCreate
-) -> model_project_group.ProjectGroup:
+) -> schema_project.ProjectGroup:
     # fmt: off
     obj_project_group = model_project_group.ProjectGroup(
         rid_companies=target.rid_companies,
@@ -41,7 +41,7 @@ def create_project_group(
 
 def update_project_group(
     db: Session, target: schema_project.ProjectGroupUpdate
-) -> model_project_group.ProjectGroup:
+) -> schema_project.ProjectGroup:
     # fmt: off
     obj_project_group = db.query(
         model_project_group.ProjectGroup
@@ -72,9 +72,7 @@ def delete_project_group(db: Session, rid: int) -> None:
     db.commit()
 
 
-def get_project_numbers(
-    db: Session, rid: int
-) -> List[model_project_number.ProjectNumber]:
+def get_project_numbers(db: Session, rid: int) -> List[schema_project.ProjectNumber]:
     # fmt: off
     query = db.query(
         model_project_number.ProjectNumber
@@ -92,7 +90,7 @@ def get_project_numbers(
 
 def create_project_number(
     db: Session, target: schema_project.ProjectNumberCreate
-) -> model_project_number.ProjectNumber:
+) -> schema_project.ProjectNumber:
     # fmt: off
     obj_project_number = model_project_number.ProjectNumber(
         rid_projects=target.rid_projects,
@@ -112,7 +110,7 @@ def create_project_number(
 
 def update_project_number(
     db: Session, target: schema_project.ProjectNumberUpdate
-) -> model_project_number.ProjectNumber:
+) -> schema_project.ProjectNumber:
     # fmt: off
     obj_project_number = db.query(
         model_project_number.ProjectNumber
@@ -335,7 +333,7 @@ def _get_target(date_end: str) -> int:
 
 def create_project(
     db: Session, target: schema_project.ProjectCreate
-) -> model_project.Project:
+) -> schema_project.Project:
     # fmt: off
     obj_project = model_project.Project(
         rid_project_groups=target.rid_project_groups,
@@ -362,7 +360,7 @@ def create_project(
 
 def update_project(
     db: Session, target: schema_project.ProjectUpdate
-) -> model_project.Project:
+) -> schema_project.Project:
     # fmt: off
     obj_project = db.query(
         model_project.Project

@@ -90,7 +90,7 @@ const handleRankSelected = (rank: number) => {
 
           <v-text-field v-model="form_data.pre_approval" label="Pre-Approval" type="date" />
 
-          <v-text-field v-model="form_data.name" :rules="[rules.text]" label="Name" />
+          <v-text-field v-model="form_data.name" :rules="[]" label="Name" />
 
           <v-text-field
             v-model="form_data.number_parent"

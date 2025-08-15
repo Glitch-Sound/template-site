@@ -8,7 +8,7 @@ from sqlalchemy import and_, func, literal, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 
-def get_threads_by_rid(db: Session, rid_projects: int) -> List[model_thread.Thread]:
+def get_threads_by_rid(db: Session, rid_projects: int) -> List[schema_thread.Thread]:
     t = model_thread.Thread.__table__
 
     def cat(a, b):
@@ -81,7 +81,7 @@ def create_thread(
     db: Session,
     target: schema_thread.ThreadCreate,
     current_user: schema_user.User,
-) -> model_thread.Thread:
+) -> schema_thread.Thread:
     # fmt: off
     obj_thread = model_thread.Thread(
         rid_projects=target.rid_projects,
@@ -103,7 +103,7 @@ def create_thread(
 
 def update_thread(
     db: Session, target: schema_thread.ThreadUpdate, current_user: schema_user.User
-) -> model_thread.Thread:
+) -> schema_thread.Thread:
     # fmt: off
     obj_thread = db.query(
         model_thread.Thread

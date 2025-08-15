@@ -5,7 +5,7 @@ from app.schemas import company as schema_company
 from sqlalchemy.orm import Session
 
 
-def get_companies(db: Session) -> List[model_company.Company]:
+def get_companies(db: Session) -> List[schema_company.Company]:
     # fmt: off
     query = db.query(
         model_company.Company
@@ -18,7 +18,7 @@ def get_companies(db: Session) -> List[model_company.Company]:
 
 def create_company(
     db: Session, target: schema_company.CompanyCreate
-) -> model_company.Company:
+) -> schema_company.Company:
     # fmt: off
     obj_company = model_company.Company(
         name=target.name,
@@ -34,7 +34,7 @@ def create_company(
 
 def update_company(
     db: Session, target: schema_company.CompanyUpdate
-) -> model_company.Company:
+) -> schema_company.Company:
     # fmt: off
     obj_company = db.query(
         model_company.Company

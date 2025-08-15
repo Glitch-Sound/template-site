@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def get_users(db: Session) -> List[model_user.User]:
+def get_users(db: Session) -> List[schema_user.User]:
     # fmt: off
     query = db.query(
         model_user.User
@@ -20,7 +20,7 @@ def get_users(db: Session) -> List[model_user.User]:
     return query.all()
 
 
-def get_user_by_rid(db: Session, rid: int) -> model_user.User:
+def get_user_by_rid(db: Session, rid: int) -> schema_user.User:
     # fmt: off
     query = (
         db.query(model_user.User)
@@ -35,7 +35,7 @@ def get_user_by_rid(db: Session, rid: int) -> model_user.User:
     return query.first()
 
 
-def get_user_by_username(db: Session, username: str) -> model_user.User:
+def get_user_by_username(db: Session, username: str) -> schema_user.User:
     # fmt: off
     query = (
         db.query(model_user.User)
@@ -50,7 +50,7 @@ def get_user_by_username(db: Session, username: str) -> model_user.User:
     return query.first()
 
 
-def create_user(db: Session, target: schema_user.UserCreate) -> model_user.User:
+def create_user(db: Session, target: schema_user.UserCreate) -> schema_user.User:
     # fmt: off
     obj_user = model_user.User(
         eid=target.eid,
@@ -70,7 +70,7 @@ def create_user(db: Session, target: schema_user.UserCreate) -> model_user.User:
     return obj_user
 
 
-def update_user(db: Session, target: schema_user.UserUpdate) -> model_user.User:
+def update_user(db: Session, target: schema_user.UserUpdate) -> schema_user.User:
     # fmt: off
     obj_user = db.query(
         model_user.User
