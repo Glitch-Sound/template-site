@@ -41,7 +41,11 @@ class User(Base, TimestampMixin):
     projects_pm = relationship("Project", back_populates="user_pm", foreign_keys="Project.rid_users_pm")
     projects_pl = relationship("Project", back_populates="user_pl", foreign_keys="Project.rid_users_pl")
 
-    threads     = relationship("Thread",  back_populates="user")
+    threads            = relationship("Thread",         back_populates="user",    foreign_keys="Thread.rid_users")
+    summaries_total_pm = relationship("SummaryTotalPM", back_populates="user_pm", foreign_keys="SummaryTotalPM.rid_users_pm")
+    summaries_total_pl = relationship("SummaryTotalPL", back_populates="user_pl", foreign_keys="SummaryTotalPL.rid_users_pl")
+    summaries_count_pm = relationship("SummaryCountPM", back_populates="user_pm", foreign_keys="SummaryCountPM.rid_users_pm")
+    summaries_count_pl = relationship("SummaryCountPL", back_populates="user_pl", foreign_keys="SummaryCountPL.rid_users_pl")
 
     __table_args__ = (
         Index("idx_users_01", "is_deleted", "rid"),

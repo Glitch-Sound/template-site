@@ -8,8 +8,8 @@ class SummaryTotalCompany(BaseModel):
     rid: int
     date_snap: str
     company: schema_company.Company
-    expected: int
-    order: int
+    total_expected: int
+    total_order: int
 
     class Config:
         orm_mode = True
@@ -18,9 +18,9 @@ class SummaryTotalCompany(BaseModel):
 class SummaryTotalProject(BaseModel):
     rid: int
     date_snap: str
-    project: schema_project.ProjectGroup
-    expected: int
-    order: int
+    project_group: schema_project.ProjectGroup
+    total_expected: int
+    total_order: int
 
     class Config:
         orm_mode = True
@@ -30,8 +30,8 @@ class SummaryTotalPM(BaseModel):
     rid: int
     date_snap: str
     user_pm: schema_user.User
-    expected: int
-    order: int
+    total_expected: int
+    total_order: int
 
     class Config:
         orm_mode = True
@@ -41,8 +41,8 @@ class SummaryTotalPL(BaseModel):
     rid: int
     date_snap: str
     user_pl: schema_user.User
-    expected: int
-    order: int
+    total_expected: int
+    total_order: int
 
     class Config:
         orm_mode = True
@@ -52,6 +52,7 @@ class SummaryCountCompany(BaseModel):
     rid: int
     date_snap: str
     company: schema_company.Company
+    rank: int
     count: int
 
     class Config:
@@ -61,7 +62,8 @@ class SummaryCountCompany(BaseModel):
 class SummaryCountProject(BaseModel):
     rid: int
     date_snap: str
-    project: schema_project.ProjectGroup
+    project_group: schema_project.ProjectGroup
+    rank: int
     count: int
 
     class Config:
@@ -72,6 +74,7 @@ class SummaryCountPM(BaseModel):
     rid: int
     date_snap: str
     user_pm: schema_user.User
+    rank: int
     count: int
 
     class Config:
@@ -82,6 +85,7 @@ class SummaryCountPL(BaseModel):
     rid: int
     date_snap: str
     user_pl: schema_user.User
+    rank: int
     count: int
 
     class Config:

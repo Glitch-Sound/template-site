@@ -10,105 +10,281 @@ from sqlalchemy.orm import Session
 def get_summaries_latest_company_total(
     db: Session,
 ) -> list[schema_summary.SummaryTotalCompany]:
-    return None
+    latest = select(
+        func.max(model_summary.SummaryTotalCompany.date_snap)
+    ).scalar_subquery()
+
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryTotalCompany
+    )\
+    .filter(
+        model_summary.SummaryTotalCompany.date_snap == latest
+    )\
+    .order_by(model_summary.SummaryTotalCompany.rid_companies, model_summary.SummaryTotalCompany.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_latest_project_total(
     db: Session,
 ) -> list[schema_summary.SummaryTotalProject]:
-    return None
+    latest = select(
+        func.max(model_summary.SummaryTotalProject.date_snap)
+    ).scalar_subquery()
+
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryTotalProject
+    )\
+    .filter(
+        model_summary.SummaryTotalProject.date_snap == latest
+    )\
+    .order_by(model_summary.SummaryTotalProject.rid_project_groups, model_summary.SummaryTotalProject.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_latest_pm_total(db: Session) -> list[schema_summary.SummaryTotalPM]:
-    return None
+    latest = select(func.max(model_summary.SummaryTotalPM.date_snap)).scalar_subquery()
+
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryTotalPM
+    )\
+    .filter(
+        model_summary.SummaryTotalPM.date_snap == latest
+    )\
+    .order_by(model_summary.SummaryTotalPM.rid_users_pm, model_summary.SummaryTotalPM.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_latest_pl_total(db: Session) -> list[schema_summary.SummaryTotalPL]:
-    return None
+    latest = select(func.max(model_summary.SummaryTotalPL.date_snap)).scalar_subquery()
+
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryTotalPL
+    )\
+    .filter(
+        model_summary.SummaryTotalPL.date_snap == latest
+    )\
+    .order_by(model_summary.SummaryTotalPL.rid_users_pl, model_summary.SummaryTotalPL.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_latest_company_count(
     db: Session,
 ) -> list[schema_summary.SummaryCountCompany]:
-    return None
+    latest = select(
+        func.max(model_summary.SummaryCountCompany.date_snap)
+    ).scalar_subquery()
+
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryCountCompany
+    )\
+    .filter(
+        model_summary.SummaryCountCompany.date_snap == latest
+    )\
+    .order_by(model_summary.SummaryCountCompany.rid_companies, model_summary.SummaryCountCompany.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_latest_project_count(
     db: Session,
 ) -> list[schema_summary.SummaryCountProject]:
-    return None
+    latest = select(
+        func.max(model_summary.SummaryCountProject.date_snap)
+    ).scalar_subquery()
+
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryCountProject
+    )\
+    .filter(
+        model_summary.SummaryCountProject.date_snap == latest
+    )\
+    .order_by(model_summary.SummaryCountProject.rid_project_groups, model_summary.SummaryCountProject.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_latest_pm_count(db: Session) -> list[schema_summary.SummaryCountPM]:
-    return None
+    latest = select(func.max(model_summary.SummaryCountPM.date_snap)).scalar_subquery()
+
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryCountPM
+    )\
+    .filter(
+        model_summary.SummaryCountPM.date_snap == latest
+    )\
+    .order_by(model_summary.SummaryCountPM.rid_users_pm, model_summary.SummaryCountPM.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_latest_pl_count(db: Session) -> list[schema_summary.SummaryCountPL]:
-    return None
+    latest = select(func.max(model_summary.SummaryCountPL.date_snap)).scalar_subquery()
+
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryCountPL
+    )\
+    .filter(
+        model_summary.SummaryCountPL.date_snap == latest
+    )\
+    .order_by(model_summary.SummaryCountPL.rid_users_pl, model_summary.SummaryCountPL.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_period_company_total(
     db: Session,
     year: int,
-    quarter: model_project.TypeQuarter,
 ) -> list[schema_summary.SummaryTotalCompany]:
-    return None
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryTotalCompany
+    )\
+    .filter(
+        model_summary.SummaryTotalCompany.date_snap.startswith(f"{year}-")
+    )\
+    .order_by(model_summary.SummaryTotalCompany.rid_companies, model_summary.SummaryTotalCompany.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_period_project_total(
     db: Session,
     year: int,
-    quarter: model_project.TypeQuarter,
 ) -> list[schema_summary.SummaryTotalProject]:
-    return None
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryTotalProject
+    )\
+    .filter(
+        model_summary.SummaryTotalProject.date_snap.startswith(f"{year}-")
+    )\
+    .order_by(model_summary.SummaryTotalProject.rid_project_groups, model_summary.SummaryTotalProject.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_period_pm_total(
     db: Session,
     year: int,
-    quarter: model_project.TypeQuarter,
 ) -> list[schema_summary.SummaryTotalPM]:
-    return None
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryTotalPM
+    )\
+    .filter(
+        model_summary.SummaryTotalPM.date_snap.startswith(f"{year}-")
+    )\
+    .order_by(model_summary.SummaryTotalPM.rid_users_pm, model_summary.SummaryTotalPM.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_period_pl_total(
     db: Session,
     year: int,
-    quarter: model_project.TypeQuarter,
 ) -> list[schema_summary.SummaryTotalPL]:
-    return None
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryTotalPL
+    )\
+    .filter(
+        model_summary.SummaryTotalPL.date_snap.startswith(f"{year}-")
+    )\
+    .order_by(model_summary.SummaryTotalPL.rid_users_pl, model_summary.SummaryTotalPL.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_period_company_count(
     db: Session,
     year: int,
-    quarter: model_project.TypeQuarter,
 ) -> list[schema_summary.SummaryCountCompany]:
-    return None
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryCountCompany
+    )\
+    .filter(
+        model_summary.SummaryCountCompany.date_snap.startswith(f"{year}-")
+    )\
+    .order_by(model_summary.SummaryCountCompany.rid_companies, model_summary.SummaryCountCompany.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_period_project_count(
     db: Session,
     year: int,
-    quarter: model_project.TypeQuarter,
 ) -> list[schema_summary.SummaryCountProject]:
-    return None
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryCountProject
+    )\
+    .filter(
+        model_summary.SummaryCountProject.date_snap.startswith(f"{year}-")
+    )\
+    .order_by(model_summary.SummaryCountProject.rid_project_groups, model_summary.SummaryCountProject.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_period_pm_count(
     db: Session,
     year: int,
-    quarter: model_project.TypeQuarter,
 ) -> list[schema_summary.SummaryCountPM]:
-    return None
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryCountPM
+    )\
+    .filter(
+        model_summary.SummaryCountPM.date_snap.startswith(f"{year}-")
+    )\
+    .order_by(model_summary.SummaryCountPM.rid_users_pm, model_summary.SummaryCountPM.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def get_summaries_period_pl_count(
     db: Session,
     year: int,
-    quarter: model_project.TypeQuarter,
 ) -> list[schema_summary.SummaryCountPL]:
-    return None
+    # fmt: off
+    query = db.query(
+        model_summary.SummaryCountPL
+    )\
+    .filter(
+        model_summary.SummaryCountPL.date_snap.startswith(f"{year}-")
+    )\
+    .order_by(model_summary.SummaryCountPL.rid_users_pl, model_summary.SummaryCountPL.rid)
+    # fmt: on
+
+    return query.all()
 
 
 def create_summaries(
@@ -139,10 +315,9 @@ def _create_summaries_company_total(
     summary = (
         select(
             func.date("now", "localtime").label("date_snap"),
-            literal(model_summary.TypeSummary.COMPANY.value).label("type"),
-            model_company.Company.rid.label("rid_dim"),
-            func.sum(model_project.Project.amount_expected).label("expected"),
-            func.sum(model_project.Project.amount_order).label("order"),
+            model_company.Company.rid.label("rid_companies"),
+            func.sum(model_project.Project.amount_expected).label("total_expected"),
+            func.sum(model_project.Project.amount_order).label("total_order"),
         )
         .select_from(model_project.Project)
         .join(
@@ -157,8 +332,13 @@ def _create_summaries_company_total(
         .group_by(model_company.Company.rid)
         .order_by(model_company.Company.rid)
     )
-    _insert_summary_total(db, summary)
     # fmt: on
+
+    stmt = insert(model_summary.SummaryTotalCompany).from_select(
+        ["date_snap", "rid_companies", "total_expected", "total_order"],
+        summary,
+    )
+    db.execute(stmt)
 
 
 def _create_summaries_project_total(
@@ -169,10 +349,9 @@ def _create_summaries_project_total(
     summary = (
         select(
             func.date("now", "localtime").label("date_snap"),
-            literal(model_summary.TypeSummary.PROJECT.value).label("type"),
-            model_project_group.ProjectGroup.rid.label("rid_dim"),
-            func.sum(model_project.Project.amount_expected).label("expected"),
-            func.sum(model_project.Project.amount_order).label("order"),
+            model_project_group.ProjectGroup.rid.label("rid_project_groups"),
+            func.sum(model_project.Project.amount_expected).label("total_expected"),
+            func.sum(model_project.Project.amount_order).label("total_order"),
         )
         .select_from(model_project.Project)
         .join(
@@ -183,8 +362,13 @@ def _create_summaries_project_total(
         .group_by(model_project_group.ProjectGroup.rid)
         .order_by(model_project_group.ProjectGroup.rid)
     )
-    _insert_summary_total(db, summary)
     # fmt: on
+
+    stmt = insert(model_summary.SummaryTotalProject).from_select(
+        ["date_snap", "rid_project_groups", "total_expected", "total_order"],
+        summary,
+    )
+    db.execute(stmt)
 
 
 def _create_summaries_pm_total(
@@ -195,18 +379,22 @@ def _create_summaries_pm_total(
     summary = (
         select(
             func.date("now", "localtime").label("date_snap"),
-            literal(model_summary.TypeSummary.USER_PM.value).label("type"),
-            model_project.Project.rid_users_pm.label("rid_dim"),
-            func.sum(model_project.Project.amount_expected).label("expected"),
-            func.sum(model_project.Project.amount_order).label("order"),
+            model_project.Project.rid_users_pm.label("rid_users_pm"),
+            func.sum(model_project.Project.amount_expected).label("total_expected"),
+            func.sum(model_project.Project.amount_order).label("total_order"),
         )
         .select_from(model_project.Project)
         .where(*_get_filter(target))
         .group_by(model_project.Project.rid_users_pm)
         .order_by(model_project.Project.rid_users_pm)
     )
-    _insert_summary_total(db, summary)
     # fmt: on
+
+    stmt = insert(model_summary.SummaryTotalPM).from_select(
+        ["date_snap", "rid_users_pm", "total_expected", "total_order"],
+        summary,
+    )
+    db.execute(stmt)
 
 
 def _create_summaries_pl_total(
@@ -217,18 +405,22 @@ def _create_summaries_pl_total(
     summary = (
         select(
             func.date("now", "localtime").label("date_snap"),
-            literal(model_summary.TypeSummary.USER_PL.value).label("type"),
-            model_project.Project.rid_users_pl.label("rid_dim"),
-            func.sum(model_project.Project.amount_expected).label("expected"),
-            func.sum(model_project.Project.amount_order).label("order"),
+            model_project.Project.rid_users_pl.label("rid_users_pl"),
+            func.sum(model_project.Project.amount_expected).label("total_expected"),
+            func.sum(model_project.Project.amount_order).label("total_order"),
         )
         .select_from(model_project.Project)
         .where(*_get_filter(target))
         .group_by(model_project.Project.rid_users_pl)
         .order_by(model_project.Project.rid_users_pl)
     )
-    _insert_summary_total(db, summary)
     # fmt: on
+
+    stmt = insert(model_summary.SummaryTotalPL).from_select(
+        ["date_snap", "rid_users_pl", "total_expected", "total_order"],
+        summary,
+    )
+    db.execute(stmt)
 
 
 def _create_summaries_company_count(
@@ -239,8 +431,7 @@ def _create_summaries_company_count(
     summary = (
         select(
             func.date("now", "localtime").label("date_snap"),
-            literal(model_summary.TypeSummary.COMPANY.value).label("type"),
-            model_company.Company.rid.label("rid_dim"),
+            model_company.Company.rid.label("rid_companies"),
             model_project.Project.rank.label("rank"),
             func.count(model_company.Company.rid).label("count"),
         )
@@ -257,8 +448,13 @@ def _create_summaries_company_count(
         .group_by(model_company.Company.rid, model_project.Project.rank)
         .order_by(model_company.Company.rid, model_project.Project.rank)
     )
-    _insert_summary_count(db, summary)
     # fmt: on
+
+    stmt = insert(model_summary.SummaryCountCompany).from_select(
+        ["date_snap", "rid_companies", "rank", "count"],
+        summary,
+    )
+    db.execute(stmt)
 
 
 def _create_summaries_project_count(
@@ -269,8 +465,7 @@ def _create_summaries_project_count(
     summary = (
         select(
             func.date("now", "localtime").label("date_snap"),
-            literal(model_summary.TypeSummary.PROJECT.value).label("type"),
-            model_project_group.ProjectGroup.rid.label("rid_dim"),
+            model_project_group.ProjectGroup.rid.label("rid_project_groups"),
             model_project.Project.rank.label("rank"),
             func.count(model_project_group.ProjectGroup.rid).label("count"),
         )
@@ -283,8 +478,13 @@ def _create_summaries_project_count(
         .group_by(model_project_group.ProjectGroup.rid, model_project.Project.rank)
         .order_by(model_project_group.ProjectGroup.rid, model_project.Project.rank)
     )
-    _insert_summary_count(db, summary)
     # fmt: on
+
+    stmt = insert(model_summary.SummaryCountProject).from_select(
+        ["date_snap", "rid_project_groups", "rank", "count"],
+        summary,
+    )
+    db.execute(stmt)
 
 
 def _create_summaries_pm_count(
@@ -295,8 +495,7 @@ def _create_summaries_pm_count(
     summary = (
         select(
             func.date("now", "localtime").label("date_snap"),
-            literal(model_summary.TypeSummary.USER_PM.value).label("type"),
-            model_project.Project.rid_users_pm.label("rid_dim"),
+            model_project.Project.rid_users_pm.label("rid_users_pm"),
             model_project.Project.rank.label("rank"),
             func.count(model_project.Project.rid_users_pm).label("count"),
         )
@@ -305,8 +504,13 @@ def _create_summaries_pm_count(
         .group_by(model_project.Project.rid_users_pm, model_project.Project.rank)
         .order_by(model_project.Project.rid_users_pm, model_project.Project.rank)
     )
-    _insert_summary_count(db, summary)
     # fmt: on
+
+    stmt = insert(model_summary.SummaryCountPM).from_select(
+        ["date_snap", "rid_users_pm", "rank", "count"],
+        summary,
+    )
+    db.execute(stmt)
 
 
 def _create_summaries_pl_count(
@@ -317,8 +521,7 @@ def _create_summaries_pl_count(
     summary = (
         select(
             func.date("now", "localtime").label("date_snap"),
-            literal(model_summary.TypeSummary.USER_PL.value).label("type"),
-            model_project.Project.rid_users_pl.label("rid_dim"),
+            model_project.Project.rid_users_pl.label("rid_users_pl"),
             model_project.Project.rank.label("rank"),
             func.count(model_project.Project.rid_users_pl).label("count"),
         )
@@ -327,8 +530,13 @@ def _create_summaries_pl_count(
         .group_by(model_project.Project.rid_users_pl, model_project.Project.rank)
         .order_by(model_project.Project.rid_users_pl, model_project.Project.rank)
     )
-    _insert_summary_count(db, summary)
     # fmt: on
+
+    stmt = insert(model_summary.SummaryCountPL).from_select(
+        ["date_snap", "rid_users_pl", "rank", "count"],
+        summary,
+    )
+    db.execute(stmt)
 
 
 def _get_filter(target: schema_summary.SummaryCreate):
@@ -345,19 +553,3 @@ def _get_filter(target: schema_summary.SummaryCreate):
             <= func.date(literal(str_snapshot_date))
         )
     return where_clauses
-
-
-def _insert_summary_total(db: Session, summary: select) -> None:
-    stmt = insert(model_summary.SummaryTotal).from_select(
-        ["date_snap", "type", "rid_dim", "expected", "order"],
-        summary,
-    )
-    db.execute(stmt)
-
-
-def _insert_summary_count(db: Session, summary: select) -> None:
-    stmt = insert(model_summary.SummaryCount).from_select(
-        ["date_snap", "type", "rid_dim", "rank", "count"],
-        summary,
-    )
-    db.execute(stmt)
