@@ -1,27 +1,18 @@
-from pydantic import BaseModel
+from app.schemas import base as schema_base
 
 
-class Company(BaseModel):
+class Company(schema_base.ORMBaseModel):
     rid: int
     name: str
     detail: str
 
-    class Config:
-        orm_mode = True
 
-
-class CompanyCreate(BaseModel):
+class CompanyCreate(schema_base.ORMBaseModel):
     name: str
     detail: str
 
-    class Config:
-        orm_mode = True
 
-
-class CompanyUpdate(BaseModel):
+class CompanyUpdate(schema_base.ORMBaseModel):
     rid: int
     name: str
     detail: str
-
-    class Config:
-        orm_mode = True

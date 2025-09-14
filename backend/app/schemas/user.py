@@ -1,8 +1,8 @@
 from app.models import user as model_user
-from pydantic import BaseModel
+from app.schemas import base as schema_base
 
 
-class User(BaseModel):
+class User(schema_base.ORMBaseModel):
     rid: int
     eid: str
     username: str
@@ -12,11 +12,8 @@ class User(BaseModel):
     contract: model_user.TypeContract
     is_admin: bool
 
-    class Config:
-        orm_mode = True
 
-
-class UserCreate(BaseModel):
+class UserCreate(schema_base.ORMBaseModel):
     eid: str
     username: str
     password: str
@@ -26,11 +23,8 @@ class UserCreate(BaseModel):
     contract: model_user.TypeContract
     is_admin: bool
 
-    class Config:
-        orm_mode = True
 
-
-class UserUpdate(BaseModel):
+class UserUpdate(schema_base.ORMBaseModel):
     rid: int
     eid: str
     username: str
@@ -40,6 +34,3 @@ class UserUpdate(BaseModel):
     post: model_user.TypePost
     contract: model_user.TypeContract
     is_admin: bool
-
-    class Config:
-        orm_mode = True
