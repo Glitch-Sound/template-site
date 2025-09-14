@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from app.models import company as model_company
 from app.models import project as model_project
 from app.models import project_group as model_project_group
 from app.models import summary as model_summary
 from app.schemas import summary as schema_summary
+from pytz import timezone
 from sqlalchemy import Date, cast, func, insert, literal, select
 from sqlalchemy.orm import Session
 
@@ -292,6 +295,7 @@ def create_summaries(
     target: schema_summary.SummaryCreate,
 ) -> None:
     try:
+        _clear_summaries(db)
         _create_summaries_company_total(db, target)
         _create_summaries_project_total(db, target)
         _create_summaries_pm_total(db, target)
@@ -305,6 +309,37 @@ def create_summaries(
     except Exception:
         db.rollback()
         raise
+
+
+def _clear_summaries(db: Session) -> None:
+    JST = timezone("Asia/Tokyo")
+    today_str = datetime.now(JST).date().isoformat()
+
+    db.query(model_summary.SummaryTotalCompany).filter(
+        model_summary.SummaryTotalCompany.date_snap == today_str
+    ).delete(synchronize_session=False)
+    db.query(model_summary.SummaryTotalProject).filter(
+        model_summary.SummaryTotalProject.date_snap == today_str
+    ).delete(synchronize_session=False)
+    db.query(model_summary.SummaryTotalPM).filter(
+        model_summary.SummaryTotalPM.date_snap == today_str
+    ).delete(synchronize_session=False)
+    db.query(model_summary.SummaryTotalPL).filter(
+        model_summary.SummaryTotalPL.date_snap == today_str
+    ).delete(synchronize_session=False)
+    db.query(model_summary.SummaryCountCompany).filter(
+        model_summary.SummaryCountCompany.date_snap == today_str
+    ).delete(synchronize_session=False)
+    db.query(model_summary.SummaryCountProject).filter(
+        model_summary.SummaryCountProject.date_snap == today_str
+    ).delete(synchronize_session=False)
+    db.query(model_summary.SummaryCountPM).filter(
+        model_summary.SummaryCountPM.date_snap == today_str
+    ).delete(synchronize_session=False)
+    db.query(model_summary.SummaryCountPL).filter(
+        model_summary.SummaryCountPL.date_snap == today_str
+    ).delete(synchronize_session=False)
+    db.commit()
 
 
 def _create_summaries_company_total(

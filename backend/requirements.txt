@@ -1,8 +1,8 @@
 apscheduler
-bcrypt
+bcrypt==4.0.1
 fastapi
 jpholiday
-passlib
+passlib[bcrypt]==1.7.4
 pydantic
 PyJWT
 pytz

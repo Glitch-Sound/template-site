@@ -1,5 +1,4 @@
 import type { Company } from '@/types/Company'
-
 import type { User } from '@/types/User'
 
 // prettier-ignore

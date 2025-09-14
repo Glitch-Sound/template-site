@@ -1,7 +1,11 @@
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from app.api import common as api_common
 from app.crud import summary as crud_summary
 from app.database import get_db
 from app.schemas import summary as schema_summary
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -268,3 +272,23 @@ def create_thread(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+JST = ZoneInfo("Asia/Tokyo")
+scheduler = AsyncIOScheduler(
+    timezone=JST,
+    job_defaults={
+        "coalesce": True,
+        "misfire_grace_time": 3600,
+    },
+)
+
+
+def scheduled_summaries(db: Session = Depends(get_db)):
+    try:
+        today_str = datetime.now(JST).date().isoformat()
+        target = schema_summary.SummaryCreate(date_snap=today_str)
+        crud_summary.create_summaries(db, target)
+
+    except Exception as e:
+        raise e
