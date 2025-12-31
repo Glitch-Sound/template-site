@@ -1,6 +1,7 @@
 import mitt from 'mitt'
 
 type Events = {
+  openCreateTargetDialog: void
   openCreateUserDialog: void
   openCreateCompanyDialog: void
   openCreateProjectGroupDialog: void

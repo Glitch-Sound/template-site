@@ -6,9 +6,14 @@ import SettingEvent from '@/views/setting/SettingEvent'
 
 const route = useRoute()
 
+const is_enable_main = computed(() => route.path === '/setting/main')
 const is_enable_user = computed(() => route.path === '/setting/user')
 const is_enable_company = computed(() => route.path === '/setting/company')
 const is_enable_project = computed(() => route.path === '/setting/project')
+
+const handleAddTarget = () => {
+  SettingEvent.emit('openCreateTargetDialog')
+}
 
 const handleAddUser = () => {
   SettingEvent.emit('openCreateUserDialog')
@@ -31,6 +36,16 @@ const handleAddProject = () => {
           <v-icon icon="mdi-cog" />
           Main
         </router-link>
+
+        <template #append>
+          <v-btn
+            icon="mdi-plus-circle"
+            variant="plain"
+            size="x-small"
+            @click="handleAddTarget"
+            :disabled="!is_enable_main"
+          />
+        </template>
       </v-list-item>
 
       <v-list-item>

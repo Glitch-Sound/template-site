@@ -3,7 +3,9 @@ from contextlib import asynccontextmanager
 from app.api.auth import router as router_auth
 from app.api.company import router as router_company
 from app.api.project import router as router_project
-from app.api.summary import router as router_summary, scheduled_summaries
+from app.api.summary import router as router_summary
+from app.api.summary import scheduled_summaries
+from app.api.target import router as router_target
 from app.api.thread import router as router_thread
 from app.api.user import router as router_user
 from app.database import Base, engine
@@ -63,4 +65,5 @@ app.include_router(router_project, prefix="/api")
 app.include_router(router_summary, prefix="/api")
 app.include_router(router_thread,  prefix="/api")
 app.include_router(router_user,    prefix="/api")
+app.include_router(router_target,  prefix="/api")
 # fmt: on
