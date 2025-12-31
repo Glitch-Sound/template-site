@@ -1,8 +1,9 @@
 from app.api import common as api_common
+from app.api.errors import re_raise_as_internal_error
 from app.crud import thread as crud_thread
 from app.database import get_db
 from app.schemas import thread as schema_thread
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 router = APIRouter(tags=["Thread"])
@@ -18,7 +19,7 @@ def get_threads_by_rid(
         return crud_thread.get_threads_by_rid(db, rid)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.post("/threads", response_model=schema_thread.Thread)
@@ -32,7 +33,7 @@ def create_thread(
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.put("/threads", response_model=schema_thread.Thread)
@@ -46,7 +47,7 @@ def update_thread(
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.delete("/threads/{rid}", response_model=None)
@@ -60,4 +61,4 @@ def delete_thread(
         return {"result": "deleted"}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)

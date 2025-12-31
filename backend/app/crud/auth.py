@@ -58,12 +58,33 @@ def get_token_user(
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
-    rid_user = decoded.get("sub")
-    return (
+    rid_user_claim = decoded.get("sub")
+    try:
+        rid_user = int(rid_user_claim)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+    user = (
         db.query(model_user.User)
-        .filter(and_(model_user.User.rid == rid_user, ~model_user.User.is_deleted))
+        .filter(
+            and_(
+                model_user.User.rid == rid_user,
+                model_user.User.is_deleted.is_(False),
+            )
+        )
         .first()
     )
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user
 
 
 def _create_jwt_token(data: dict, expires_delta: int) -> str:

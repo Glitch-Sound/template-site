@@ -1,8 +1,9 @@
 from app.api import common as api_common
+from app.api.errors import re_raise_as_internal_error
 from app.crud import company as crud_company
 from app.database import get_db
 from app.schemas import company as schema_company
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 router = APIRouter(tags=["Company"])
@@ -16,7 +17,7 @@ def get_companies(
         return crud_company.get_companies(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.post("/companies", response_model=schema_company.Company)
@@ -30,7 +31,7 @@ def create_company(
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.put("/companies", response_model=schema_company.Company)
@@ -44,7 +45,7 @@ def update_company(
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.delete("/companies/{rid}", response_model=None)
@@ -58,4 +59,4 @@ def delete_company(
         return {"result": "deleted"}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)

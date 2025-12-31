@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from app.api.auth import router as router_auth
 from app.api.company import router as router_company
 from app.api.project import router as router_project
-from app.api.summary import router as router_summary
+from app.api.summary import router as router_summary, scheduled_summaries
 from app.api.thread import router as router_thread
 from app.api.user import router as router_user
 from app.database import Base, engine
@@ -14,20 +14,6 @@ from pytz import timezone
 from starlette.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
-
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=[
-        "Authorization",
-        "Content-Type",
-        "Accept",
-        "X-Requested-With",
-    ],
-)
 
 JST = timezone("Asia/Tokyo")
 scheduler = BackgroundScheduler(
@@ -44,7 +30,7 @@ scheduler = BackgroundScheduler(
 async def lifespan(app: FastAPI):
     trigger = CronTrigger(hour=0, minute=0, second=0, timezone=JST)
     scheduler.add_job(
-        app.api.summary.scheduled_summaries,
+        scheduled_summaries,
         trigger,
         id="daily_summary_job",
         replace_existing=True,
@@ -55,6 +41,20 @@ async def lifespan(app: FastAPI):
     finally:
         scheduler.shutdown(wait=False)
 
+
+app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "Accept",
+        "X-Requested-With",
+    ],
+)
 
 # fmt: off
 app.include_router(router_auth,    prefix="/api")

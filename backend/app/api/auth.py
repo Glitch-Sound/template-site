@@ -1,3 +1,4 @@
+from app.api.errors import re_raise_as_internal_error
 from app.crud import auth as crud_auth
 from app.crud import user as crud_user
 from app.database import get_db
@@ -19,7 +20,7 @@ def get_status(db: Session = Depends(get_db)):
             return schemas_auth.Status(is_setup=False)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.post("/setup/admin", response_model=schema_user.User)
@@ -29,7 +30,7 @@ def create_user(target: schema_user.UserCreate, db: Session = Depends(get_db)):
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.post("/login", response_model=schemas_auth.Token)
@@ -47,7 +48,7 @@ def login(data: schemas_auth.Login, db: Session = Depends(get_db)):
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.post("/refresh", response_model=schemas_auth.Token)
@@ -66,4 +67,4 @@ def refresh(data: schemas_auth.Refresh):
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)

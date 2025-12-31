@@ -9,6 +9,8 @@ from pytz import timezone
 from sqlalchemy import Date, cast, func, insert, literal, select
 from sqlalchemy.orm import Session
 
+JST = timezone("Asia/Tokyo")
+
 
 def get_summaries_latest_company_total(
     db: Session,
@@ -294,16 +296,19 @@ def create_summaries(
     db: Session,
     target: schema_summary.SummaryCreate,
 ) -> None:
+    target_date = (target.date_snap or "").strip()
+    snapshot_date = target_date or _today_jst()
+    filters = _get_filter(target_date)
     try:
-        _clear_summaries(db)
-        _create_summaries_company_total(db, target)
-        _create_summaries_project_total(db, target)
-        _create_summaries_pm_total(db, target)
-        _create_summaries_pl_total(db, target)
-        _create_summaries_company_count(db, target)
-        _create_summaries_project_count(db, target)
-        _create_summaries_pm_count(db, target)
-        _create_summaries_pl_count(db, target)
+        _clear_summaries(db, snapshot_date)
+        _create_summaries_company_total(db, filters, snapshot_date)
+        _create_summaries_project_total(db, filters, snapshot_date)
+        _create_summaries_pm_total(db, filters, snapshot_date)
+        _create_summaries_pl_total(db, filters, snapshot_date)
+        _create_summaries_company_count(db, filters, snapshot_date)
+        _create_summaries_project_count(db, filters, snapshot_date)
+        _create_summaries_pm_count(db, filters, snapshot_date)
+        _create_summaries_pl_count(db, filters, snapshot_date)
         db.commit()
 
     except Exception:
@@ -311,45 +316,42 @@ def create_summaries(
         raise
 
 
-def _clear_summaries(db: Session) -> None:
-    JST = timezone("Asia/Tokyo")
-    today_str = datetime.now(JST).date().isoformat()
-
+def _clear_summaries(db: Session, snapshot_date: str) -> None:
     db.query(model_summary.SummaryTotalCompany).filter(
-        model_summary.SummaryTotalCompany.date_snap == today_str
+        model_summary.SummaryTotalCompany.date_snap == snapshot_date
     ).delete(synchronize_session=False)
     db.query(model_summary.SummaryTotalProject).filter(
-        model_summary.SummaryTotalProject.date_snap == today_str
+        model_summary.SummaryTotalProject.date_snap == snapshot_date
     ).delete(synchronize_session=False)
     db.query(model_summary.SummaryTotalPM).filter(
-        model_summary.SummaryTotalPM.date_snap == today_str
+        model_summary.SummaryTotalPM.date_snap == snapshot_date
     ).delete(synchronize_session=False)
     db.query(model_summary.SummaryTotalPL).filter(
-        model_summary.SummaryTotalPL.date_snap == today_str
+        model_summary.SummaryTotalPL.date_snap == snapshot_date
     ).delete(synchronize_session=False)
     db.query(model_summary.SummaryCountCompany).filter(
-        model_summary.SummaryCountCompany.date_snap == today_str
+        model_summary.SummaryCountCompany.date_snap == snapshot_date
     ).delete(synchronize_session=False)
     db.query(model_summary.SummaryCountProject).filter(
-        model_summary.SummaryCountProject.date_snap == today_str
+        model_summary.SummaryCountProject.date_snap == snapshot_date
     ).delete(synchronize_session=False)
     db.query(model_summary.SummaryCountPM).filter(
-        model_summary.SummaryCountPM.date_snap == today_str
+        model_summary.SummaryCountPM.date_snap == snapshot_date
     ).delete(synchronize_session=False)
     db.query(model_summary.SummaryCountPL).filter(
-        model_summary.SummaryCountPL.date_snap == today_str
+        model_summary.SummaryCountPL.date_snap == snapshot_date
     ).delete(synchronize_session=False)
-    db.commit()
 
 
 def _create_summaries_company_total(
     db: Session,
-    target: schema_summary.SummaryCreate,
+    filters: list,
+    snapshot_date: str,
 ) -> None:
     # fmt: off
     summary = (
         select(
-            func.date("now", "localtime").label("date_snap"),
+            literal(snapshot_date).label("date_snap"),
             model_company.Company.rid.label("rid_companies"),
             func.sum(model_project.Project.amount_expected).label("total_expected"),
             func.sum(model_project.Project.amount_order).label("total_order"),
@@ -363,7 +365,7 @@ def _create_summaries_company_total(
             model_company.Company,
             model_project_group.ProjectGroup.rid_companies == model_company.Company.rid,
         )
-        .where(*_get_filter(target))
+        .where(*filters)
         .group_by(model_company.Company.rid)
         .order_by(model_company.Company.rid)
     )
@@ -378,12 +380,13 @@ def _create_summaries_company_total(
 
 def _create_summaries_project_total(
     db: Session,
-    target: schema_summary.SummaryCreate,
+    filters: list,
+    snapshot_date: str,
 ) -> None:
     # fmt: off
     summary = (
         select(
-            func.date("now", "localtime").label("date_snap"),
+            literal(snapshot_date).label("date_snap"),
             model_project_group.ProjectGroup.rid.label("rid_project_groups"),
             func.sum(model_project.Project.amount_expected).label("total_expected"),
             func.sum(model_project.Project.amount_order).label("total_order"),
@@ -393,7 +396,7 @@ def _create_summaries_project_total(
             model_project_group.ProjectGroup,
             model_project.Project.rid_project_groups == model_project_group.ProjectGroup.rid,
         )
-        .where(*_get_filter(target))
+        .where(*filters)
         .group_by(model_project_group.ProjectGroup.rid)
         .order_by(model_project_group.ProjectGroup.rid)
     )
@@ -408,18 +411,19 @@ def _create_summaries_project_total(
 
 def _create_summaries_pm_total(
     db: Session,
-    target: schema_summary.SummaryCreate,
+    filters: list,
+    snapshot_date: str,
 ) -> None:
     # fmt: off
     summary = (
         select(
-            func.date("now", "localtime").label("date_snap"),
+            literal(snapshot_date).label("date_snap"),
             model_project.Project.rid_users_pm.label("rid_users_pm"),
             func.sum(model_project.Project.amount_expected).label("total_expected"),
             func.sum(model_project.Project.amount_order).label("total_order"),
         )
         .select_from(model_project.Project)
-        .where(*_get_filter(target))
+        .where(*filters)
         .group_by(model_project.Project.rid_users_pm)
         .order_by(model_project.Project.rid_users_pm)
     )
@@ -434,18 +438,19 @@ def _create_summaries_pm_total(
 
 def _create_summaries_pl_total(
     db: Session,
-    target: schema_summary.SummaryCreate,
+    filters: list,
+    snapshot_date: str,
 ) -> None:
     # fmt: off
     summary = (
         select(
-            func.date("now", "localtime").label("date_snap"),
+            literal(snapshot_date).label("date_snap"),
             model_project.Project.rid_users_pl.label("rid_users_pl"),
             func.sum(model_project.Project.amount_expected).label("total_expected"),
             func.sum(model_project.Project.amount_order).label("total_order"),
         )
         .select_from(model_project.Project)
-        .where(*_get_filter(target))
+        .where(*filters)
         .group_by(model_project.Project.rid_users_pl)
         .order_by(model_project.Project.rid_users_pl)
     )
@@ -460,12 +465,13 @@ def _create_summaries_pl_total(
 
 def _create_summaries_company_count(
     db: Session,
-    target: schema_summary.SummaryCreate,
+    filters: list,
+    snapshot_date: str,
 ) -> None:
     # fmt: off
     summary = (
         select(
-            func.date("now", "localtime").label("date_snap"),
+            literal(snapshot_date).label("date_snap"),
             model_company.Company.rid.label("rid_companies"),
             model_project.Project.rank.label("rank"),
             func.count(model_company.Company.rid).label("count"),
@@ -479,7 +485,7 @@ def _create_summaries_company_count(
             model_company.Company,
             model_project_group.ProjectGroup.rid_companies == model_company.Company.rid,
         )
-        .where(*_get_filter(target))
+        .where(*filters)
         .group_by(model_company.Company.rid, model_project.Project.rank)
         .order_by(model_company.Company.rid, model_project.Project.rank)
     )
@@ -494,12 +500,13 @@ def _create_summaries_company_count(
 
 def _create_summaries_project_count(
     db: Session,
-    target: schema_summary.SummaryCreate,
+    filters: list,
+    snapshot_date: str,
 ) -> None:
     # fmt: off
     summary = (
         select(
-            func.date("now", "localtime").label("date_snap"),
+            literal(snapshot_date).label("date_snap"),
             model_project_group.ProjectGroup.rid.label("rid_project_groups"),
             model_project.Project.rank.label("rank"),
             func.count(model_project_group.ProjectGroup.rid).label("count"),
@@ -509,7 +516,7 @@ def _create_summaries_project_count(
             model_project_group.ProjectGroup,
             model_project.Project.rid_project_groups == model_project_group.ProjectGroup.rid,
         )
-        .where(*_get_filter(target))
+        .where(*filters)
         .group_by(model_project_group.ProjectGroup.rid, model_project.Project.rank)
         .order_by(model_project_group.ProjectGroup.rid, model_project.Project.rank)
     )
@@ -524,18 +531,19 @@ def _create_summaries_project_count(
 
 def _create_summaries_pm_count(
     db: Session,
-    target: schema_summary.SummaryCreate,
+    filters: list,
+    snapshot_date: str,
 ) -> None:
     # fmt: off
     summary = (
         select(
-            func.date("now", "localtime").label("date_snap"),
+            literal(snapshot_date).label("date_snap"),
             model_project.Project.rid_users_pm.label("rid_users_pm"),
             model_project.Project.rank.label("rank"),
             func.count(model_project.Project.rid_users_pm).label("count"),
         )
         .select_from(model_project.Project)
-        .where(*_get_filter(target))
+        .where(*filters)
         .group_by(model_project.Project.rid_users_pm, model_project.Project.rank)
         .order_by(model_project.Project.rid_users_pm, model_project.Project.rank)
     )
@@ -550,18 +558,19 @@ def _create_summaries_pm_count(
 
 def _create_summaries_pl_count(
     db: Session,
-    target: schema_summary.SummaryCreate,
+    filters: list,
+    snapshot_date: str,
 ) -> None:
     # fmt: off
     summary = (
         select(
-            func.date("now", "localtime").label("date_snap"),
+            literal(snapshot_date).label("date_snap"),
             model_project.Project.rid_users_pl.label("rid_users_pl"),
             model_project.Project.rank.label("rank"),
             func.count(model_project.Project.rid_users_pl).label("count"),
         )
         .select_from(model_project.Project)
-        .where(*_get_filter(target))
+        .where(*filters)
         .group_by(model_project.Project.rid_users_pl, model_project.Project.rank)
         .order_by(model_project.Project.rid_users_pl, model_project.Project.rank)
     )
@@ -574,17 +583,18 @@ def _create_summaries_pl_count(
     db.execute(stmt)
 
 
-def _get_filter(target: schema_summary.SummaryCreate):
-    str_snapshot_date = (target.date_snap or "").strip()
-    has_target_date = bool(str_snapshot_date)
-
+def _get_filter(date_limit: str | None) -> list:
     where_clauses = [
         model_project.Project.is_deleted.is_(False),
     ]
 
-    if has_target_date:
+    if date_limit:
         where_clauses.append(
             cast(model_project.Project.updated_at, Date)
-            <= func.date(literal(str_snapshot_date))
+            <= func.date(literal(date_limit))
         )
     return where_clauses
+
+
+def _today_jst() -> str:
+    return datetime.now(JST).date().isoformat()

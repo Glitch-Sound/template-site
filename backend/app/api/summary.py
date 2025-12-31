@@ -2,11 +2,11 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from app.api import common as api_common
+from app.api.errors import re_raise_as_internal_error
 from app.crud import summary as crud_summary
-from app.database import get_db
+from app.database import SessionLocal, get_db
 from app.schemas import summary as schema_summary
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 router = APIRouter(tags=["Summary"])
@@ -24,7 +24,7 @@ def get_summaries_latest_company_total(
         return crud_summary.get_summaries_latest_company_total(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -39,7 +39,7 @@ def get_summaries_latest_project_total(
         return crud_summary.get_summaries_latest_project_total(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -54,7 +54,7 @@ def get_summaries_latest_pm_total(
         return crud_summary.get_summaries_latest_pm_total(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -69,7 +69,7 @@ def get_summaries_latest_pl_total(
         return crud_summary.get_summaries_latest_pl_total(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -84,7 +84,7 @@ def get_summaries_latest_company_count(
         return crud_summary.get_summaries_latest_company_count(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -99,7 +99,7 @@ def get_summaries_latest_project_count(
         return crud_summary.get_summaries_latest_project_count(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -114,7 +114,7 @@ def get_summaries_latest_pm_count(
         return crud_summary.get_summaries_latest_pm_count(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -129,7 +129,7 @@ def get_summaries_latest_pl_count(
         return crud_summary.get_summaries_latest_pl_count(db)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -145,7 +145,7 @@ def get_summaries_period_company_total(
         return crud_summary.get_summaries_period_company_total(db, year)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -161,7 +161,7 @@ def get_summaries_period_project_total(
         return crud_summary.get_summaries_period_project_total(db, year)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -177,7 +177,7 @@ def get_summaries_period_pm_total(
         return crud_summary.get_summaries_period_pm_total(db, year)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -193,7 +193,7 @@ def get_summaries_period_pl_total(
         return crud_summary.get_summaries_period_pl_total(db, year)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -209,7 +209,7 @@ def get_summaries_period_company_count(
         return crud_summary.get_summaries_period_company_count(db, year)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -225,7 +225,7 @@ def get_summaries_period_project_count(
         return crud_summary.get_summaries_period_project_count(db, year)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -241,7 +241,7 @@ def get_summaries_period_pm_count(
         return crud_summary.get_summaries_period_pm_count(db, year)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.get(
@@ -257,7 +257,7 @@ def get_summaries_period_pl_count(
         return crud_summary.get_summaries_period_pl_count(db, year)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 @router.post("/summaries", response_model=None)
@@ -271,24 +271,17 @@ def create_thread(
         return {"result": "success"}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        re_raise_as_internal_error(e)
 
 
 JST = ZoneInfo("Asia/Tokyo")
-scheduler = AsyncIOScheduler(
-    timezone=JST,
-    job_defaults={
-        "coalesce": True,
-        "misfire_grace_time": 3600,
-    },
-)
 
 
-def scheduled_summaries(db: Session = Depends(get_db)):
+def scheduled_summaries() -> None:
+    db: Session = SessionLocal()
     try:
         today_str = datetime.now(JST).date().isoformat()
         target = schema_summary.SummaryCreate(date_snap=today_str)
         crud_summary.create_summaries(db, target)
-
-    except Exception as e:
-        raise e
+    finally:
+        db.close()
