@@ -28,18 +28,19 @@ async function handleCreate(data: ProjectCreate) {
 <template>
   <v-main>
     <v-sheet class="main">
-      <v-skeleton-loader
-        v-if="is_loading_projects"
-        type="list-item-two-line, list-item-two-line, list-item-two-line"
-        class="mb-4"
-      />
+      <v-overlay
+        :model-value="is_loading_projects"
+        contained
+        scrim="transparent"
+        class="align-center justify-center"
+      >
+        <v-progress-circular indeterminate color="primary" />
+      </v-overlay>
 
-      <template v-else>
-        <template v-for="(project_group, i) in projects" :key="project_group.rid">
-          <PanelProjectGroup :project_group="project_group" :class="{ 'mt-10': 0 < i }" />
-          <template v-for="project in project_group.projects" :key="project.rid">
-            <PanelProject :project="project" />
-          </template>
+      <template v-for="(project_group, i) in projects" :key="project_group.rid">
+        <PanelProjectGroup :project_group="project_group" :class="{ 'mt-10': 0 < i }" />
+        <template v-for="project in project_group.projects" :key="project.rid">
+          <PanelProject :project="project" />
         </template>
       </template>
     </v-sheet>
