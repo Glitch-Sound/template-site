@@ -1,9 +1,24 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { type Project } from '@/types/Project'
 
 const props = defineProps<{
   project: Project
 }>()
+
+const isPreApprovalCurrentOrFuture = computed(() => {
+  const value = props.project.pre_approval
+  if (!value) return false
+
+  const preApprovalDate = new Date(value)
+  if (Number.isNaN(preApprovalDate.getTime())) return false
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  preApprovalDate.setHours(0, 0, 0, 0)
+
+  return preApprovalDate.getTime() <= today.getTime()
+})
 </script>
 
 <template>
@@ -21,7 +36,10 @@ const props = defineProps<{
 
     <v-col cols="auto">
       <template v-if="props.project.pre_approval !== ''">
-        <span class="text-caption gray-dark">
+        <span
+          class="text-caption"
+          :class="isPreApprovalCurrentOrFuture ? 'pre-approval-warning' : 'gray-dark'"
+        >
           {{ props.project.pre_approval }}
         </span>
       </template>
@@ -59,4 +77,8 @@ const props = defineProps<{
 
 <style scoped>
 @import '@/assets/main.css';
+
+.pre-approval-warning {
+  color: #c49116 !important;
+}
 </style>
