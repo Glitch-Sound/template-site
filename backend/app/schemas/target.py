@@ -8,6 +8,9 @@ class Target(schema_base.ORMBaseModel):
     quarter2: int
     quarter3: int
     quarter4: int
+    half_first: int
+    half_second: int
+    all: int
 
 
 class TargetCreate(schema_base.ORMBaseModel):

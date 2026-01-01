@@ -26,6 +26,9 @@ def create_target(
         quarter2=target.quarter2,
         quarter3=target.quarter3,
         quarter4=target.quarter4,
+        half_first=(target.quarter1 + target.quarter2),
+        half_second=(target.quarter3 + target.quarter4),
+        all=(target.quarter1 + target.quarter2 + target.quarter3 + target.quarter4),
     )
     # fmt: on
 
@@ -45,11 +48,14 @@ def update_target(
     .filter(model_target.Target.rid == target.rid)\
     .first()
 
-    obj_target.year    = target.year
-    obj_target.quarter1 = target.quarter1
-    obj_target.quarter2 = target.quarter2
-    obj_target.quarter3 = target.quarter3
-    obj_target.quarter4 = target.quarter4
+    obj_target.year        = target.year
+    obj_target.quarter1    = target.quarter1
+    obj_target.quarter2    = target.quarter2
+    obj_target.quarter3    = target.quarter3
+    obj_target.quarter4    = target.quarter4
+    obj_target.half_first  = target.quarter1 + target.quarter2
+    obj_target.half_second = target.quarter3 + target.quarter4
+    obj_target.all         = target.quarter1 + target.quarter2 + target.quarter3 + target.quarter4
     # fmt: on
 
     db.commit()
