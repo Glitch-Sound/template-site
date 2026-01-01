@@ -10,14 +10,14 @@ import service_user from '@/services/UserService'
 
 export const useAuthStore = defineStore('auth', () => {
   // state.
-  let user_initial: User | null = null
+  const user_initial = ref<User | null>(null)
   try {
-    user_initial = loadLoginUser() as User | null
+    user_initial.value = loadLoginUser() as User | null
   } catch {
-    user_initial = null
+    user_initial.value = null
     saveLoginUser(null)
   }
-  const user_logined = ref<User | null>(user_initial)
+  const user_logined = ref<User | null>(user_initial.value)
 
   // getters.
   const is_logined = computed(() => user_logined.value !== null)
@@ -27,6 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
     user_logined,
     (val) => {
       saveLoginUser(val)
+      user_initial.value = val
     },
     { deep: true },
   )
@@ -80,6 +81,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
+    user_initial,
     user_logined,
     is_logined,
     fetchStatus,

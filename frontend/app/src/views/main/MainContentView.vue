@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '@/stores/AuthStore'
+import IconCat from '@/assets/cat-1.svg'
 import MainContentInformationView from '@/views/main/MainContentInformationView.vue'
 import MainContentNoticeView from '@/views/main/MainContentNoticeView.vue'
 import MainContentWarningView from '@/views/main/MainContentWarningView.vue'
 import MainContentNoteView from '@/views/main/MainContentNoteView.vue'
+
+const authStore = useAuthStore()
+const { user_initial } = storeToRefs(authStore)
 </script>
 
 <template>
   <v-main>
-    <v-container class="cards-container" fluid>
+    <v-container v-if="user_initial" class="cards-container" fluid>
       <v-row class="top-row" justify="center" align="stretch">
         <v-col cols="12" sm="6" md="3" class="card-col">
           <MainContentInformationView />
@@ -25,6 +31,9 @@ import MainContentNoteView from '@/views/main/MainContentNoteView.vue'
         </v-col>
       </v-row>
     </v-container>
+    <div v-else class="ghost-container">
+      <img :src="IconCat" alt="" class="icon" />
+    </div>
   </v-main>
 </template>
 
@@ -47,5 +56,18 @@ import MainContentNoteView from '@/views/main/MainContentNoteView.vue'
 .card-col {
   display: flex;
   justify-content: center;
+}
+
+.ghost-container {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  width: 1200px;
+  max-width: 60vw;
+  opacity: 0.7;
 }
 </style>
