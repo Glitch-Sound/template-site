@@ -19,21 +19,42 @@ const route = useRoute()
       </div>
     </v-app-bar-title>
 
-    <v-btn icon to="/" :color="route.path === '/' ? 'primary' : 'icon'">
-      <v-icon>mdi-home</v-icon>
+    <v-btn
+      icon
+      to="/"
+      :color="route.path === '/' ? 'primary' : 'icon'"
+      class="nav-btn nav-home-btn"
+    >
+      <div class="nav-btn-inner">
+        <v-icon>mdi-home</v-icon>
+      </div>
     </v-btn>
 
-    <v-btn icon to="/project" :color="route.path === '/project' ? 'primary' : 'icon'">
-      <v-icon>mdi-view-list</v-icon>
+    <v-btn
+      icon
+      to="/project"
+      :color="route.path === '/project' ? 'primary' : 'icon'"
+      class="nav-btn"
+    >
+      <div class="nav-btn-inner">
+        <v-icon>mdi-view-list</v-icon>
+      </div>
     </v-btn>
 
-    <v-btn icon to="/viz/main" :color="route.path.startsWith('/viz') ? 'primary' : 'icon'">
-      <v-icon>mdi-chart-scatter-plot-hexbin</v-icon>
+    <v-btn
+      icon
+      to="/viz/main"
+      :color="route.path.startsWith('/viz') ? 'primary' : 'icon'"
+      class="nav-btn"
+    >
+      <div class="nav-btn-inner">
+        <v-icon>mdi-chart-scatter-plot-hexbin</v-icon>
+      </div>
     </v-btn>
 
     <v-spacer />
 
-    <div class="mr-2">
+    <div class="mr-2 login-user-wrapper">
       <LoginUser />
     </div>
 
@@ -45,4 +66,25 @@ const route = useRoute()
 
 <style scoped>
 @import '@/assets/main.css';
+
+.nav-btn {
+  height: auto;
+}
+
+.nav-btn-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-home-btn {
+  margin-left: 155px;
+}
+
+.login-user-wrapper {
+  width: 120px;
+  display: flex;
+  justify-content: center;
+}
 </style>
