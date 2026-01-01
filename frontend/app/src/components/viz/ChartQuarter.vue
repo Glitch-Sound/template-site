@@ -50,7 +50,7 @@ const diffClass = (diff: number) =>
               </span>
             </v-progress-circular>
 
-            <div class="amount-stack">
+            <div class="amount-stack ml-3">
               <div class="amount-display">
                 <div class="amount-achieved">
                   {{ formatCurrency(quarter.achieved) }}
