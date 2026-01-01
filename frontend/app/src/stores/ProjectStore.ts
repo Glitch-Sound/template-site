@@ -47,11 +47,11 @@ export const useProjectStore = defineStore('project', () => {
     return by_rid_project.value.get(rid)
   }
 
-  function upsertGroup(g: ProjectGroup) {
-    const i = project_groups.value.findIndex((x) => x.rid === g.rid)
-    if (i >= 0) project_groups.value[i] = g
-    else project_groups.value.push(g)
-  }
+  // function upsertGroup(g: ProjectGroup) {
+  //   const i = project_groups.value.findIndex((x) => x.rid === g.rid)
+  //   if (i >= 0) project_groups.value[i] = g
+  //   else project_groups.value.push(g)
+  // }
 
   function setCondition(cond: SearchCondition) {
     condition.value = cond
@@ -102,13 +102,15 @@ export const useProjectStore = defineStore('project', () => {
 
   async function createProjectGroup(payload: ProjectGroupCreate): Promise<ProjectGroup> {
     const created = await service_project.createProjectGroup(payload)
-    upsertGroup(created)
+    // upsertGroup(created)
+    fetchProjectGroups()
     return created
   }
 
   async function updateProjectGroup(payload: ProjectGroupUpdate): Promise<ProjectGroup> {
     const updated = await service_project.updateProjectGroup(payload)
-    upsertGroup(updated)
+    // upsertGroup(updated)
+    fetchProjectGroups()
     return updated
   }
 

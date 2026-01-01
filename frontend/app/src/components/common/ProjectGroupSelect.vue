@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import type { ProjectGroup } from '@/types/Project'
@@ -17,6 +17,13 @@ const emit = defineEmits<{
 const store_project = useProjectStore()
 const { project_groups, is_loading_groups } = storeToRefs(store_project)
 const { fetchProjectGroups, getGroupByRid } = store_project
+
+const project_group_items = computed(() =>
+  project_groups.value.map((group) => ({
+    ...group,
+    display_name: `${group.company?.name ?? ''}：${group.name}`,
+  })),
+)
 
 const selected_option = ref<number | null>(
   props.modelValue && props.modelValue !== 0 ? props.modelValue : null,
@@ -46,10 +53,10 @@ onMounted(async () => {
 
 <template>
   <v-select
-    :items="project_groups"
+    :items="project_group_items"
     v-model="selected_option"
     label="Project Group"
-    item-title="name"
+    item-title="display_name"
     item-value="rid"
     :loading="is_loading_groups"
     :disabled="is_loading_groups"

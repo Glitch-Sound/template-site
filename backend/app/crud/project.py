@@ -17,7 +17,7 @@ def get_project_groups(db: Session) -> List[schema_project.ProjectGroup]:
         model_project_group.ProjectGroup
     )\
     .filter(model_project_group.ProjectGroup.is_deleted == 0)\
-    .order_by(model_project_group.ProjectGroup.rid)
+    .order_by(model_project_group.ProjectGroup.rid_companies, model_project_group.ProjectGroup.rid)
     # fmt: on
     return query.all()
 
@@ -320,7 +320,10 @@ def get_projects(db: Session, condition: schema_project.SearchCondition):
             ).joinedload(model_project.Project.project_numbers)
         )
         .filter(and_(*group_preds))
-        .order_by(model_project_group.ProjectGroup.rid)
+        .order_by(
+            model_project_group.ProjectGroup.rid_companies,
+            model_project_group.ProjectGroup.rid,
+        )
     )
 
     return query.all()

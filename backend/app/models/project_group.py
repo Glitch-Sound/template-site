@@ -17,8 +17,7 @@ class ProjectGroup(Base, TimestampMixin):
     company = relationship("Company", back_populates="project_groups", foreign_keys=[rid_companies])
 
     projects                = relationship("Project",             back_populates="project_group", foreign_keys="[Project.rid_project_groups]")
-    summaries_total_project = relationship("SummaryTotalProject", back_populates="project_group", foreign_keys="[SummaryTotalProject.rid_project_groups]")
-    summaries_count_project = relationship("SummaryCountProject", back_populates="project_group", foreign_keys="[SummaryCountProject.rid_project_groups]")
+    # summary models for project groups are not defined yet
 
     __table_args__ = (
         Index("idx_project_groups_01", "is_deleted", "rid"),
