@@ -1,11 +1,8 @@
-FROM node:20-slim
+FROM node:20.19-alpine
 
 ENV TZ=Asia/Tokyo
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache build-base
 
 WORKDIR /app
 
@@ -14,9 +11,8 @@ RUN npm install --legacy-peer-deps
 
 COPY app/ .
 
-RUN useradd -m appuser && \
-    chown -R appuser:appuser /app
+RUN chown -R node:node /app
 
-USER appuser
+USER node
 
 EXPOSE 5173
