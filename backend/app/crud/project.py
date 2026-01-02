@@ -293,8 +293,8 @@ def get_projects(db: Session, condition: schema_project.SearchCondition):
     if condition.is_none_pre_approval:
         child_preds.append(
             or_(
-                model_project.Project.number_parent.is_(None),
-                model_project.Project.number_parent == "",
+                model_project.Project.pre_approval.is_(None),
+                model_project.Project.pre_approval == "",
             )
         )
 
