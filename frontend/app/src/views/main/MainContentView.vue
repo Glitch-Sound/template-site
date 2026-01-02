@@ -17,7 +17,7 @@ const { user_initial } = storeToRefs(authStore)
         <v-col cols="12" sm="6" md="3" class="card-col">
           <MainContentInformationView />
         </v-col>
-        <v-col cols="12" sm="6" md="3" class="card-col">
+        <v-col cols="12" sm="6" md="3" class="card-col mx-8">
           <MainContentNoticeView />
         </v-col>
         <v-col cols="12" sm="6" md="3" class="card-col">
@@ -44,7 +44,7 @@ const { user_initial } = storeToRefs(authStore)
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 48px;
+  gap: 64px;
 }
 
 .top-row,
