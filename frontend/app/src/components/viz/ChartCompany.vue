@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Doughnut } from 'vue-chartjs'
 import type { ChartOptions, TooltipItem } from 'chart.js'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
@@ -11,6 +11,17 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
+const selectedRanks = ref<TypeRank[]>([TypeRank.A])
+const draftRanks = ref<TypeRank[]>([TypeRank.A])
+const isRankMenuOpen = ref(false)
+
+const rankOptions = [
+  { value: TypeRank.A, label: 'Rank A' },
+  { value: TypeRank.B, label: 'Rank B' },
+  { value: TypeRank.C, label: 'Rank C' },
+  { value: TypeRank.D, label: 'Rank D' },
+  { value: TypeRank.E, label: 'Rank E' },
+]
 
 onMounted(async () => {
   await targetStore.fetchTargets()
@@ -22,7 +33,7 @@ const palette = ['#2f6b7a', '#3a8f6b', '#7a6c2f', '#6b2f2f', '#4a4a4a', '#394b5a
 const companyTotals = computed(() => {
   const map = new Map<number, { name: string; value: number }>()
   summaryStore.summaries_company_latest
-    .filter((item) => item.rank === TypeRank.A)
+    .filter((item) => selectedRanks.value.includes(item.rank))
     .forEach((item) => {
       const rid = item.company?.rid ?? item.rid
       const name = item.company?.name ?? 'Unknown'
@@ -85,11 +96,48 @@ const chartOptions: ChartOptions<'doughnut'> = {
     },
   },
 }
+
+const applyRanks = () => {
+  selectedRanks.value = [...draftRanks.value]
+  isRankMenuOpen.value = false
+}
 </script>
 
 <template>
   <v-card class="company-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-h6 font-weight-medium">Company</v-card-title>
+    <v-card-title class="text-h6 font-weight-medium">
+      Company
+      <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon="mdi-filter-variant"
+            variant="text"
+            density="comfortable"
+            class="ml-2"
+            aria-label="Rank filter"
+          />
+        </template>
+        <v-list min-width="220">
+          <v-list-item v-for="rank in rankOptions" :key="rank.value">
+            <v-checkbox
+              v-model="draftRanks"
+              :value="rank.value"
+              :label="rank.label"
+              density="compact"
+              hide-details
+            />
+          </v-list-item>
+          <v-list-item>
+            <div class="d-flex justify-end w-100">
+              <v-btn size="small" color="primary" variant="flat" @click="applyRanks">
+                Apply
+              </v-btn>
+            </div>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </v-card-title>
 
     <v-card-text class="pa-4">
       <div class="chart-wrap">
