@@ -1,10 +1,47 @@
 <script setup lang="ts">
-const quarters = [
-  { title: '1Q', achieved: 2150000, target: 3000000 },
-  { title: '2Q', achieved: 2550000, target: 3000000 },
-  { title: '3Q', achieved: 1900000, target: 3000000 },
-  { title: '4Q', achieved: 2150000, target: 3000000 },
-]
+import { computed, onMounted } from 'vue'
+import { useSummaryStore } from '@/stores/SummaryStore'
+import { useTargetStore } from '@/stores/TargetStore'
+
+const summaryStore = useSummaryStore()
+const targetStore = useTargetStore()
+const currentYear = new Date().getFullYear()
+
+onMounted(async () => {
+  await Promise.all([
+    summaryStore.fetchSummariesAmountLatest(),
+    targetStore.fetchTargets(),
+  ])
+})
+
+const currentTarget = computed(
+  () => targetStore.targets.find((target) => target.year === currentYear) ?? null,
+)
+
+const targetByQuarter = computed(() => ({
+  q1: currentTarget.value?.quarter1 ?? 0,
+  q2: currentTarget.value?.quarter2 ?? 0,
+  q3: currentTarget.value?.quarter3 ?? 0,
+  q4: currentTarget.value?.quarter4 ?? 0,
+}))
+
+const achievedByQuarter = computed(() => {
+  const base = { q1: 0, q2: 0, q3: 0, q4: 0 }
+  return summaryStore.summaries_amount_latest.reduce((acc, item) => {
+    acc.q1 += item.quarter1_order
+    acc.q2 += item.quarter2_order
+    acc.q3 += item.quarter3_order
+    acc.q4 += item.quarter4_order
+    return acc
+  }, base)
+})
+
+const quarters = computed(() => [
+  { title: '1Q', achieved: achievedByQuarter.value.q1, target: targetByQuarter.value.q1 },
+  { title: '2Q', achieved: achievedByQuarter.value.q2, target: targetByQuarter.value.q2 },
+  { title: '3Q', achieved: achievedByQuarter.value.q3, target: targetByQuarter.value.q3 },
+  { title: '4Q', achieved: achievedByQuarter.value.q4, target: targetByQuarter.value.q4 },
+])
 
 const currencyFormatter = new Intl.NumberFormat('ja-JP', {
   style: 'currency',
@@ -31,7 +68,7 @@ const diffClass = (diff: number) =>
 
     <v-card-text class="pa-6">
       <div class="quarter-row">
-        <div v-for="quarter in quarters" :key="quarter.title" class="quarter-item">
+          <div v-for="quarter in quarters" :key="quarter.title" class="quarter-item">
           <div class="quarter-title text-caption text-medium-emphasis">
             {{ quarter.title }}
           </div>
