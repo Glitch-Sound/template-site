@@ -9,10 +9,7 @@ const targetStore = useTargetStore()
 const currentYear = new Date().getFullYear()
 
 onMounted(async () => {
-  await Promise.all([
-    summaryStore.fetchSummariesAmountLatest(),
-    targetStore.fetchTargets(),
-  ])
+  await Promise.all([summaryStore.fetchSummariesAmountLatest(), targetStore.fetchTargets()])
 })
 
 const currentTarget = computed(
@@ -62,10 +59,7 @@ const amount = computed(() => ({
 
 const totalProgress = computed(() => {
   if (!amount.value.total.target) return 0
-  return Math.min(
-    100,
-    Math.round((amount.value.total.achieved / amount.value.total.target) * 100),
-  )
+  return Math.min(100, Math.round((amount.value.total.achieved / amount.value.total.target) * 100))
 })
 
 const currencyFormatter = new Intl.NumberFormat('ja-JP', {
@@ -88,7 +82,8 @@ const diffClass = (diff: number) =>
 
     <v-card-text class="pa-6">
       <div class="top-row">
-        <div class="progress-wrapper">
+        <div class="total-block">
+          <div class="total-label text-caption text-medium-emphasis">Total</div>
           <v-progress-circular
             :model-value="totalProgress"
             size="100"
@@ -102,7 +97,6 @@ const diffClass = (diff: number) =>
         </div>
 
         <div class="total-amount">
-          <div class="total-label text-caption text-medium-emphasis">Total</div>
           <div class="amount-stack">
             <div class="amount-display">
               <div class="amount-achieved">
@@ -161,9 +155,13 @@ const diffClass = (diff: number) =>
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+  margin-top: 12px;
 }
 
-.progress-wrapper {
+.total-block {
+  position: relative;
+  width: 100px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -181,17 +179,23 @@ const diffClass = (diff: number) =>
   font-size: 1.25rem;
 }
 
+.total-label {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .total-amount {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 8px;
   min-width: 200px;
-}
-
-.total-label {
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  align-self: center;
 }
 
 .amount-display {
