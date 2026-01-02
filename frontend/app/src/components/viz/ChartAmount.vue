@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
 import { TypeRank } from '@/types/Project'
@@ -7,6 +7,17 @@ import { TypeRank } from '@/types/Project'
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
 const currentYear = new Date().getFullYear()
+const selectedRanks = ref<TypeRank[]>([TypeRank.A])
+const draftRanks = ref<TypeRank[]>([TypeRank.A])
+const isRankMenuOpen = ref(false)
+
+const rankOptions = [
+  { value: TypeRank.A, label: 'Rank A' },
+  { value: TypeRank.B, label: 'Rank B' },
+  { value: TypeRank.C, label: 'Rank C' },
+  { value: TypeRank.D, label: 'Rank D' },
+  { value: TypeRank.E, label: 'Rank E' },
+]
 
 onMounted(async () => {
   await Promise.all([summaryStore.fetchSummariesAmountLatest(), targetStore.fetchTargets()])
@@ -29,7 +40,7 @@ const targetTotals = computed(() => {
 const achievedTotals = computed(() => {
   const base = { total: 0, firstHalf: 0, secondHalf: 0 }
   return summaryStore.summaries_amount_latest
-    .filter((item) => item.rank === TypeRank.A)
+    .filter((item) => selectedRanks.value.includes(item.rank))
     .reduce((acc, item) => {
       acc.total += item.all_order
       acc.firstHalf += item.half_first_order
@@ -74,11 +85,48 @@ const diffValue = (achieved: number, target: number) => achieved - target
 
 const diffClass = (diff: number) =>
   diff >= 0 ? 'amount-diff amount-diff--positive' : 'amount-diff amount-diff--negative'
+
+const applyRanks = () => {
+  selectedRanks.value = [...draftRanks.value]
+  isRankMenuOpen.value = false
+}
 </script>
 
 <template>
   <v-card class="amount-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-h6 font-weight-medium">Amount</v-card-title>
+  <v-card-title class="text-h6 font-weight-medium">
+    Amount
+    <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
+      <template #activator="{ props }">
+        <v-btn
+          v-bind="props"
+          icon="mdi-filter-variant"
+          variant="text"
+          density="comfortable"
+          class="ml-2"
+          aria-label="Rank filter"
+        />
+      </template>
+      <v-list min-width="220">
+        <v-list-item v-for="rank in rankOptions" :key="rank.value">
+          <v-checkbox
+            v-model="draftRanks"
+            :value="rank.value"
+            :label="rank.label"
+            density="compact"
+            hide-details
+          />
+        </v-list-item>
+        <v-list-item>
+          <div class="d-flex justify-end w-100">
+            <v-btn size="small" color="primary" variant="flat" @click="applyRanks">
+              Apply
+            </v-btn>
+          </div>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+  </v-card-title>
 
     <v-card-text class="pa-6">
       <div class="top-row">
