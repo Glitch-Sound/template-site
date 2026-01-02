@@ -58,6 +58,10 @@ const chartOptions: ChartOptions<'doughnut'> = {
   responsive: true,
   maintainAspectRatio: false,
   cutout: '80%',
+  animation: {
+    duration: 900,
+    easing: 'easeOutQuart',
+  },
   layout: {
     padding: 0,
   },

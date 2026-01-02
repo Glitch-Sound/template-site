@@ -50,6 +50,14 @@ const seriesFromQuarterValues = (quarters: number[]) =>
     return quarters[quarterIndex] ?? 0
   })
 
+const rankSeries = [
+  { rank: TypeRank.A, label: 'Rank A', color: '#5fa7c8', fill: 'rgba(95, 167, 200, 0.15)' },
+  { rank: TypeRank.B, label: 'Rank B', color: '#6bb48e', fill: 'rgba(107, 180, 142, 0.15)' },
+  { rank: TypeRank.C, label: 'Rank C', color: '#b3a45a', fill: 'rgba(179, 164, 90, 0.15)' },
+  { rank: TypeRank.D, label: 'Rank D', color: '#a06b6b', fill: 'rgba(160, 107, 107, 0.15)' },
+  { rank: TypeRank.E, label: 'Rank E', color: '#8a8a8a', fill: 'rgba(138, 138, 138, 0.15)' },
+]
+
 const summariesByRank = computed(() => {
   const map = new Map<number, { q1: number; q2: number; q3: number; q4: number }>()
   summaryStore.summaries_amount_latest.forEach((item) => {
@@ -78,81 +86,24 @@ const quarterTargets = computed(() => {
 const chartData = computed(() => ({
   labels,
   datasets: [
-    {
-      label: 'Rank A',
-      data: seriesFromQuarterValues([
-        summariesByRank.value.get(TypeRank.A)?.q1 ?? 0,
-        summariesByRank.value.get(TypeRank.A)?.q2 ?? 0,
-        summariesByRank.value.get(TypeRank.A)?.q3 ?? 0,
-        summariesByRank.value.get(TypeRank.A)?.q4 ?? 0,
-      ]),
-      borderColor: '#5fa7c8',
-      backgroundColor: 'rgba(95, 167, 200, 0.15)',
-      tension: 0.2,
-      pointRadius: 0,
-      fill: false,
-      stepped: true,
-    },
-    {
-      label: 'Rank B',
-      data: seriesFromQuarterValues([
-        summariesByRank.value.get(TypeRank.B)?.q1 ?? 0,
-        summariesByRank.value.get(TypeRank.B)?.q2 ?? 0,
-        summariesByRank.value.get(TypeRank.B)?.q3 ?? 0,
-        summariesByRank.value.get(TypeRank.B)?.q4 ?? 0,
-      ]),
-      borderColor: '#6bb48e',
-      backgroundColor: 'rgba(107, 180, 142, 0.15)',
-      tension: 0.2,
-      pointRadius: 0,
-      fill: false,
-      stepped: true,
-    },
-    {
-      label: 'Rank C',
-      data: seriesFromQuarterValues([
-        summariesByRank.value.get(TypeRank.C)?.q1 ?? 0,
-        summariesByRank.value.get(TypeRank.C)?.q2 ?? 0,
-        summariesByRank.value.get(TypeRank.C)?.q3 ?? 0,
-        summariesByRank.value.get(TypeRank.C)?.q4 ?? 0,
-      ]),
-      borderColor: '#b3a45a',
-      backgroundColor: 'rgba(179, 164, 90, 0.15)',
-      tension: 0.2,
-      pointRadius: 0,
-      fill: false,
-      stepped: true,
-    },
-    {
-      label: 'Rank D',
-      data: seriesFromQuarterValues([
-        summariesByRank.value.get(TypeRank.D)?.q1 ?? 0,
-        summariesByRank.value.get(TypeRank.D)?.q2 ?? 0,
-        summariesByRank.value.get(TypeRank.D)?.q3 ?? 0,
-        summariesByRank.value.get(TypeRank.D)?.q4 ?? 0,
-      ]),
-      borderColor: '#a06b6b',
-      backgroundColor: 'rgba(160, 107, 107, 0.15)',
-      tension: 0.2,
-      pointRadius: 0,
-      fill: false,
-      stepped: true,
-    },
-    {
-      label: 'Rank E',
-      data: seriesFromQuarterValues([
-        summariesByRank.value.get(TypeRank.E)?.q1 ?? 0,
-        summariesByRank.value.get(TypeRank.E)?.q2 ?? 0,
-        summariesByRank.value.get(TypeRank.E)?.q3 ?? 0,
-        summariesByRank.value.get(TypeRank.E)?.q4 ?? 0,
-      ]),
-      borderColor: '#8a8a8a',
-      backgroundColor: 'rgba(138, 138, 138, 0.15)',
-      tension: 0.2,
-      pointRadius: 0,
-      fill: false,
-      stepped: true,
-    },
+    ...rankSeries.map((series) => {
+      const quarters = summariesByRank.value.get(series.rank) ?? {
+        q1: 0,
+        q2: 0,
+        q3: 0,
+        q4: 0,
+      }
+      return {
+        label: series.label,
+        data: seriesFromQuarterValues([quarters.q1, quarters.q2, quarters.q3, quarters.q4]),
+        borderColor: series.color,
+        backgroundColor: series.fill,
+        tension: 0.2,
+        pointRadius: 0,
+        fill: false,
+        stepped: true,
+      }
+    }),
     {
       label: 'Quarter Target',
       data: seriesFromQuarterValues(quarterTargets.value),
@@ -174,6 +125,10 @@ const currencyFormatter = new Intl.NumberFormat('ja-JP', {
 const chartOptions: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,
+  animation: {
+    duration: 1000,
+    easing: 'easeOutQuart',
+  },
   interaction: {
     mode: 'index',
     intersect: false,

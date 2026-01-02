@@ -71,7 +71,7 @@ const diffClass = (diff: number) =>
 
     <v-card-text class="pa-6">
       <div class="quarter-row">
-          <div v-for="quarter in quarters" :key="quarter.title" class="quarter-item">
+        <div v-for="quarter in quarters" :key="quarter.title" class="quarter-item">
           <div class="quarter-title text-caption text-medium-emphasis">
             {{ quarter.title }}
           </div>
@@ -149,6 +149,10 @@ const diffClass = (diff: number) =>
 
 .progress {
   font-weight: 600;
+}
+
+.progress :deep(.v-progress-circular__overlay) {
+  transition: stroke-dashoffset 0.6s ease;
 }
 
 .progress-label {

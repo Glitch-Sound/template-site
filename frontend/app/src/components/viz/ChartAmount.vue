@@ -173,6 +173,10 @@ const diffClass = (diff: number) =>
   font-weight: 600;
 }
 
+.progress :deep(.v-progress-circular__overlay) {
+  transition: stroke-dashoffset 0.6s ease;
+}
+
 .progress-label {
   font-size: 1.25rem;
 }
