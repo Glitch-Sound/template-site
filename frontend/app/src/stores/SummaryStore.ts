@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import type { SummaryAmount, SummaryCompany } from '@/types/Summary'
+import type { Project } from '@/types/Project'
 import service_summary from '@/services/SummaryService'
 
 export const useSummaryStore = defineStore('summary', () => {
@@ -9,6 +10,9 @@ export const useSummaryStore = defineStore('summary', () => {
   const summaries_amount_year = ref<SummaryAmount[]>([])
   const summaries_company_latest = ref<SummaryCompany[]>([])
   const summaries_company_year = ref<SummaryCompany[]>([])
+  const summaries_deadline = ref<Project[]>([])
+  const summaries_incomplete = ref<Project[]>([])
+  const summaries_alert = ref<Project[]>([])
 
   const amount_year = ref<number | null>(null)
   const company_year = ref<number | null>(null)
@@ -17,11 +21,17 @@ export const useSummaryStore = defineStore('summary', () => {
   const is_loading_amount_year = ref(false)
   const is_loading_company_latest = ref(false)
   const is_loading_company_year = ref(false)
+  const is_loading_deadline = ref(false)
+  const is_loading_incomplete = ref(false)
+  const is_loading_alert = ref(false)
 
   let inflight_amount_latest: Promise<void> | null = null
   let inflight_amount_year: Promise<void> | null = null
   let inflight_company_latest: Promise<void> | null = null
   let inflight_company_year: Promise<void> | null = null
+  let inflight_deadline: Promise<void> | null = null
+  let inflight_incomplete: Promise<void> | null = null
+  let inflight_alert: Promise<void> | null = null
 
   async function fetchSummariesAmountLatest(): Promise<void> {
     if (inflight_amount_latest) return inflight_amount_latest
@@ -81,11 +91,56 @@ export const useSummaryStore = defineStore('summary', () => {
     return inflight_company_year
   }
 
+  async function fetchSummariesDeadline(): Promise<void> {
+    if (inflight_deadline) return inflight_deadline
+    is_loading_deadline.value = true
+    inflight_deadline = (async () => {
+      try {
+        summaries_deadline.value = await service_summary.fetchSummariesDeadline()
+      } finally {
+        is_loading_deadline.value = false
+        inflight_deadline = null
+      }
+    })()
+    return inflight_deadline
+  }
+
+  async function fetchSummariesIncomplete(): Promise<void> {
+    if (inflight_incomplete) return inflight_incomplete
+    is_loading_incomplete.value = true
+    inflight_incomplete = (async () => {
+      try {
+        summaries_incomplete.value = await service_summary.fetchSummariesIncomplete()
+      } finally {
+        is_loading_incomplete.value = false
+        inflight_incomplete = null
+      }
+    })()
+    return inflight_incomplete
+  }
+
+  async function fetchSummariesAlert(): Promise<void> {
+    if (inflight_alert) return inflight_alert
+    is_loading_alert.value = true
+    inflight_alert = (async () => {
+      try {
+        summaries_alert.value = await service_summary.fetchSummariesAlert()
+      } finally {
+        is_loading_alert.value = false
+        inflight_alert = null
+      }
+    })()
+    return inflight_alert
+  }
+
   function reset(): void {
     summaries_amount_latest.value = []
     summaries_amount_year.value = []
     summaries_company_latest.value = []
     summaries_company_year.value = []
+    summaries_deadline.value = []
+    summaries_incomplete.value = []
+    summaries_alert.value = []
     amount_year.value = null
     company_year.value = null
   }
@@ -96,18 +151,27 @@ export const useSummaryStore = defineStore('summary', () => {
     summaries_amount_year,
     summaries_company_latest,
     summaries_company_year,
+    summaries_deadline,
+    summaries_incomplete,
+    summaries_alert,
     amount_year,
     company_year,
     is_loading_amount_latest,
     is_loading_amount_year,
     is_loading_company_latest,
     is_loading_company_year,
+    is_loading_deadline,
+    is_loading_incomplete,
+    is_loading_alert,
 
     // actions
     fetchSummariesAmountLatest,
     fetchSummariesAmount,
     fetchSummariesCompanyLatest,
     fetchSummariesCompany,
+    fetchSummariesDeadline,
+    fetchSummariesIncomplete,
+    fetchSummariesAlert,
     reset,
   }
 })

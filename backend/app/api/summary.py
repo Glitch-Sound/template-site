@@ -5,6 +5,7 @@ from app.api import common as api_common
 from app.api.errors import re_raise_as_internal_error
 from app.crud import summary as crud_summary
 from app.database import SessionLocal, get_db
+from app.schemas import project as schema_project
 from app.schemas import summary as schema_summary
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -95,3 +96,45 @@ def scheduled_summaries() -> None:
         crud_summary.create_summaries(db, target)
     finally:
         db.close()
+
+
+@router.get(
+    "/summaries/deadline",
+    response_model=list[schema_project.Project],
+)
+def get_summaries_deadline(
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_summary.get_summaries_deadline(db)
+    except Exception as e:
+        re_raise_as_internal_error(e)
+
+
+@router.get(
+    "/summaries/incomplete",
+    response_model=list[schema_project.Project],
+)
+def get_summaries_incomplete(
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_summary.get_summaries_incomplete(db)
+    except Exception as e:
+        re_raise_as_internal_error(e)
+
+
+@router.get(
+    "/summaries/alert",
+    response_model=list[schema_project.Project],
+)
+def get_summaries_alert(
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_summary.get_summaries_alert(db)
+    except Exception as e:
+        re_raise_as_internal_error(e)

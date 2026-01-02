@@ -1,11 +1,13 @@
-from datetime import datetime
+from calendar import monthrange
+from datetime import date, datetime, timedelta
 
 from app.models import project as model_project
 from app.models import project_group as model_project_group
 from app.models import summary as model_summary
+from app.schemas import project as schema_project
 from app.schemas import summary as schema_summary
 from pytz import timezone
-from sqlalchemy import Date, cast, func, literal, select
+from sqlalchemy import Date, and_, cast, func, literal, or_, select
 from sqlalchemy.orm import Session
 
 JST = timezone("Asia/Tokyo")
@@ -357,3 +359,85 @@ def _get_filter(date_limit: str | None) -> list:
 
 def _today_jst() -> str:
     return datetime.now(JST).date().isoformat()
+
+
+def get_summaries_deadline(db: Session) -> list[schema_project.Project]:
+    today = date.today()
+    start = today.isoformat()
+    end = (today + timedelta(days=14)).isoformat()
+
+    # fmt: off
+    query = db.query(
+        model_project.Project
+    )\
+    .filter(
+        model_project.Project.is_deleted == 0,
+        _date_range_pred(model_project.Project.date_delivery, start, end),
+    )\
+    .order_by(model_project.Project.date_delivery.asc(), model_project.Project.rid.asc())
+    # fmt: on
+
+    return query.all()
+
+
+def get_summaries_incomplete(db: Session) -> list[schema_project.Project]:
+    today = date.today()
+    start = today.isoformat()
+    end = _add_months(today, 1).isoformat()
+
+    # fmt: off
+    query = db.query(
+        model_project.Project
+    )\
+    .filter(
+        model_project.Project.is_deleted == 0,
+        _date_range_pred(model_project.Project.date_start, start, end),
+        or_(
+            model_project.Project.pre_approval.is_(None),
+            model_project.Project.pre_approval == "",
+        ),
+    )\
+    .order_by(model_project.Project.date_start.asc(), model_project.Project.rid.asc())
+    # fmt: on
+
+    return query.all()
+
+
+def get_summaries_alert(db: Session) -> list[schema_project.Project]:
+    today = date.today()
+    start = today.isoformat()
+    end = (today + timedelta(days=14)).isoformat()
+
+    # fmt: off
+    query = db.query(
+        model_project.Project
+    )\
+    .filter(
+        model_project.Project.is_deleted == 0,
+        _date_range_pred(model_project.Project.date_start, start, end),
+        or_(
+            model_project.Project.number_s == 0,
+            model_project.Project.number_o == 0,
+        ),
+    )\
+    .order_by(model_project.Project.date_start.asc(), model_project.Project.rid.asc())
+    # fmt: on
+
+    return query.all()
+
+
+def _add_months(source: date, months: int) -> date:
+    month = source.month - 1 + months
+    year = source.year + month // 12
+    month = month % 12 + 1
+    day = min(source.day, monthrange(year, month)[1])
+    return date(year, month, day)
+
+
+def _date_range_pred(column, start: str, end: str):
+    return and_(
+        column.isnot(None),
+        column != "",
+        column >= start,
+        column <= end,
+    )
