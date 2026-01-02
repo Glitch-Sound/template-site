@@ -2,21 +2,21 @@ import { TypeRank } from '@/types/Project'
 
 export const chartPalette = [
   '#ffffff',
-  '#00948B',
-  '#72a1ac',
-  '#9f9f9f',
-  '#ffd93d',
-  '#9b5de5',
-  '#f67280',
-  '#90f1c4',
-  '#60d394',
-  '#ffd4a5',
-  '#b067ff',
-  '#99c1de',
-  '#ff6b6b',
-  '#f4b6c2',
-  '#ff9a8b',
-  '#f47c7c',
+  '#00948B', // Z
+  '#003C88', // G
+  '#3e3e3e', // S
+  '#00B0D4', // D
+  '#C00000', // M
+  '#4fa29e', // M4
+  '#4955A3', // T
+  '#1CA3CE', // T4
+  '#ffffff',
+  '#ffffff',
+  '#ffffff',
+  '#ffffff',
+  '#ffffff',
+  '#ffffff',
+  '#ffffff',
 ]
 
 export const rankPalette: Record<TypeRank, string> = {
