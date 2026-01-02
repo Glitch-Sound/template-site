@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/AuthStore'
-import IconCat from '@/assets/cat-1.svg'
 import MainContentInformationView from '@/views/main/MainContentInformationView.vue'
 import MainContentNoticeView from '@/views/main/MainContentNoticeView.vue'
 import MainContentWarningView from '@/views/main/MainContentWarningView.vue'
@@ -32,7 +31,7 @@ const { user_initial } = storeToRefs(authStore)
       </v-row>
     </v-container>
     <div v-else class="ghost-container">
-      <img :src="IconCat" alt="" class="icon" />
+      <v-icon icon="mdi-ghost" size="1100" class="icon" />
     </div>
   </v-main>
 </template>
@@ -66,8 +65,7 @@ const { user_initial } = storeToRefs(authStore)
 }
 
 .icon {
-  width: 1200px;
-  max-width: 60vw;
-  opacity: 0.7;
+  color: #3f3f3f;
+  opacity: 0.4;
 }
 </style>

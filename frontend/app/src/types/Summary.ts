@@ -1,67 +1,43 @@
 import type { Company } from '@/types/Company'
-import { TypeRank, type ProjectGroup } from '@/types/Project'
-import type { User } from '@/types/User'
+import { TypeRank } from '@/types/Project'
 
-export interface SummaryTotalCompany {
+export interface SummaryAmount {
+  rid: number
+  date_snap: string
+  rank: TypeRank
+  quarter1_expected: number
+  quarter1_order: number
+  quarter2_expected: number
+  quarter2_order: number
+  quarter3_expected: number
+  quarter3_order: number
+  quarter4_expected: number
+  quarter4_order: number
+  half_first_expected: number
+  half_first_order: number
+  half_second_expected: number
+  half_second_order: number
+  all_expected: number
+  all_order: number
+}
+
+export interface SummaryCompany {
   rid: number
   date_snap: string
   company: Company
-  total_expected: number
-  total_order: number
-}
-
-export interface SummaryTotalProject {
-  rid: number
-  date_snap: string
-  project_group: ProjectGroup
-  total_expected: number
-  total_order: number
-}
-
-export interface SummaryTotalPM {
-  rid: number
-  date_snap: string
-  user_pm: User
-  total_expected: number
-  total_order: number
-}
-
-export interface SummaryTotalPL {
-  rid: number
-  date_snap: string
-  user_pl: User
-  total_expected: number
-  total_order: number
-}
-
-export interface SummaryCountCompany {
-  rid: number
-  date_snap: string
-  company: Company
-  rank: TypeRank
-  count: number
-}
-
-export interface SummaryCountProject {
-  rid: number
-  date_snap: string
-  project_group: ProjectGroup
-  rank: TypeRank
-  count: number
-}
-
-export interface SummaryCountPM {
-  rid: number
-  date_snap: string
-  user_pm: User
-  rank: TypeRank
-  count: number
-}
-
-export interface SummaryCountPL {
-  rid: number
-  date_snap: string
-  user_pl: User
-  rank: TypeRank
-  count: number
+  rank: number
+  quarter1_expected: number
+  quarter1_order: number
+  quarter2_expected: number
+  quarter2_order: number
+  quarter3_expected: number
+  quarter3_order: number
+  quarter4_expected: number
+  quarter4_order: number
+  half_first_expected: number
+  half_first_order: number
+  half_second_expected: number
+  half_second_order: number
+  all_expected: number
+  all_order: number
 }
