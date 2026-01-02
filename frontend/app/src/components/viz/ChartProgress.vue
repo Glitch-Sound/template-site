@@ -30,7 +30,7 @@ onMounted(async () => {
 
 const pad2 = (value: number) => String(value).padStart(2, '0')
 
-const dateItems = (() => {
+const dateItems = computed(() => {
   const items: Array<{ label: string; month: number; index: number }> = []
   for (let month = 0; month < 12; month += 1) {
     const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -40,12 +40,23 @@ const dateItems = (() => {
     }
   }
   return items
-})()
+})
 
-const labels = dateItems.map((item) => item.label)
+const labels = computed(() => dateItems.value.map((item) => item.label))
+
+const latestSnap = computed(() => {
+  const initial = `${year}-01-01`
+  return summaryStore.summaries_amount_latest.reduce((acc, item) => {
+    if (!item.date_snap) return acc
+    return item.date_snap > acc ? item.date_snap : acc
+  }, initial)
+})
+
+const seriesFromValueUntil = (value: number, cutoff: string) =>
+  dateItems.value.map((item) => (item.label <= cutoff ? value : null))
 
 const seriesFromQuarterValues = (quarters: number[]) =>
-  dateItems.map((item) => {
+  dateItems.value.map((item) => {
     const quarterIndex = Math.floor((item.month - 1) / 3)
     return quarters[quarterIndex] ?? 0
   })
@@ -59,14 +70,9 @@ const rankSeries = [
 ]
 
 const summariesByRank = computed(() => {
-  const map = new Map<number, { q1: number; q2: number; q3: number; q4: number }>()
+  const map = new Map<number, number>()
   summaryStore.summaries_amount_latest.forEach((item) => {
-    map.set(item.rank, {
-      q1: item.quarter1_order,
-      q2: item.quarter2_order,
-      q3: item.quarter3_order,
-      q4: item.quarter4_order,
-    })
+    map.set(item.rank, item.all_order)
   })
   return map
 })
@@ -84,18 +90,13 @@ const quarterTargets = computed(() => {
 })
 
 const chartData = computed(() => ({
-  labels,
+  labels: labels.value,
   datasets: [
     ...rankSeries.map((series) => {
-      const quarters = summariesByRank.value.get(series.rank) ?? {
-        q1: 0,
-        q2: 0,
-        q3: 0,
-        q4: 0,
-      }
+      const total = summariesByRank.value.get(series.rank) ?? 0
       return {
         label: series.label,
-        data: seriesFromQuarterValues([quarters.q1, quarters.q2, quarters.q3, quarters.q4]),
+        data: seriesFromValueUntil(total, latestSnap.value),
         borderColor: series.color,
         backgroundColor: series.fill,
         tension: 0.2,
