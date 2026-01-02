@@ -6,6 +6,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
 import { useChartFilterStore } from '@/stores/ChartFilterStore'
+import { chartPalette } from '@/constants/chartPalette'
 import { TypeRank } from '@/types/Project'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -29,22 +30,19 @@ onMounted(async () => {
   await summaryStore.fetchSummariesCompanyLatest()
 })
 
-const palette = ['#2f6b7a', '#3a8f6b', '#7a6c2f', '#6b2f2f', '#4a4a4a', '#394b5a']
-
 const companyTotals = computed(() => {
-  const map = new Map<number, { name: string; value: number }>()
+  const map = new Map<number, { rid: number; name: string; value: number }>()
   summaryStore.summaries_company_latest
     .filter((item) => chartFilterStore.selectedRanks.includes(item.rank))
     .forEach((item) => {
       const rid = item.company?.rid ?? item.rid
       const name = item.company?.name ?? 'Unknown'
       const existing = map.get(rid)
-      const amount =
-        chartFilterStore.amountMode === 'expected' ? item.all_expected : item.all_order
+      const amount = chartFilterStore.amountMode === 'expected' ? item.all_expected : item.all_order
       if (existing) {
         existing.value += amount
       } else {
-        map.set(rid, { name, value: amount })
+        map.set(rid, { rid, name, value: amount })
       }
     })
   return Array.from(map.values())
@@ -55,7 +53,11 @@ const chartData = computed(() => ({
   datasets: [
     {
       data: companyTotals.value.map((item) => item.value),
-      backgroundColor: companyTotals.value.map((_, index) => palette[index % palette.length]),
+      backgroundColor: companyTotals.value.map((item) => {
+        const rid = item.rid ?? 0
+        const index = Math.abs(rid) % chartPalette.length
+        return chartPalette[index]
+      }),
       borderColor: 'rgba(0, 0, 0, 0.7)',
       borderWidth: 2,
     },
@@ -71,7 +73,7 @@ const currencyFormatter = new Intl.NumberFormat('ja-JP', {
 const chartOptions: ChartOptions<'doughnut'> = {
   responsive: true,
   maintainAspectRatio: false,
-  cutout: '80%',
+  cutout: '90%',
   animation: {
     duration: 900,
     easing: 'easeOutQuart',
@@ -139,9 +141,7 @@ watch(isRankMenuOpen, (isOpen) => {
           </v-list-item>
           <v-list-item>
             <div class="d-flex justify-end w-100">
-              <v-btn size="small" color="primary" variant="flat" @click="applyRanks">
-                Apply
-              </v-btn>
+              <v-btn size="small" color="primary" variant="flat" @click="applyRanks"> Apply </v-btn>
             </div>
           </v-list-item>
         </v-list>
