@@ -72,7 +72,7 @@ def get_summaries_company(
 
 
 @router.post("/summaries", response_model=None)
-def create_thread(
+def create_summaries(
     target: schema_summary.SummaryCreate,
     db: Session = Depends(get_db),
     _current_user=Depends(api_common.log_token_user),

@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
 from app.api.auth import router as router_auth
+from app.api.batch import router as router_batch
+from app.api.batch import scheduled_batch
 from app.api.company import router as router_company
 from app.api.project import router as router_project
 from app.api.summary import router as router_summary
@@ -9,7 +11,6 @@ from app.api.target import router as router_target
 from app.api.thread import router as router_thread
 from app.api.user import router as router_user
 from app.database import Base, engine
-from app.util.task import scheduled_tasks
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
@@ -39,7 +40,7 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
     )
     scheduler.add_job(
-        scheduled_tasks,
+        scheduled_batch,
         trigger,
         id="hourly_task_job",
         replace_existing=True,
@@ -67,10 +68,11 @@ app.add_middleware(
 
 # fmt: off
 app.include_router(router_auth,    prefix="/api")
+app.include_router(router_batch,   prefix="/api")
 app.include_router(router_company, prefix="/api")
 app.include_router(router_project, prefix="/api")
 app.include_router(router_summary, prefix="/api")
+app.include_router(router_target,  prefix="/api")
 app.include_router(router_thread,  prefix="/api")
 app.include_router(router_user,    prefix="/api")
-app.include_router(router_target,  prefix="/api")
 # fmt: on
