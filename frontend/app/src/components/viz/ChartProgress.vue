@@ -22,10 +22,7 @@ const targetStore = useTargetStore()
 const year = new Date().getFullYear()
 
 onMounted(async () => {
-  await Promise.all([
-    summaryStore.fetchSummariesAmountLatest(),
-    targetStore.fetchTargets(),
-  ])
+  await Promise.all([summaryStore.fetchSummariesAmount(year), targetStore.fetchTargets()])
 })
 
 const pad2 = (value: number) => String(value).padStart(2, '0')
@@ -44,17 +41,6 @@ const dateItems = computed(() => {
 
 const labels = computed(() => dateItems.value.map((item) => item.label))
 
-const latestSnap = computed(() => {
-  const initial = `${year}-01-01`
-  return summaryStore.summaries_amount_latest.reduce((acc, item) => {
-    if (!item.date_snap) return acc
-    return item.date_snap > acc ? item.date_snap : acc
-  }, initial)
-})
-
-const seriesFromValueUntil = (value: number, cutoff: string) =>
-  dateItems.value.map((item) => (item.label <= cutoff ? value : null))
-
 const seriesFromQuarterValues = (quarters: number[]) =>
   dateItems.value.map((item) => {
     const quarterIndex = Math.floor((item.month - 1) / 3)
@@ -70,12 +56,26 @@ const rankSeries = [
 ]
 
 const summariesByRank = computed(() => {
-  const map = new Map<number, number>()
-  summaryStore.summaries_amount_latest.forEach((item) => {
-    map.set(item.rank, item.all_order)
+  const map = new Map<number, Map<string, number>>()
+  summaryStore.summaries_amount_year.forEach((item) => {
+    const rankMap = map.get(item.rank) ?? new Map<string, number>()
+    rankMap.set(item.date_snap, item.all_order)
+    map.set(item.rank, rankMap)
   })
   return map
 })
+
+const seriesFromSnapshots = (rank: number) => {
+  const rankMap = summariesByRank.value.get(rank)
+  let lastValue = 0
+  return dateItems.value.map((item) => {
+    const value = rankMap?.get(item.label)
+    if (typeof value === 'number') {
+      lastValue = value
+    }
+    return lastValue
+  })
+}
 
 const currentTarget = computed(
   () => targetStore.targets.find((target) => target.year === year) ?? null,
@@ -93,10 +93,9 @@ const chartData = computed(() => ({
   labels: labels.value,
   datasets: [
     ...rankSeries.map((series) => {
-      const total = summariesByRank.value.get(series.rank) ?? 0
       return {
         label: series.label,
-        data: seriesFromValueUntil(total, latestSnap.value),
+        data: seriesFromSnapshots(series.rank),
         borderColor: series.color,
         backgroundColor: series.fill,
         tension: 0.2,
