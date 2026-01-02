@@ -10,11 +10,11 @@ const props = defineProps<{
   <v-chip size="small" color="#dfaaaa" :value="TypePost.NONE" v-if="props.post == TypePost.NONE">
     ADMIN
   </v-chip>
-  <v-chip size="small" color="#b0e0e6" :value="TypePost.K" v-if="props.post == TypePost.K">
-    K
+  <v-chip size="small" color="#b0e0e6" :value="TypePost.MNG" v-if="props.post == TypePost.MNG">
+    MNG
   </v-chip>
-  <v-chip size="small" color="#b0e0e6" :value="TypePost.C" v-if="props.post == TypePost.C">
-    C
+  <v-chip size="small" color="#b0e0e6" :value="TypePost.AM" v-if="props.post == TypePost.AM">
+    AM
   </v-chip>
   <v-chip size="small" color="#b0e0e6" :value="TypePost.L" v-if="props.post == TypePost.L">
     L

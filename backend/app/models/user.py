@@ -9,8 +9,8 @@ from sqlalchemy.orm import relationship
 # fmt: off
 class TypePost(IntEnum):
     NONE    = 0
-    K       = 1
-    C       = 2
+    MNG     = 1
+    AM      = 2
     L       = 3
     T       = 4
     BP      = 5

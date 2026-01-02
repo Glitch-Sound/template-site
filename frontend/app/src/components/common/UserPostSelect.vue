@@ -9,7 +9,7 @@ const props = defineProps<{
   modelValue?: number
 }>()
 
-const selected_post = ref(props.modelValue ?? TypeContract.K)
+const selected_post = ref(props.modelValue ?? TypePost.MNG)
 
 const emit = defineEmits<EmitType<'itemSelected', number>>()
 const emitSelected = () => {
@@ -20,8 +20,8 @@ const emitSelected = () => {
 <template>
   <div class="d-flex justify-center">
     <v-chip-group v-model="selected_post" @update:modelValue="emitSelected">
-      <UserPostLabel :post="TypePost.K" />
-      <UserPostLabel :post="TypePost.C" />
+      <UserPostLabel :post="TypePost.MNG" />
+      <UserPostLabel :post="TypePost.AM" />
       <UserPostLabel :post="TypePost.L" />
       <UserPostLabel :post="TypePost.T" />
       <UserPostLabel :post="TypePost.BP" />
