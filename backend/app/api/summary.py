@@ -92,8 +92,11 @@ def scheduled_summaries() -> None:
     db: Session = SessionLocal()
     try:
         today_str = datetime.now(JST).date().isoformat()
+        print("summary: " + today_str)
+
         target = schema_summary.SummaryCreate(date_snap=today_str)
         crud_summary.create_summaries(db, target)
+
     finally:
         db.close()
 

@@ -10,3 +10,4 @@ ruff
 ruff-lsp
 sqlalchemy
 uvicorn
+pandas

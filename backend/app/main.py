@@ -9,6 +9,7 @@ from app.api.target import router as router_target
 from app.api.thread import router as router_thread
 from app.api.user import router as router_user
 from app.database import Base, engine
+from app.util.task import scheduled_tasks
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
@@ -35,6 +36,12 @@ async def lifespan(app: FastAPI):
         scheduled_summaries,
         trigger,
         id="daily_summary_job",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        scheduled_tasks,
+        trigger,
+        id="hourly_task_job",
         replace_existing=True,
     )
     scheduler.start()
