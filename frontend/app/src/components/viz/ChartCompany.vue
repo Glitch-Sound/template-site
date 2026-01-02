@@ -5,40 +5,34 @@ import type { ChartOptions, TooltipItem } from 'chart.js'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
+import { TypeRank } from '@/types/Project'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
-const currentYear = new Date().getFullYear()
 
 onMounted(async () => {
   await targetStore.fetchTargets()
-  const year =
-    targetStore.targets.find((target) => target.year === currentYear)?.year ?? currentYear
-  await summaryStore.fetchSummariesCompany(year)
+  await summaryStore.fetchSummariesCompanyLatest()
 })
 
 const palette = ['#2f6b7a', '#3a8f6b', '#7a6c2f', '#6b2f2f', '#4a4a4a', '#394b5a']
 
 const companyTotals = computed(() => {
-  const latestDate = summaryStore.summaries_company_year.reduce((acc, item) => {
-    if (!acc) return item.date_snap
-    return item.date_snap > acc ? item.date_snap : acc
-  }, '')
-
   const map = new Map<number, { name: string; value: number }>()
-  summaryStore.summaries_company_year.forEach((item) => {
-    if (latestDate && item.date_snap !== latestDate) return
-    const rid = item.company?.rid ?? item.rid
-    const name = item.company?.name ?? 'Unknown'
-    const existing = map.get(rid)
-    if (existing) {
-      existing.value += item.all_order
-    } else {
-      map.set(rid, { name, value: item.all_order })
-    }
-  })
+  summaryStore.summaries_company_latest
+    .filter((item) => item.rank === TypeRank.A)
+    .forEach((item) => {
+      const rid = item.company?.rid ?? item.rid
+      const name = item.company?.name ?? 'Unknown'
+      const existing = map.get(rid)
+      if (existing) {
+        existing.value += item.all_order
+      } else {
+        map.set(rid, { name, value: item.all_order })
+      }
+    })
   return Array.from(map.values())
 })
 

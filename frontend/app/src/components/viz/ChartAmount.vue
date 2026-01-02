@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
+import { TypeRank } from '@/types/Project'
 
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
@@ -30,12 +31,14 @@ const targetTotals = computed(() => {
 
 const achievedTotals = computed(() => {
   const base = { total: 0, firstHalf: 0, secondHalf: 0 }
-  return summaryStore.summaries_amount_latest.reduce((acc, item) => {
-    acc.total += item.all_order
-    acc.firstHalf += item.half_first_order
-    acc.secondHalf += item.half_second_order
-    return acc
-  }, base)
+  return summaryStore.summaries_amount_latest
+    .filter((item) => item.rank === TypeRank.A)
+    .reduce((acc, item) => {
+      acc.total += item.all_order
+      acc.firstHalf += item.half_first_order
+      acc.secondHalf += item.half_second_order
+      return acc
+    }, base)
 })
 
 const amount = computed(() => ({

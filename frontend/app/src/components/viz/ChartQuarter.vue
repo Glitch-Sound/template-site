@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
+import { TypeRank } from '@/types/Project'
 
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
@@ -27,13 +28,15 @@ const targetByQuarter = computed(() => ({
 
 const achievedByQuarter = computed(() => {
   const base = { q1: 0, q2: 0, q3: 0, q4: 0 }
-  return summaryStore.summaries_amount_latest.reduce((acc, item) => {
-    acc.q1 += item.quarter1_order
-    acc.q2 += item.quarter2_order
-    acc.q3 += item.quarter3_order
-    acc.q4 += item.quarter4_order
-    return acc
-  }, base)
+  return summaryStore.summaries_amount_latest
+    .filter((item) => item.rank === TypeRank.A)
+    .reduce((acc, item) => {
+      acc.q1 += item.quarter1_order
+      acc.q2 += item.quarter2_order
+      acc.q3 += item.quarter3_order
+      acc.q4 += item.quarter4_order
+      return acc
+    }, base)
 })
 
 const quarters = computed(() => [
