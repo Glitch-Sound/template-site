@@ -10,6 +10,7 @@ const currentYear = new Date().getFullYear()
 const selectedRanks = ref<TypeRank[]>([TypeRank.A])
 const draftRanks = ref<TypeRank[]>([TypeRank.A])
 const isRankMenuOpen = ref(false)
+const amountMode = ref<'order' | 'expected'>('order')
 
 const rankOptions = [
   { value: TypeRank.A, label: 'Rank A' },
@@ -42,9 +43,15 @@ const achievedTotals = computed(() => {
   return summaryStore.summaries_amount_latest
     .filter((item) => selectedRanks.value.includes(item.rank))
     .reduce((acc, item) => {
-      acc.total += item.all_order
-      acc.firstHalf += item.half_first_order
-      acc.secondHalf += item.half_second_order
+      if (amountMode.value === 'expected') {
+        acc.total += item.all_expected
+        acc.firstHalf += item.half_first_expected
+        acc.secondHalf += item.half_second_expected
+      } else {
+        acc.total += item.all_order
+        acc.firstHalf += item.half_first_order
+        acc.secondHalf += item.half_second_order
+      }
       return acc
     }, base)
 })
@@ -94,11 +101,11 @@ const applyRanks = () => {
 
 <template>
   <v-card class="amount-card" rounded="xl" variant="tonal">
-  <v-card-title class="text-h6 font-weight-medium">
-    Amount
-    <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
-      <template #activator="{ props }">
-        <v-btn
+    <v-card-title class="text-h6 font-weight-medium">
+      Amount
+      <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
+        <template #activator="{ props }">
+          <v-btn
           v-bind="props"
           icon="mdi-filter-variant"
           variant="text"
@@ -124,9 +131,13 @@ const applyRanks = () => {
             </v-btn>
           </div>
         </v-list-item>
-      </v-list>
-    </v-menu>
-  </v-card-title>
+        </v-list>
+      </v-menu>
+      <v-btn-toggle v-model="amountMode" mandatory density="compact" class="ml-4">
+        <v-btn value="order">ORDER</v-btn>
+        <v-btn value="expected">EXPECTED</v-btn>
+      </v-btn-toggle>
+    </v-card-title>
 
     <v-card-text class="pa-6">
       <div class="top-row">
