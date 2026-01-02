@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { Line } from 'vue-chartjs'
 import type { ChartOptions, TooltipItem } from 'chart.js'
 import {
@@ -13,6 +13,7 @@ import {
 } from 'chart.js'
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
+import { useChartFilterStore } from '@/stores/ChartFilterStore'
 import { TypeRank } from '@/types/Project'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
@@ -20,7 +21,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip,
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
 const year = new Date().getFullYear()
-const amountMode = ref<'order' | 'expected'>('order')
+const chartFilterStore = useChartFilterStore()
 
 onMounted(async () => {
   await Promise.all([summaryStore.fetchSummariesAmount(year), targetStore.fetchTargets()])
@@ -60,7 +61,8 @@ const summariesByRank = computed(() => {
   const map = new Map<number, Map<string, number>>()
   summaryStore.summaries_amount_year.forEach((item) => {
     const rankMap = map.get(item.rank) ?? new Map<string, number>()
-    const amount = amountMode.value === 'expected' ? item.all_expected : item.all_order
+    const amount =
+      chartFilterStore.amountMode === 'expected' ? item.all_expected : item.all_order
     rankMap.set(item.date_snap, amount)
     map.set(item.rank, rankMap)
   })
@@ -182,7 +184,7 @@ const chartOptions: ChartOptions<'line'> = {
   <v-card class="progress-card" rounded="xl" variant="tonal">
     <v-card-title class="text-h6 font-weight-medium">
       Progress
-      <v-btn-toggle v-model="amountMode" mandatory density="compact" class="ml-4">
+      <v-btn-toggle v-model="chartFilterStore.amountMode" mandatory density="compact" class="ml-4">
         <v-btn value="order">ORDER</v-btn>
         <v-btn value="expected">EXPECTED</v-btn>
       </v-btn-toggle>

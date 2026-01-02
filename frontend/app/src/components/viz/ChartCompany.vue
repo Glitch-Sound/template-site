@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Doughnut } from 'vue-chartjs'
 import type { ChartOptions, TooltipItem } from 'chart.js'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
+import { useChartFilterStore } from '@/stores/ChartFilterStore'
 import { TypeRank } from '@/types/Project'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
-const selectedRanks = ref<TypeRank[]>([TypeRank.A])
-const draftRanks = ref<TypeRank[]>([TypeRank.A])
+const chartFilterStore = useChartFilterStore()
+const draftRanks = ref<TypeRank[]>([...chartFilterStore.selectedRanks])
 const isRankMenuOpen = ref(false)
-const amountMode = ref<'order' | 'expected'>('order')
 
 const rankOptions = [
   { value: TypeRank.A, label: 'Rank A' },
@@ -34,12 +34,13 @@ const palette = ['#2f6b7a', '#3a8f6b', '#7a6c2f', '#6b2f2f', '#4a4a4a', '#394b5a
 const companyTotals = computed(() => {
   const map = new Map<number, { name: string; value: number }>()
   summaryStore.summaries_company_latest
-    .filter((item) => selectedRanks.value.includes(item.rank))
+    .filter((item) => chartFilterStore.selectedRanks.includes(item.rank))
     .forEach((item) => {
       const rid = item.company?.rid ?? item.rid
       const name = item.company?.name ?? 'Unknown'
       const existing = map.get(rid)
-      const amount = amountMode.value === 'expected' ? item.all_expected : item.all_order
+      const amount =
+        chartFilterStore.amountMode === 'expected' ? item.all_expected : item.all_order
       if (existing) {
         existing.value += amount
       } else {
@@ -100,9 +101,15 @@ const chartOptions: ChartOptions<'doughnut'> = {
 }
 
 const applyRanks = () => {
-  selectedRanks.value = [...draftRanks.value]
+  chartFilterStore.selectedRanks = [...draftRanks.value]
   isRankMenuOpen.value = false
 }
+
+watch(isRankMenuOpen, (isOpen) => {
+  if (isOpen) {
+    draftRanks.value = [...chartFilterStore.selectedRanks]
+  }
+})
 </script>
 
 <template>
@@ -139,7 +146,7 @@ const applyRanks = () => {
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-btn-toggle v-model="amountMode" mandatory density="compact" class="ml-4">
+      <v-btn-toggle v-model="chartFilterStore.amountMode" mandatory density="compact" class="ml-4">
         <v-btn value="order">ORDER</v-btn>
         <v-btn value="expected">EXPECTED</v-btn>
       </v-btn-toggle>

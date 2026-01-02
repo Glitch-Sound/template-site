@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
+import { useChartFilterStore } from '@/stores/ChartFilterStore'
 import { TypeRank } from '@/types/Project'
 
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
 const currentYear = new Date().getFullYear()
-const selectedRanks = ref<TypeRank[]>([TypeRank.A])
-const draftRanks = ref<TypeRank[]>([TypeRank.A])
+const chartFilterStore = useChartFilterStore()
+const draftRanks = ref<TypeRank[]>([...chartFilterStore.selectedRanks])
 const isRankMenuOpen = ref(false)
-const amountMode = ref<'order' | 'expected'>('order')
 
 const rankOptions = [
   { value: TypeRank.A, label: 'Rank A' },
@@ -41,9 +41,9 @@ const targetByQuarter = computed(() => ({
 const achievedByQuarter = computed(() => {
   const base = { q1: 0, q2: 0, q3: 0, q4: 0 }
   return summaryStore.summaries_amount_latest
-    .filter((item) => selectedRanks.value.includes(item.rank))
+    .filter((item) => chartFilterStore.selectedRanks.includes(item.rank))
     .reduce((acc, item) => {
-      if (amountMode.value === 'expected') {
+      if (chartFilterStore.amountMode === 'expected') {
         acc.q1 += item.quarter1_expected
         acc.q2 += item.quarter2_expected
         acc.q3 += item.quarter3_expected
@@ -84,9 +84,15 @@ const diffClass = (diff: number) =>
   diff >= 0 ? 'amount-diff amount-diff--positive' : 'amount-diff amount-diff--negative'
 
 const applyRanks = () => {
-  selectedRanks.value = [...draftRanks.value]
+  chartFilterStore.selectedRanks = [...draftRanks.value]
   isRankMenuOpen.value = false
 }
+
+watch(isRankMenuOpen, (isOpen) => {
+  if (isOpen) {
+    draftRanks.value = [...chartFilterStore.selectedRanks]
+  }
+})
 </script>
 
 <template>
@@ -123,7 +129,7 @@ const applyRanks = () => {
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-btn-toggle v-model="amountMode" mandatory density="compact" class="ml-4">
+      <v-btn-toggle v-model="chartFilterStore.amountMode" mandatory density="compact" class="ml-4">
         <v-btn value="order">ORDER</v-btn>
         <v-btn value="expected">EXPECTED</v-btn>
       </v-btn-toggle>
