@@ -3,7 +3,7 @@ import { TypeRank } from '@/types/Project'
 export const chartPalette = [
   '#ffffff',
   '#00948B',
-  '#90f1ef',
+  '#72a1ac',
   '#9f9f9f',
   '#ffd93d',
   '#9b5de5',
