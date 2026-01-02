@@ -6,6 +6,7 @@ services:
     working_dir: /app
     volumes:
       - ./backend:/app
+      - ./imports:/app/imports
     ports:
       - "8000:8000"
 
