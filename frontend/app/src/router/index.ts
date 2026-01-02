@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/AuthStore'
 import MainView from '@/views/main/MainView.vue'
 import ProjectView from '@/views/project/ProjectView.vue'
 import VizMainView from '@/views/viz/VizMainView.vue'
+import VizReportView from '@/views/viz/VizReportView.vue'
 import SettingMainView from '@/views/setting/SettingMainView.vue'
 import SettingUserView from '@/views/setting/SettingUserView.vue'
 import SettingCompanyView from '@/views/setting/SettingCompanyView.vue'
@@ -29,6 +30,10 @@ const router = createRouter({
         {
           path: 'main',
           component: VizMainView,
+        },
+        {
+          path: 'report',
+          component: VizReportView,
         },
       ],
       meta: { requiresAuth: true },

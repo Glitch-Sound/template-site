@@ -125,8 +125,6 @@ const handleDelete = async (data: ThreadUpdate) => {
       </v-card-title>
 
       <v-card-text class="flex-grow-1 overflow-y-auto">
-        <v-progress-linear v-if="is_loading" indeterminate class="mb-2" />
-
         <div v-if="!is_loading && (!threads || threads.length === 0)" class="text-medium-emphasis">
           No Thread.
         </div>
