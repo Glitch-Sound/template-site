@@ -10,7 +10,6 @@
       xxx<br />
       xxx<br />
       xxx<br />
-      xxx<br />
     </v-card-text>
   </v-card>
 </template>
@@ -19,7 +18,7 @@
 @import '@/assets/main.css';
 
 .bottom-card {
-  width: min(1750px, 100%);
+  width: min(1800px, 100%);
   height: 650px;
   display: flex;
   flex-direction: column;
