@@ -1,22 +1,67 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useSummaryStore } from '@/stores/SummaryStore'
+import { useTargetStore } from '@/stores/TargetStore'
 
-const amount = {
+const summaryStore = useSummaryStore()
+const targetStore = useTargetStore()
+const currentYear = new Date().getFullYear()
+
+onMounted(async () => {
+  await Promise.all([
+    summaryStore.fetchSummariesAmountLatest(),
+    targetStore.fetchTargets(),
+  ])
+})
+
+const currentTarget = computed(
+  () => targetStore.targets.find((target) => target.year === currentYear) ?? null,
+)
+
+const targetTotals = computed(() => {
+  if (!currentTarget.value) return { total: 0, firstHalf: 0, secondHalf: 0 }
+  const { quarter1, quarter2, quarter3, quarter4 } = currentTarget.value
+  return {
+    total: quarter1 + quarter2 + quarter3 + quarter4,
+    firstHalf: quarter1 + quarter2,
+    secondHalf: quarter3 + quarter4,
+  }
+})
+
+const achievedTotals = computed(() => {
+  const base = { total: 0, firstHalf: 0, secondHalf: 0 }
+  return summaryStore.summaries_amount_latest.reduce((acc, item) => {
+    acc.total += item.all_order
+    acc.firstHalf += item.half_first_order
+    acc.secondHalf += item.half_second_order
+    return acc
+  }, base)
+})
+
+const amount = computed(() => ({
   total: {
-    achieved: 8750000,
-    target: 12000000,
+    achieved: achievedTotals.value.total,
+    target: targetTotals.value.total,
   },
   halves: [
-    { title: 'First half', achieved: 4700000, target: 6000000 },
-    { title: 'Second half', achieved: 4050000, target: 6000000 },
+    {
+      title: 'First half',
+      achieved: achievedTotals.value.firstHalf,
+      target: targetTotals.value.firstHalf,
+    },
+    {
+      title: 'Second half',
+      achieved: achievedTotals.value.secondHalf,
+      target: targetTotals.value.secondHalf,
+    },
   ],
-}
+}))
 
 const totalProgress = computed(() => {
-  if (!amount.total.target) return 0
+  if (!amount.value.total.target) return 0
   return Math.min(
     100,
-    Math.round((amount.total.achieved / amount.total.target) * 100),
+    Math.round((amount.value.total.achieved / amount.value.total.target) * 100),
   )
 })
 
