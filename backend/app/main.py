@@ -30,7 +30,7 @@ scheduler = BackgroundScheduler(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    trigger = CronTrigger(hour=0, minute=0, second=0, timezone=JST)
+    trigger = CronTrigger(minute=0, second=0, timezone=JST)
     scheduler.add_job(
         scheduled_summaries,
         trigger,
