@@ -14,6 +14,7 @@ import {
 import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
 import { useChartFilterStore } from '@/stores/ChartFilterStore'
+import { rankPalette } from '@/constants/chartPalette'
 import { TypeRank } from '@/types/Project'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
@@ -49,12 +50,46 @@ const seriesFromQuarterValues = (quarters: number[]) =>
     return quarters[quarterIndex] ?? 0
   })
 
+const toRgba = (hex: string, alpha: number) => {
+  const normalized = hex.replace('#', '').trim()
+  if (normalized.length !== 6) return `rgba(0, 0, 0, ${alpha})`
+  const r = parseInt(normalized.slice(0, 2), 16)
+  const g = parseInt(normalized.slice(2, 4), 16)
+  const b = parseInt(normalized.slice(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 const rankSeries = [
-  { rank: TypeRank.A, label: 'Rank A', color: '#5fa7c8', fill: 'rgba(95, 167, 200, 0.15)' },
-  { rank: TypeRank.B, label: 'Rank B', color: '#6bb48e', fill: 'rgba(107, 180, 142, 0.15)' },
-  { rank: TypeRank.C, label: 'Rank C', color: '#b3a45a', fill: 'rgba(179, 164, 90, 0.15)' },
-  { rank: TypeRank.D, label: 'Rank D', color: '#a06b6b', fill: 'rgba(160, 107, 107, 0.15)' },
-  { rank: TypeRank.E, label: 'Rank E', color: '#8a8a8a', fill: 'rgba(138, 138, 138, 0.15)' },
+  {
+    rank: TypeRank.A,
+    label: 'Rank A',
+    color: rankPalette[TypeRank.A],
+    fill: toRgba(rankPalette[TypeRank.A], 0.15),
+  },
+  {
+    rank: TypeRank.B,
+    label: 'Rank B',
+    color: rankPalette[TypeRank.B],
+    fill: toRgba(rankPalette[TypeRank.B], 0.15),
+  },
+  {
+    rank: TypeRank.C,
+    label: 'Rank C',
+    color: rankPalette[TypeRank.C],
+    fill: toRgba(rankPalette[TypeRank.C], 0.15),
+  },
+  {
+    rank: TypeRank.D,
+    label: 'Rank D',
+    color: rankPalette[TypeRank.D],
+    fill: toRgba(rankPalette[TypeRank.D], 0.15),
+  },
+  {
+    rank: TypeRank.E,
+    label: 'Rank E',
+    color: rankPalette[TypeRank.E],
+    fill: toRgba(rankPalette[TypeRank.E], 0.15),
+  },
 ]
 
 const summariesByRank = computed(() => {
