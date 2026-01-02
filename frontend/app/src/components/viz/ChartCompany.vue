@@ -14,6 +14,7 @@ const targetStore = useTargetStore()
 const selectedRanks = ref<TypeRank[]>([TypeRank.A])
 const draftRanks = ref<TypeRank[]>([TypeRank.A])
 const isRankMenuOpen = ref(false)
+const amountMode = ref<'order' | 'expected'>('order')
 
 const rankOptions = [
   { value: TypeRank.A, label: 'Rank A' },
@@ -38,10 +39,11 @@ const companyTotals = computed(() => {
       const rid = item.company?.rid ?? item.rid
       const name = item.company?.name ?? 'Unknown'
       const existing = map.get(rid)
+      const amount = amountMode.value === 'expected' ? item.all_expected : item.all_order
       if (existing) {
-        existing.value += item.all_order
+        existing.value += amount
       } else {
-        map.set(rid, { name, value: item.all_order })
+        map.set(rid, { name, value: amount })
       }
     })
   return Array.from(map.values())
@@ -137,6 +139,10 @@ const applyRanks = () => {
           </v-list-item>
         </v-list>
       </v-menu>
+      <v-btn-toggle v-model="amountMode" mandatory density="compact" class="ml-4">
+        <v-btn value="order">ORDER</v-btn>
+        <v-btn value="expected">EXPECTED</v-btn>
+      </v-btn-toggle>
     </v-card-title>
 
     <v-card-text class="pa-4">

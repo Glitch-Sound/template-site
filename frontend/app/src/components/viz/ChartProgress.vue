@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Line } from 'vue-chartjs'
 import type { ChartOptions, TooltipItem } from 'chart.js'
 import {
@@ -20,6 +20,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip,
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
 const year = new Date().getFullYear()
+const amountMode = ref<'order' | 'expected'>('order')
 
 onMounted(async () => {
   await Promise.all([summaryStore.fetchSummariesAmount(year), targetStore.fetchTargets()])
@@ -59,7 +60,8 @@ const summariesByRank = computed(() => {
   const map = new Map<number, Map<string, number>>()
   summaryStore.summaries_amount_year.forEach((item) => {
     const rankMap = map.get(item.rank) ?? new Map<string, number>()
-    rankMap.set(item.date_snap, item.all_order)
+    const amount = amountMode.value === 'expected' ? item.all_expected : item.all_order
+    rankMap.set(item.date_snap, amount)
     map.set(item.rank, rankMap)
   })
   return map
@@ -178,7 +180,13 @@ const chartOptions: ChartOptions<'line'> = {
 
 <template>
   <v-card class="progress-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-h6 font-weight-medium">Progress</v-card-title>
+    <v-card-title class="text-h6 font-weight-medium">
+      Progress
+      <v-btn-toggle v-model="amountMode" mandatory density="compact" class="ml-4">
+        <v-btn value="order">ORDER</v-btn>
+        <v-btn value="expected">EXPECTED</v-btn>
+      </v-btn-toggle>
+    </v-card-title>
 
     <v-card-text class="pa-6">
       <div class="chart-wrap">

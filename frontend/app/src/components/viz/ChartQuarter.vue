@@ -10,6 +10,7 @@ const currentYear = new Date().getFullYear()
 const selectedRanks = ref<TypeRank[]>([TypeRank.A])
 const draftRanks = ref<TypeRank[]>([TypeRank.A])
 const isRankMenuOpen = ref(false)
+const amountMode = ref<'order' | 'expected'>('order')
 
 const rankOptions = [
   { value: TypeRank.A, label: 'Rank A' },
@@ -42,10 +43,17 @@ const achievedByQuarter = computed(() => {
   return summaryStore.summaries_amount_latest
     .filter((item) => selectedRanks.value.includes(item.rank))
     .reduce((acc, item) => {
-      acc.q1 += item.quarter1_order
-      acc.q2 += item.quarter2_order
-      acc.q3 += item.quarter3_order
-      acc.q4 += item.quarter4_order
+      if (amountMode.value === 'expected') {
+        acc.q1 += item.quarter1_expected
+        acc.q2 += item.quarter2_expected
+        acc.q3 += item.quarter3_expected
+        acc.q4 += item.quarter4_expected
+      } else {
+        acc.q1 += item.quarter1_order
+        acc.q2 += item.quarter2_order
+        acc.q3 += item.quarter3_order
+        acc.q4 += item.quarter4_order
+      }
       return acc
     }, base)
 })
@@ -115,6 +123,10 @@ const applyRanks = () => {
           </v-list-item>
         </v-list>
       </v-menu>
+      <v-btn-toggle v-model="amountMode" mandatory density="compact" class="ml-4">
+        <v-btn value="order">ORDER</v-btn>
+        <v-btn value="expected">EXPECTED</v-btn>
+      </v-btn-toggle>
     </v-card-title>
 
     <v-card-text class="pa-6">
