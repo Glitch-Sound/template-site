@@ -3,6 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import type { User } from '@/types/User'
+import { TypePost } from '@/types/User'
 import { useUserStore } from '@/stores/UserStore'
 
 const props = defineProps<{
@@ -23,7 +24,9 @@ const selected_option = ref<number | null>(
   props.modelValue && props.modelValue !== 0 ? props.modelValue : null,
 )
 
-const filtered_users = computed(() => users.value.filter((user) => user.rid !== 1))
+const filtered_users = computed(() =>
+  users.value.filter((user) => user.post !== TypePost.NONE && user.post !== TypePost.GUEST),
+)
 
 onMounted(async () => {
   await fetchUsers()

@@ -25,6 +25,9 @@ const props = defineProps<{
   <v-chip size="small" color="#f4a261" :value="TypePost.BP" v-if="props.post == TypePost.BP">
     BP
   </v-chip>
+  <v-chip size="small" color="#6f6f6f" :value="TypePost.GUEST" v-if="props.post == TypePost.GUEST">
+    GUEST
+  </v-chip>
 </template>
 
 <style scoped>

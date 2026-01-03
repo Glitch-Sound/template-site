@@ -14,6 +14,7 @@ class TypePost(IntEnum):
     L       = 3
     T       = 4
     BP      = 5
+    GUEST   = 9
 
 
 class TypeContract(IntEnum):

@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 
 import { useProjectStore } from '@/stores/ProjectStore'
 import type { User } from '@/types/User'
+import { TypePost } from '@/types/User'
 
 const props = defineProps<{
   modelValue?: number[] | null
@@ -20,7 +21,9 @@ const { project_users } = storeToRefs(projectStore)
 
 const selected_option = ref<number[]>(props.modelValue ?? [])
 
-const filtered_users = computed(() => project_users.value.filter((user) => user.rid !== 1))
+const filtered_users = computed(() =>
+  project_users.value.filter((user) => user.post !== TypePost.NONE && user.post !== TypePost.GUEST),
+)
 
 watch(
   () => props.modelValue,

@@ -1,11 +1,12 @@
 // prettier-ignore
 export enum TypePost {
-  NONE = 0,
-  MNG  = 1,
-  AM   = 2,
-  L    = 3,
-  T    = 4,
-  BP   = 5,
+  NONE  = 0,
+  MNG   = 1,
+  AM    = 2,
+  L     = 3,
+  T     = 4,
+  BP    = 5,
+  GUEST = 9
 }
 
 // prettier-ignore

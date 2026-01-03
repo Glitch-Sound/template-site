@@ -25,6 +25,7 @@ const emitSelected = () => {
       <UserPostLabel :post="TypePost.L" />
       <UserPostLabel :post="TypePost.T" />
       <UserPostLabel :post="TypePost.BP" />
+      <UserPostLabel :post="TypePost.GUEST" />
     </v-chip-group>
   </div>
 </template>
