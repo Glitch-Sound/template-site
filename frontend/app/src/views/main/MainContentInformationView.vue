@@ -9,7 +9,7 @@ onMounted(async () => {
   await summaryStore.fetchSummariesDeadline()
 })
 
-const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0, 10))
+const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0, 6))
 </script>
 
 <template>
@@ -20,8 +20,7 @@ const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0,
       <div class="main-text">
         <div v-for="project in deadlineProjects" :key="project.rid" class="deadline-row">
           <span class="project-name">{{ project.name }}</span>
-          <UserLabel v-if="project.user_pl" :user="project.user_pl" />
-          <span v-else class="label-missing">PL未設定</span>
+          <UserLabel :user="project.user_pl" />
         </div>
       </div>
     </v-card-text>
@@ -52,13 +51,8 @@ const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0,
   justify-content: space-between;
 }
 
-.label-missing {
-  color: #9a9a9a;
-}
-
 .project-name {
   flex: 1;
   min-width: 0;
-  color: #c0c0c0;
 }
 </style>

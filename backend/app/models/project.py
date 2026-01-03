@@ -14,6 +14,7 @@ class TypeRank(IntEnum):
     C    = 3
     D    = 4
     E    = 5
+    X    = 9
 
 
 class TypeQuarter(IntEnum):

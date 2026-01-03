@@ -18,6 +18,7 @@ const rankOptions = [
   { value: TypeRank.C, label: 'Rank C' },
   { value: TypeRank.D, label: 'Rank D' },
   { value: TypeRank.E, label: 'Rank E' },
+  { value: TypeRank.X, label: 'Rank X' },
 ]
 
 onMounted(async () => {
@@ -112,31 +113,29 @@ watch(isRankMenuOpen, (isOpen) => {
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
         <template #activator="{ props }">
           <v-btn
-          v-bind="props"
-          icon="mdi-filter-variant"
-          variant="text"
-          density="comfortable"
-          class="ml-2"
-          aria-label="Rank filter"
-        />
-      </template>
-      <v-list min-width="220">
-        <v-list-item v-for="rank in rankOptions" :key="rank.value">
-          <v-checkbox
-            v-model="draftRanks"
-            :value="rank.value"
-            :label="rank.label"
-            density="compact"
-            hide-details
+            v-bind="props"
+            icon="mdi-filter-variant"
+            variant="text"
+            density="comfortable"
+            class="ml-2"
+            aria-label="Rank filter"
           />
-        </v-list-item>
-        <v-list-item>
-          <div class="d-flex justify-end w-100">
-            <v-btn size="small" color="primary" variant="flat" @click="applyRanks">
-              Apply
-            </v-btn>
-          </div>
-        </v-list-item>
+        </template>
+        <v-list min-width="220">
+          <v-list-item v-for="rank in rankOptions" :key="rank.value">
+            <v-checkbox
+              v-model="draftRanks"
+              :value="rank.value"
+              :label="rank.label"
+              density="compact"
+              hide-details
+            />
+          </v-list-item>
+          <v-list-item>
+            <div class="d-flex justify-end w-100">
+              <v-btn size="small" color="primary" variant="flat" @click="applyRanks"> Apply </v-btn>
+            </div>
+          </v-list-item>
         </v-list>
       </v-menu>
       <v-btn-toggle v-model="chartFilterStore.amountMode" mandatory density="compact" class="ml-4">

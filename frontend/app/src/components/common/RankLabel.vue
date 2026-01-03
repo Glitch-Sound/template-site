@@ -52,6 +52,15 @@ const props = defineProps<{
   >
     E
   </v-chip>
+
+  <v-chip
+    size="small"
+    :value="TypeRank.X"
+    :color="rankPalette[TypeRank.X]"
+    v-if="props.rank == TypeRank.X"
+  >
+    X
+  </v-chip>
 </template>
 
 <style scoped>

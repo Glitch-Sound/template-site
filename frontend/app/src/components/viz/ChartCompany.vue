@@ -23,6 +23,7 @@ const rankOptions = [
   { value: TypeRank.C, label: 'Rank C' },
   { value: TypeRank.D, label: 'Rank D' },
   { value: TypeRank.E, label: 'Rank E' },
+  { value: TypeRank.X, label: 'Rank X' },
 ]
 
 onMounted(async () => {

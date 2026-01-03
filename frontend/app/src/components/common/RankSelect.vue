@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 import { type EmitType } from '@/components/common/events'
 import { TypeRank } from '@/types/Project'
@@ -25,6 +25,7 @@ const emitSelected = () => {
       <RankLabel :rank="TypeRank.C" />
       <RankLabel :rank="TypeRank.D" />
       <RankLabel :rank="TypeRank.E" />
+      <RankLabel :rank="TypeRank.X" />
     </v-chip-group>
   </div>
 </template>

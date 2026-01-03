@@ -25,5 +25,6 @@ export const rankPalette: Record<TypeRank, string> = {
   [TypeRank.B]: '#4caf8a',
   [TypeRank.C]: '#b06fab',
   [TypeRank.D]: '#c3bf7f',
-  [TypeRank.E]: '#808080',
+  [TypeRank.E]: '#a0a0a0',
+  [TypeRank.X]: '#3f3f3f',
 }

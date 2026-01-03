@@ -90,14 +90,19 @@ const rankSeries = [
     color: rankPalette[TypeRank.E],
     fill: toRgba(rankPalette[TypeRank.E], 0.15),
   },
+  {
+    rank: TypeRank.X,
+    label: 'Rank X',
+    color: rankPalette[TypeRank.X],
+    fill: toRgba(rankPalette[TypeRank.X], 0.15),
+  },
 ]
 
 const summariesByRank = computed(() => {
   const map = new Map<number, Map<string, number>>()
   summaryStore.summaries_amount_year.forEach((item) => {
     const rankMap = map.get(item.rank) ?? new Map<string, number>()
-    const amount =
-      chartFilterStore.amountMode === 'expected' ? item.all_expected : item.all_order
+    const amount = chartFilterStore.amountMode === 'expected' ? item.all_expected : item.all_order
     rankMap.set(item.date_snap, amount)
     map.set(item.rank, rankMap)
   })

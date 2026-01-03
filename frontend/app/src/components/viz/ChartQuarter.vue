@@ -18,13 +18,11 @@ const rankOptions = [
   { value: TypeRank.C, label: 'Rank C' },
   { value: TypeRank.D, label: 'Rank D' },
   { value: TypeRank.E, label: 'Rank E' },
+  { value: TypeRank.X, label: 'Rank X' },
 ]
 
 onMounted(async () => {
-  await Promise.all([
-    summaryStore.fetchSummariesAmountLatest(),
-    targetStore.fetchTargets(),
-  ])
+  await Promise.all([summaryStore.fetchSummariesAmountLatest(), targetStore.fetchTargets()])
 })
 
 const currentTarget = computed(
@@ -122,9 +120,7 @@ watch(isRankMenuOpen, (isOpen) => {
           </v-list-item>
           <v-list-item>
             <div class="d-flex justify-end w-100">
-              <v-btn size="small" color="primary" variant="flat" @click="applyRanks">
-                Apply
-              </v-btn>
+              <v-btn size="small" color="primary" variant="flat" @click="applyRanks"> Apply </v-btn>
             </div>
           </v-list-item>
         </v-list>
