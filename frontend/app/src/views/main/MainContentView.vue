@@ -46,65 +46,12 @@ const { is_loading_deadline, is_loading_incomplete, is_loading_alert } = storeTo
       </v-row>
     </v-container>
     <div v-else class="ghost-container">
-      <v-icon icon="mdi-ghost" size="900" class="icon" />
+      <v-icon icon="mdi-ghost" size="900" class="ghost-icon" />
     </div>
   </v-main>
 </template>
 
 <style scoped>
 @import '@/assets/main.css';
-
-.cards-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 64px;
-  position: relative;
-  max-width: 1920px;
-  width: 100%;
-  height: 100%;
-}
-
-.top-row {
-  width: 100%;
-}
-
-.bottom-row {
-  width: 70%;
-  flex: 1;
-  align-items: stretch;
-}
-
-.card-col {
-  display: flex;
-  justify-content: center;
-}
-
-.card-item {
-  width: 100%;
-}
-
-.main-divider {
-  width: 90%;
-  border-color: #9f9f9f;
-  opacity: 0.3;
-}
-
-.ghost-container {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.main-root {
-  height: 100vh;
-  overflow: hidden;
-}
-
-.icon {
-  color: #3f3f3f;
-  opacity: 0.4;
-}
+@import '@/views/main/main.css';
 </style>
