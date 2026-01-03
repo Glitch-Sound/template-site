@@ -17,7 +17,7 @@ class Thread(schema_base.ORMBaseModel):
 class ThreadStatus(schema_base.ORMBaseModel):
     rid_projects: int
     count: int
-    is_updated: bool
+    is_important: bool
 
 
 class ThreadCreate(schema_base.ORMBaseModel):

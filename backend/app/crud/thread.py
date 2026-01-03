@@ -104,7 +104,7 @@ def get_threads_status(db: Session) -> List[schema_thread.ThreadStatus]:
             schema_thread.ThreadStatus(
                 rid_projects=rid_projects,
                 count=int(count_recent or 0),
-                is_updated=bool(has_important),
+                is_important=bool(has_important),
             )
         )
     return result

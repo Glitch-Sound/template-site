@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import type { Project, ProjectUpdate } from '@/types/Project'
 import { useProjectStore } from '@/stores/ProjectStore'
+import { useThreadStore } from '@/stores/ThreadStore'
 import QuarterLabel from '@/components/common/QuarterLabel.vue'
 import RankLabelLarge from '@/components/common/RankLabelLarge.vue'
 import ProjectDateLabel from '@/components/common/ProjectDateLabel.vue'
@@ -20,6 +22,14 @@ const props = defineProps<{
 
 const store_project = useProjectStore()
 const { updateProject, deleteProject } = store_project
+
+const store_thread = useThreadStore()
+const { threads_status } = storeToRefs(store_thread)
+
+const has_thread_update = computed(() => {
+  const status = threads_status.value.find((item) => item.rid_projects === props.project.rid)
+  return status?.is_important ?? false
+})
 
 const dialog_project_update = ref()
 const dialog_thread = ref()
@@ -93,7 +103,9 @@ const handleDelete = async (data: ProjectUpdate) => {
       </v-col>
 
       <v-col cols="auto" class="d-flex align-center justify-center ga-5">
-        <v-icon color="#c0c0c0" @click="openThreadDialog()"> mdi-message-bulleted </v-icon>
+        <v-icon :color="has_thread_update ? '#f5c542' : '#c0c0c0'" @click="openThreadDialog()">
+          mdi-message-bulleted
+        </v-icon>
         <v-icon color="#c0c0c0" @click="openUpdateProjectDialog()"> mdi-pencil </v-icon>
       </v-col>
     </v-row>

@@ -20,7 +20,7 @@ export interface Thread {
 export interface ThreadStatus {
   rid_projects: number
   count: number
-  is_updated: boolean
+  is_important: boolean
 }
 
 export interface ThreadCreate {

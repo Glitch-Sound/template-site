@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useDisplayDialog } from '@/components/dialog/BaseDialog'
@@ -12,7 +12,8 @@ import CreateThreadDialog from '@/components/dialog/CreateThreadDialog.vue'
 import UpdateThreadDialog from '@/components/dialog/UpdateThreadDialog.vue'
 
 const store_thread = useThreadStore()
-const { fetchThreadsByRID, createThread, updateThread, deleteThread } = store_thread
+const { fetchThreadsByRID, fetchThreadsStatus, createThread, updateThread, deleteThread } =
+  store_thread
 const { threads, is_loading } = storeToRefs(store_thread)
 
 const emit = defineEmits(['submit'])
@@ -24,6 +25,15 @@ const dialog_thread_create = ref()
 const dialog_thread_update = ref()
 
 const indent_depth = (d: number) => `${Math.max(0, d) * 22}px`
+
+watch(
+  () => dialog.value,
+  async (is_open, was_open) => {
+    if (was_open && !is_open) {
+      await fetchThreadsStatus()
+    }
+  },
+)
 
 defineExpose({
   async open(data: Project) {
