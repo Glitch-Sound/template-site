@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 
 import { TypeRank } from '@/types/Project'
 import type { User } from '@/types/User'
@@ -68,6 +68,16 @@ const handleUserPLSelected = (user: User | null) => {
 const handleRankSelected = (rank: number) => {
   form_data.value.rank = rank
 }
+
+watch(
+  () => form_data.value.amount_order,
+  (value) => {
+    const numberValue = Number(value)
+    if (!Number.isNaN(numberValue) && numberValue !== 0) {
+      form_data.value.amount_expected = value
+    }
+  },
+)
 </script>
 
 <template>
