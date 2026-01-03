@@ -13,7 +13,7 @@ const incompleteProjects = computed(() => summaryStore.summaries_incomplete.slic
 </script>
 
 <template>
-  <v-card class="top-card main-card" elevation="2">
+  <v-card class="top-card main-card status-amber" elevation="2">
     <v-card-text class="main-content">
       <span class="main-status">Incomplete</span>
       <v-icon class="main-icon" size="82"> mdi-alert-outline </v-icon>
@@ -30,34 +30,4 @@ const incompleteProjects = computed(() => summaryStore.summaries_incomplete.slic
 <style scoped>
 @import '@/assets/main.css';
 @import '@/views/main/main.css';
-
-.main-status {
-  color: #f9a825;
-}
-
-.main-icon {
-  color: #f9a825;
-}
-
-.main-text {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.deadline-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.project-name {
-  flex: 1;
-  min-width: 0;
-}
-
-.user-label {
-  min-width: 120px;
-  text-align: left;
-}
 </style>

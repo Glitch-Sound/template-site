@@ -18,14 +18,11 @@
   margin: 0;
   font-size: 14px;
   text-align: left;
-}
-
-.main-content {
   width: 100%;
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .main-status {
@@ -39,16 +36,54 @@
   margin-bottom: 15px;
 }
 
-.main-text {
-  margin: 0;
-  font-size: 14px;
-  text-align: left;
-  width: 100%;
-  padding: 0 10px;
-}
-
 .main-card {
   align-items: flex-start;
   justify-content: flex-start;
   padding: 16px;
+}
+
+.status-green .main-status,
+.status-green .main-icon {
+  color: #2e7d32;
+}
+
+.status-amber .main-status,
+.status-amber .main-icon {
+  color: #f9a825;
+}
+
+.status-red .main-status,
+.status-red .main-icon {
+  color: #c62828;
+}
+
+.deadline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.project-name {
+  flex: 1;
+  min-width: 0;
+  color: #c0c0c0;
+}
+
+.user-label {
+  min-width: 120px;
+  text-align: left;
+}
+
+.note-row {
+  width: 100%;
+  justify-content: center;
+}
+
+.note-col {
+  display: flex;
+  padding: 0 12px;
+}
+
+.note-col > .v-card {
+  width: 100%;
 }

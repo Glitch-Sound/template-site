@@ -13,7 +13,7 @@ const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0,
 </script>
 
 <template>
-  <v-card class="top-card main-card" elevation="2">
+  <v-card class="top-card main-card status-green" elevation="2">
     <v-card-text class="main-content">
       <span class="main-status">Deadline</span>
       <v-icon class="main-icon" size="82"> mdi-information-outline </v-icon>
@@ -30,34 +30,4 @@ const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0,
 <style scoped>
 @import '@/assets/main.css';
 @import '@/views/main/main.css';
-
-.main-status {
-  color: #2e7d32;
-}
-
-.main-icon {
-  color: #2e7d32;
-}
-
-.main-text {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.deadline-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.project-name {
-  flex: 1;
-  min-width: 0;
-}
-
-.user-label {
-  min-width: 120px;
-  text-align: left;
-}
 </style>

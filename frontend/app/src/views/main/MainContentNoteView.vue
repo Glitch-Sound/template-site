@@ -52,18 +52,5 @@
 
 <style scoped>
 @import '@/assets/main.css';
-
-.note-row {
-  width: 100%;
-  justify-content: center;
-}
-
-.note-col {
-  display: flex;
-  padding: 0 12px;
-}
-
-.note-col > .v-card {
-  width: 100%;
-}
+@import '@/views/main/main.css';
 </style>
