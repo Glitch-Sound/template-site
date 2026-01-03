@@ -31,6 +31,11 @@ const has_thread_update = computed(() => {
   return status?.is_important ?? false
 })
 
+const thread_status_count = computed(() => {
+  const status = threads_status.value.find((item) => item.rid_projects === props.project.rid)
+  return status?.count ?? 0
+})
+
 const dialog_project_update = ref()
 const dialog_thread = ref()
 const dialog_project_number = ref()
@@ -103,9 +108,18 @@ const handleDelete = async (data: ProjectUpdate) => {
       </v-col>
 
       <v-col cols="auto" class="d-flex align-center justify-center ga-5">
-        <v-icon :color="has_thread_update ? '#f5c542' : '#c0c0c0'" @click="openThreadDialog()">
-          mdi-message-bulleted
-        </v-icon>
+        <v-badge
+          :content="thread_status_count"
+          :model-value="thread_status_count > 0"
+          bordered
+          color="#C00000"
+          offset-x="-3"
+          offset-y="-3"
+        >
+          <v-icon :color="has_thread_update ? '#f5c542' : '#c0c0c0'" @click="openThreadDialog()">
+            mdi-message-bulleted
+          </v-icon>
+        </v-badge>
         <v-icon color="#c0c0c0" @click="openUpdateProjectDialog()"> mdi-pencil </v-icon>
       </v-col>
     </v-row>
