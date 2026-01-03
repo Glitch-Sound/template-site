@@ -12,11 +12,13 @@ const route = useRoute()
       <v-img gradient="to top, rgba(0, 0, 0, 0), rgba(29, 35, 46, 0.4), rgba(106, 113, 124, 0.7)" />
     </template>
 
-    <v-app-bar-title style="cursor: pointer">
-      <div class="d-flex align-center">
-        <v-icon color="primary">mdi-grain</v-icon>
-        <span class="ml-2"> muu </span>
-      </div>
+    <v-app-bar-title>
+      <router-link to="/" class="title-link">
+        <div class="d-flex align-center">
+          <v-icon color="primary">mdi-grain</v-icon>
+          <span class="ml-2"> muu </span>
+        </div>
+      </router-link>
     </v-app-bar-title>
 
     <v-btn
@@ -86,5 +88,13 @@ const route = useRoute()
   width: 200px;
   display: flex;
   justify-content: flex-end;
+}
+
+.title-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 </style>
