@@ -79,11 +79,11 @@ const route = useRoute()
 }
 
 .nav-home-btn {
-  margin-left: 155px;
+  margin-left: 240px;
 }
 
 .login-user-wrapper {
-  width: 120px;
+  width: 200px;
   display: flex;
   justify-content: center;
 }

@@ -21,7 +21,7 @@ const labelColor = computed(() => {
       {{ props.project_group.company.name }}
     </v-chip>
 
-    <span class="group font-weight-bold">
+    <span class="group font-weight-black">
       {{ props.project_group.name }}
     </span>
   </v-sheet>
@@ -33,5 +33,4 @@ const labelColor = computed(() => {
 .group {
   color: #c0c0c0;
 }
-
 </style>

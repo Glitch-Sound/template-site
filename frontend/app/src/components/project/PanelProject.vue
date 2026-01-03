@@ -80,7 +80,7 @@ const handleDelete = async (data: ProjectUpdate) => {
         </v-card>
 
         <v-card>
-          <span class="text-subtitle-1 font-weight-black">{{ props.project.name }}</span>
+          <span class="text-subtitle-1">{{ props.project.name }}</span>
         </v-card>
       </v-col>
 
