@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import type { User } from '@/types/User'
@@ -23,6 +23,8 @@ const selected_option = ref<number | null>(
   props.modelValue && props.modelValue !== 0 ? props.modelValue : null,
 )
 
+const filtered_users = computed(() => users.value.filter((user) => user.rid !== 1))
+
 onMounted(async () => {
   await fetchUsers()
 })
@@ -44,7 +46,7 @@ watch(selected_option, (v) => {
 <template>
   <v-select
     v-model="selected_option"
-    :items="users"
+    :items="filtered_users"
     :label="props.label ?? 'User'"
     item-title="name"
     item-value="rid"

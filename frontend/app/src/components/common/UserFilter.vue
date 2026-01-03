@@ -20,6 +20,8 @@ const { project_users } = storeToRefs(projectStore)
 
 const selected_option = ref<number[]>(props.modelValue ?? [])
 
+const filtered_users = computed(() => project_users.value.filter((user) => user.rid !== 1))
+
 watch(
   () => props.modelValue,
   (v) => {
@@ -34,15 +36,15 @@ watch(selected_option, (val) => {
 })
 
 const selectionText = computed(() => {
-  const total = project_users.value.length
+  const total = filtered_users.value.length
   const count = selected_option.value.length
   if (count === 0) return ''
   if (total > 0 && count === total) return 'ALL'
   if (count === 1) {
-    const u = project_users.value.find((u) => u.rid === selected_option.value[0])
+    const u = filtered_users.value.find((u) => u.rid === selected_option.value[0])
     return u?.name ?? '1件'
   }
-  const firstUser = project_users.value.find((u) => u.rid === selected_option.value[0])
+  const firstUser = filtered_users.value.find((u) => u.rid === selected_option.value[0])
   return `${firstUser?.name ?? ''} + ${count - 1}`
 })
 </script>
@@ -51,7 +53,7 @@ const selectionText = computed(() => {
   <v-select
     clearable
     multiple
-    :items="project_users"
+    :items="filtered_users"
     v-model="selected_option"
     :label="props.label ?? 'User'"
     item-title="name"
