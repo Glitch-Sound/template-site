@@ -20,7 +20,7 @@ const alertProjects = computed(() => summaryStore.summaries_alert.slice(0, 12))
       <div class="main-text">
         <div v-for="project in alertProjects" :key="project.rid" class="deadline-row">
           <span class="project-name">{{ project.name }}</span>
-          <UserLabel :user="project.user_pl" />
+          <UserLabel :user="project.user_pl" class="user-label" />
         </div>
       </div>
     </v-card-text>
@@ -54,5 +54,10 @@ const alertProjects = computed(() => summaryStore.summaries_alert.slice(0, 12))
 .project-name {
   flex: 1;
   min-width: 0;
+}
+
+.user-label {
+  min-width: 120px;
+  text-align: left;
 }
 </style>
