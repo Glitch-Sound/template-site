@@ -85,6 +85,6 @@ const route = useRoute()
 .login-user-wrapper {
   width: 200px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
 }
 </style>
