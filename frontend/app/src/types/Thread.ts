@@ -17,6 +17,12 @@ export interface Thread {
   created_at: string
 }
 
+export interface ThreadStatus {
+  rid_projects: number
+  count: number
+  is_updated: boolean
+}
+
 export interface ThreadCreate {
   rid_projects: number
   rid_parent: number | null

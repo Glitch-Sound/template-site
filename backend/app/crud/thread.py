@@ -4,7 +4,7 @@ from typing import List
 from app.models import thread as model_thread
 from app.schemas import thread as schema_thread
 from app.schemas import user as schema_user
-from sqlalchemy import and_, func, literal, or_, select
+from sqlalchemy import and_, case, func, literal, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -74,6 +74,39 @@ def get_threads_by_rid(db: Session, rid_projects: int) -> List[schema_thread.Thr
     for obj, depth in rows:
         setattr(obj, "depth", int(depth))
         result.append(obj)
+    return result
+
+
+def get_threads_status(db: Session) -> List[schema_thread.ThreadStatus]:
+    t = model_thread.Thread.__table__
+
+    cutoff = datetime.utcnow() - timedelta(days=4)
+    is_recent = or_(t.c.created_at >= cutoff, t.c.updated_at >= cutoff)
+    is_important = t.c.state == model_thread.TypeThreadState.IMPORTANT
+
+    rows = (
+        db.query(
+            t.c.rid_projects,
+            func.sum(case((is_recent, 1), else_=0)).label("count_recent"),
+            func.max(case((is_important, 1), else_=0)).label("has_important"),
+        )
+        .filter(
+            t.c.is_deleted == 0,
+            or_(is_recent, is_important),
+        )
+        .group_by(t.c.rid_projects)
+        .all()
+    )
+
+    result: List[schema_thread.ThreadStatus] = []
+    for rid_projects, count_recent, has_important in rows:
+        result.append(
+            schema_thread.ThreadStatus(
+                rid_projects=rid_projects,
+                count=int(count_recent or 0),
+                is_updated=bool(has_important),
+            )
+        )
     return result
 
 

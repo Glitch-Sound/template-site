@@ -1,14 +1,17 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import type { Thread, ThreadCreate, ThreadUpdate } from '@/types/Thread'
+import type { Thread, ThreadStatus, ThreadCreate, ThreadUpdate } from '@/types/Thread'
 import service_thread from '@/services/ThreadService'
 
 export const useThreadStore = defineStore('thread', () => {
   const threads = ref<Thread[]>([])
+  const threads_status = ref<ThreadStatus[]>([])
   const is_loading = ref(false)
+  const is_loading_status = ref(false)
 
   let inflight: Promise<void> | null = null
+  let inflight_status: Promise<void> | null = null
 
   // actions.
   async function fetchThreadsByRID(rid: number): Promise<void> {
@@ -23,6 +26,20 @@ export const useThreadStore = defineStore('thread', () => {
       }
     })()
     return inflight
+  }
+
+  async function fetchThreadsStatus(): Promise<void> {
+    if (inflight_status) return inflight_status
+    is_loading_status.value = true
+    inflight_status = (async () => {
+      try {
+        threads_status.value = await service_thread.fetchThreadsStatus()
+      } finally {
+        is_loading_status.value = false
+        inflight_status = null
+      }
+    })()
+    return inflight_status
   }
 
   async function createThread(payload: ThreadCreate): Promise<Thread> {
@@ -44,15 +61,19 @@ export const useThreadStore = defineStore('thread', () => {
 
   function reset(): void {
     threads.value = []
+    threads_status.value = []
   }
 
   return {
     // state
     threads,
+    threads_status,
     is_loading,
+    is_loading_status,
 
     // actions
     fetchThreadsByRID,
+    fetchThreadsStatus,
     createThread,
     updateThread,
     deleteThread,

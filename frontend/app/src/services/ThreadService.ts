@@ -1,5 +1,5 @@
 import apiClient from '@/services/ApiClient'
-import type { Thread, ThreadCreate, ThreadUpdate } from '@/types/Thread'
+import type { Thread, ThreadStatus, ThreadCreate, ThreadUpdate } from '@/types/Thread'
 
 class ThreadService {
   public async fetchThreadsByRID(rid: number): Promise<Thread[]> {
@@ -10,6 +10,18 @@ class ThreadService {
       console.error(error)
       throw new Error(
         `fetchThreadsByRID: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async fetchThreadsStatus(): Promise<ThreadStatus[]> {
+    try {
+      const response = await apiClient.get<ThreadStatus[]>('/threads/status')
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `fetchThreadsStatus: ${error instanceof Error ? error.message : String(error)}`,
       )
     }
   }

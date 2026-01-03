@@ -9,6 +9,18 @@ from sqlalchemy.orm import Session
 router = APIRouter(tags=["Thread"])
 
 
+@router.get("/threads/status", response_model=list[schema_thread.ThreadStatus])
+def get_threads_status(
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_thread.get_threads_status(db)
+
+    except Exception as e:
+        re_raise_as_internal_error(e)
+
+
 @router.get("/threads/{rid}", response_model=list[schema_thread.Thread])
 def get_threads_by_rid(
     rid: int,

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import type { ProjectCreate } from '@/types/Project'
 import ProjectEvent from '@/views/project/ProjectEvent'
 import { useProjectStore } from '@/stores/ProjectStore'
+import { useThreadStore } from '@/stores/ThreadStore'
 import PanelProject from '@/components/project/PanelProject.vue'
 import PanelProjectGroup from '@/components/project/PanelProjectGroup.vue'
 import CreateProjectDialog from '@/components/dialog/CreateProjectDialog.vue'
@@ -13,10 +14,17 @@ const store_project = useProjectStore()
 const { projects, is_loading_projects } = storeToRefs(store_project)
 const { createProject } = store_project
 
+const store_thread = useThreadStore()
+const { fetchThreadsStatus } = store_thread
+
 const dialog_project_create = ref()
 
 ProjectEvent.on('openCreateProjectDialog', () => {
   dialog_project_create.value?.open()
+})
+
+onMounted(async () => {
+  await fetchThreadsStatus()
 })
 
 async function handleCreate(data: ProjectCreate) {

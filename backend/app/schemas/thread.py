@@ -14,6 +14,12 @@ class Thread(schema_base.ORMBaseModel):
     created_at: datetime
 
 
+class ThreadStatus(schema_base.ORMBaseModel):
+    rid_projects: int
+    count: int
+    is_updated: bool
+
+
 class ThreadCreate(schema_base.ORMBaseModel):
     rid_projects: int
     rid_parent: int | None = None
