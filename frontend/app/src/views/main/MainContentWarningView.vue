@@ -9,7 +9,7 @@ onMounted(async () => {
   await summaryStore.fetchSummariesAlert()
 })
 
-const alertProjects = computed(() => summaryStore.summaries_alert.slice(0, 6))
+const alertProjects = computed(() => summaryStore.summaries_alert.slice(0, 12))
 </script>
 
 <template>

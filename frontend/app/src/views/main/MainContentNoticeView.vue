@@ -9,7 +9,7 @@ onMounted(async () => {
   await summaryStore.fetchSummariesIncomplete()
 })
 
-const incompleteProjects = computed(() => summaryStore.summaries_incomplete.slice(0, 6))
+const incompleteProjects = computed(() => summaryStore.summaries_incomplete.slice(0, 12))
 </script>
 
 <template>

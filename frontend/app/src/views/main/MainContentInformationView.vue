@@ -9,7 +9,7 @@ onMounted(async () => {
   await summaryStore.fetchSummariesDeadline()
 })
 
-const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0, 6))
+const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0, 12))
 </script>
 
 <template>
