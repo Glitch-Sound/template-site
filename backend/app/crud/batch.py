@@ -72,9 +72,22 @@ def import_number(db: Session) -> None:
         rid_projects = dict_parent_rid.get(number_parent)
         if rid_projects is None:
             continue
-        db.query(model_project_number.ProjectNumber)\
-            .filter(model_project_number.ProjectNumber.rid_projects == rid_projects)\
-            .delete(synchronize_session=False)
+        has_m = any(len(number) >= 5 and number[4] == "M" for number, _, _, _ in items)
+        has_s = any(len(number) >= 5 and number[4] == "S" for number, _, _, _ in items)
+        has_o = any(len(number) >= 5 and number[4] == "0" for number, _, _, _ in items)
+        db.query(model_project.Project).filter(
+            model_project.Project.rid == rid_projects
+        ).update(
+            {
+                "number_m": 1 if has_m else 0,
+                "number_s": 1 if has_s else 0,
+                "number_o": 1 if has_o else 0,
+            },
+            synchronize_session=False,
+        )
+        db.query(model_project_number.ProjectNumber).filter(
+            model_project_number.ProjectNumber.rid_projects == rid_projects
+        ).delete(synchronize_session=False)
 
         for number, note, date_start, date_end in items:
             type_number = model_project_number.TypeNumber.NONE.value
