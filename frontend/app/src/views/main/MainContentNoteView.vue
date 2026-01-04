@@ -27,7 +27,11 @@
           4.　Project：Threadより状況報告<br />
           5.　Project：プロジェクト最新化<br /><br />
 
-          <p class="ml-6">※Thread：Importtant ... MNG専用</p>
+          <p class="ml-6 text-decoration-underline">Thread</p>
+          <p class="ml-6">
+            - 更新責務はPL<br />
+            - ImporttantはMNG専用
+          </p>
         </v-card-text>
       </v-card>
     </v-col>
