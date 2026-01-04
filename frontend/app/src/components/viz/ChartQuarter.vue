@@ -181,6 +181,11 @@ watch(isRankMenuOpen, (isOpen) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.quarter-card :deep(.v-card-text) {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
 .quarter-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

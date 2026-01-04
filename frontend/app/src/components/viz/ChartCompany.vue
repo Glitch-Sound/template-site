@@ -172,6 +172,11 @@ watch(isRankMenuOpen, (isOpen) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.company-card :deep(.v-card-text) {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
 .chart-wrap {
   display: flex;
   justify-content: flex-start;

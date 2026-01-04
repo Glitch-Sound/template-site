@@ -213,6 +213,11 @@ watch(isRankMenuOpen, (isOpen) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.amount-card :deep(.v-card-text) {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
 .top-row {
   display: flex;
   gap: 12px;
