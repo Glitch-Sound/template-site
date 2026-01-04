@@ -253,9 +253,18 @@ const chartOptions: ChartOptions<'line'> = {
 .progress-card {
   background: rgba(4, 4, 4, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.progress-card :deep(.v-card-text) {
+  flex: 1;
+  min-height: 0;
 }
 
 .chart-wrap {
-  height: clamp(260px, 60vh, 560px);
+  height: 100%;
+  min-height: 0;
 }
 </style>

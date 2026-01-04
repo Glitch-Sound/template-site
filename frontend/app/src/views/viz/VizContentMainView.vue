@@ -51,6 +51,13 @@ const { is_loading: is_loading_targets } = storeToRefs(targetStore)
 <style scoped>
 @import '@/assets/main.css';
 
+.main {
+  height: calc(100vh - var(--v-layout-top));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .charts-grid {
   display: grid;
   grid-template-columns: 3.2fr 4.3fr 2.5fr;
@@ -72,5 +79,7 @@ const { is_loading: is_loading_targets } = storeToRefs(targetStore)
 
 .charts-row {
   margin-top: 8px;
+  flex: 1;
+  min-height: 0;
 }
 </style>
