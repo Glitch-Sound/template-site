@@ -87,9 +87,12 @@ const chartOptions: ChartOptions<'doughnut'> = {
       position: 'right',
       labels: {
         color: '#d8d8d8',
-        boxWidth: 20,
-        boxHeight: 12,
+        boxWidth: 16,
+        boxHeight: 10,
         padding: 15,
+        font: {
+          size: 11,
+        },
       },
     },
     tooltip: {
@@ -117,7 +120,7 @@ watch(isRankMenuOpen, (isOpen) => {
 
 <template>
   <v-card class="company-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-h6 font-weight-medium">
+    <v-card-title class="text-subtitle-2 font-weight-medium">
       Company
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
         <template #activator="{ props }">
@@ -148,12 +151,12 @@ watch(isRankMenuOpen, (isOpen) => {
         </v-list>
       </v-menu>
       <v-btn-toggle v-model="chartFilterStore.amountMode" mandatory density="compact" class="ml-4">
-        <v-btn value="order">ORDER</v-btn>
-        <v-btn value="expected">EXPECTED</v-btn>
+        <v-btn value="order" size="small">ORDER</v-btn>
+        <v-btn value="expected" size="small">EXPECTED</v-btn>
       </v-btn-toggle>
     </v-card-title>
 
-    <v-card-text class="pa-4">
+    <v-card-text class="pa-3">
       <div class="chart-wrap">
         <Doughnut :data="chartData" :options="chartOptions" />
       </div>
@@ -173,6 +176,6 @@ watch(isRankMenuOpen, (isOpen) => {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  height: 220px;
+  height: 180px;
 }
 </style>

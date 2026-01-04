@@ -95,7 +95,7 @@ watch(isRankMenuOpen, (isOpen) => {
 
 <template>
   <v-card class="quarter-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-h6 font-weight-medium">
+    <v-card-title class="text-subtitle-2 font-weight-medium">
       Quarter
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
         <template #activator="{ props }">
@@ -126,12 +126,12 @@ watch(isRankMenuOpen, (isOpen) => {
         </v-list>
       </v-menu>
       <v-btn-toggle v-model="chartFilterStore.amountMode" mandatory density="compact" class="ml-4">
-        <v-btn value="order">ORDER</v-btn>
-        <v-btn value="expected">EXPECTED</v-btn>
+        <v-btn value="order" size="small">ORDER</v-btn>
+        <v-btn value="expected" size="small">EXPECTED</v-btn>
       </v-btn-toggle>
     </v-card-title>
 
-    <v-card-text class="pa-6">
+    <v-card-text class="pa-4">
       <div class="quarter-row">
         <div v-for="quarter in quarters" :key="quarter.title" class="quarter-item">
           <div class="quarter-title text-caption text-medium-emphasis">
@@ -141,7 +141,7 @@ watch(isRankMenuOpen, (isOpen) => {
           <div class="quarter-body">
             <v-progress-circular
               :model-value="progressFor(quarter.achieved, quarter.target)"
-              size="80"
+              size="64"
               width="3"
               color="primary"
               bg-color="grey-darken-4"
@@ -184,7 +184,7 @@ watch(isRankMenuOpen, (isOpen) => {
 .quarter-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: 16px;
 }
 
 .quarter-item {
@@ -197,8 +197,8 @@ watch(isRankMenuOpen, (isOpen) => {
 .quarter-title {
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 1rem;
-  width: 80px;
+  font-size: 0.85rem;
+  width: 72px;
   text-align: center;
 }
 
@@ -206,7 +206,7 @@ watch(isRankMenuOpen, (isOpen) => {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 16px;
+  gap: 12px;
 }
 
 .progress {
@@ -218,13 +218,13 @@ watch(isRankMenuOpen, (isOpen) => {
 }
 
 .progress-label {
-  font-size: 1rem;
+  font-size: 0.85rem;
 }
 
 .amount-display {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
 }
 
 .amount-stack {
@@ -233,26 +233,26 @@ watch(isRankMenuOpen, (isOpen) => {
   align-items: flex-start;
   text-align: left;
   justify-content: center;
-  min-height: 80px;
+  min-height: 64px;
 }
 
 .amount-achieved {
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
 .amount-divider {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.5);
 }
 
 .amount-target {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   opacity: 0.8;
 }
 
 .amount-diff {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   margin-top: 4px;
 }
 

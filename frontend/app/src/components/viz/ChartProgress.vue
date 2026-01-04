@@ -182,6 +182,9 @@ const chartOptions: ChartOptions<'line'> = {
       position: 'top',
       labels: {
         color: '#d8d8d8',
+        font: {
+          size: 11,
+        },
       },
     },
     tooltip: {
@@ -198,6 +201,9 @@ const chartOptions: ChartOptions<'line'> = {
       ticks: {
         color: '#9c9c9c',
         maxTicksLimit: 12,
+        font: {
+          size: 10,
+        },
       },
       grid: {
         color: 'rgba(255, 255, 255, 0.06)',
@@ -206,6 +212,9 @@ const chartOptions: ChartOptions<'line'> = {
     y: {
       ticks: {
         color: '#9c9c9c',
+        font: {
+          size: 10,
+        },
         callback: (value) => {
           if (typeof value !== 'number') return `${value}`
           const thousands = Math.round(value / 1000)
@@ -222,15 +231,15 @@ const chartOptions: ChartOptions<'line'> = {
 
 <template>
   <v-card class="progress-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-h6 font-weight-medium">
+    <v-card-title class="text-subtitle-2 font-weight-medium">
       Progress
       <v-btn-toggle v-model="chartFilterStore.amountMode" mandatory density="compact" class="ml-4">
-        <v-btn value="order">ORDER</v-btn>
-        <v-btn value="expected">EXPECTED</v-btn>
+        <v-btn value="order" size="small">ORDER</v-btn>
+        <v-btn value="expected" size="small">EXPECTED</v-btn>
       </v-btn-toggle>
     </v-card-title>
 
-    <v-card-text class="pa-6">
+    <v-card-text class="pa-4">
       <div class="chart-wrap">
         <Line :data="chartData" :options="chartOptions" />
       </div>
@@ -247,6 +256,6 @@ const chartOptions: ChartOptions<'line'> = {
 }
 
 .chart-wrap {
-  height: 680px;
+  height: clamp(260px, 60vh, 560px);
 }
 </style>
