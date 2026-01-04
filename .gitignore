@@ -33,6 +33,4 @@ build/
 .mypy_cache/
 .pytest_cache/
 .venv/
-
-# Minio.
-minio/data/
+backend/import/*.csv
