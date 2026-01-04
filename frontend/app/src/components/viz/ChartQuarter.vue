@@ -141,7 +141,7 @@ watch(isRankMenuOpen, (isOpen) => {
           <div class="quarter-body">
             <v-progress-circular
               :model-value="progressFor(quarter.achieved, quarter.target)"
-              size="64"
+              size="56"
               width="3"
               color="primary"
               bg-color="grey-darken-4"
@@ -152,7 +152,7 @@ watch(isRankMenuOpen, (isOpen) => {
               </span>
             </v-progress-circular>
 
-            <div class="amount-stack ml-3">
+            <div class="amount-stack ml-2">
               <div class="amount-display">
                 <div class="amount-achieved">
                   {{ formatCurrency(quarter.achieved) }}
@@ -218,13 +218,13 @@ watch(isRankMenuOpen, (isOpen) => {
 }
 
 .progress-label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .amount-display {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 4px;
 }
 
 .amount-stack {
@@ -233,12 +233,13 @@ watch(isRankMenuOpen, (isOpen) => {
   align-items: flex-start;
   text-align: left;
   justify-content: center;
-  min-height: 64px;
+  min-height: 56px;
 }
 
 .amount-achieved {
   font-size: 1.05rem;
   font-weight: 700;
+  margin-right: 5px;
 }
 
 .amount-divider {

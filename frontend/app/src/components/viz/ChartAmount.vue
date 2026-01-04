@@ -108,7 +108,7 @@ watch(isRankMenuOpen, (isOpen) => {
 
 <template>
   <v-card class="amount-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-subtitle-2 font-weight-medium">
+    <v-card-title class="text-body-2 font-weight-medium">
       Amount
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
         <template #activator="{ props }">
@@ -150,7 +150,7 @@ watch(isRankMenuOpen, (isOpen) => {
           <div class="total-label text-caption text-medium-emphasis">Total</div>
           <v-progress-circular
             :model-value="totalProgress"
-            size="84"
+            size="72"
             width="3"
             color="primary"
             bg-color="grey-darken-4"
@@ -178,7 +178,7 @@ watch(isRankMenuOpen, (isOpen) => {
         </div>
       </div>
 
-      <v-divider class="my-6" />
+      <v-divider class="my-3" />
 
       <div class="half-row">
         <div v-for="half in amount.halves" :key="half.title" class="half-card">
@@ -215,7 +215,7 @@ watch(isRankMenuOpen, (isOpen) => {
 
 .top-row {
   display: flex;
-  gap: 24px;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
@@ -224,8 +224,8 @@ watch(isRankMenuOpen, (isOpen) => {
 
 .total-block {
   position: relative;
-  width: 84px;
-  height: 84px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,7 +240,7 @@ watch(isRankMenuOpen, (isOpen) => {
 }
 
 .progress-label {
-  font-size: 1rem;
+  font-size: 0.85rem;
 }
 
 .total-label {
@@ -250,6 +250,7 @@ watch(isRankMenuOpen, (isOpen) => {
   transform: translateX(-50%);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  font-size: 0.7rem;
 }
 
 .total-amount {
@@ -265,7 +266,7 @@ watch(isRankMenuOpen, (isOpen) => {
 .amount-display {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 4px;
 }
 
 .amount-stack {
@@ -275,22 +276,23 @@ watch(isRankMenuOpen, (isOpen) => {
 }
 
 .amount-achieved {
-  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
   font-weight: 700;
+  margin-right: 5px;
 }
 
 .amount-divider {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.5);
 }
 
 .amount-target {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   opacity: 0.8;
 }
 
 .amount-diff {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   margin-top: 4px;
   align-self: flex-start;
 }
@@ -314,26 +316,26 @@ watch(isRankMenuOpen, (isOpen) => {
 }
 
 .half-card .amount-achieved {
-  font-size: clamp(0.95rem, 1.6vw, 1.2rem);
+  font-size: clamp(0.9rem, 1.4vw, 1.1rem);
 }
 
 .half-card .amount-divider {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .half-card .amount-target {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .half-card .amount-diff {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
 }
 
 .half-title {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 6px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 @media (max-width: 600px) {

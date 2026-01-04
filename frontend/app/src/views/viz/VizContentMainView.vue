@@ -53,8 +53,8 @@ const { is_loading: is_loading_targets } = storeToRefs(targetStore)
 
 .charts-grid {
   display: grid;
-  grid-template-columns: 3.2fr 4fr 2.8fr;
-  gap: 24px;
+  grid-template-columns: 3.2fr 4.3fr 2.5fr;
+  gap: 8px;
   align-items: stretch;
 }
 
@@ -71,6 +71,6 @@ const { is_loading: is_loading_targets } = storeToRefs(targetStore)
 }
 
 .charts-row {
-  margin-top: 24px;
+  margin-top: 8px;
 }
 </style>

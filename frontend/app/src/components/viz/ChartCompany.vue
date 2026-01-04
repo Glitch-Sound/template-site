@@ -176,6 +176,6 @@ watch(isRankMenuOpen, (isOpen) => {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  height: 180px;
+  height: 150px;
 }
 </style>
