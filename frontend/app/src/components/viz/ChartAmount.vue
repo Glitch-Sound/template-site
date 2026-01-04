@@ -178,7 +178,7 @@ watch(isRankMenuOpen, (isOpen) => {
         </div>
       </div>
 
-      <v-divider class="my-3" />
+      <v-divider class="my-4" />
 
       <div class="half-row">
         <div v-for="half in amount.halves" :key="half.title" class="half-card">
