@@ -9,5 +9,4 @@ import SettingContentCompanyView from '@/views/setting/SettingContentCompanyView
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

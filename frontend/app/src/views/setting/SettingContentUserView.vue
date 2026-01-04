@@ -113,5 +113,4 @@ const handleDelete = async (data: UserUpdate) => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

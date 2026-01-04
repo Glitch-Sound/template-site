@@ -67,7 +67,6 @@ const route = useRoute()
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .nav-btn {
   height: auto;

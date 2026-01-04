@@ -52,6 +52,5 @@ const { is_loading_deadline, is_loading_incomplete, is_loading_alert } = storeTo
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 @import '@/views/main/main.css';
 </style>

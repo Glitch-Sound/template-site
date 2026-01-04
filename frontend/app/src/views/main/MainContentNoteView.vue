@@ -55,6 +55,5 @@
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 @import '@/views/main/main.css';
 </style>

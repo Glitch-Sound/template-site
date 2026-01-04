@@ -9,5 +9,4 @@ import VizContentMainView from '@/views/viz/VizContentMainView.vue'
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

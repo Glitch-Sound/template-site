@@ -7,5 +7,4 @@ import MainContentMainView from '@/views/main/MainContentView.vue'
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

@@ -48,5 +48,4 @@ async function onSubmitLogin(data: Login) {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

@@ -166,7 +166,6 @@ watch(isRankMenuOpen, (isOpen) => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 @import './viz.css';
 
 .quarter-row {

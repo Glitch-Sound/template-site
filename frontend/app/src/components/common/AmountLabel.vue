@@ -25,5 +25,4 @@ function formatYen(amount?: number | null): string {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

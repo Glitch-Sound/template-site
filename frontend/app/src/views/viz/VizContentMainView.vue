@@ -49,7 +49,6 @@ const { is_loading: is_loading_targets } = storeToRefs(targetStore)
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .main {
   height: calc(100vh - var(--v-layout-top) - 70px);

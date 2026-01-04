@@ -9,5 +9,4 @@ import VizContentReportView from '@/views/viz/VizContentReportView.vue'
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

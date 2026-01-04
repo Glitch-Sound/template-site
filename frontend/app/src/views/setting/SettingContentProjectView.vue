@@ -110,5 +110,4 @@ const handleDelete = async (data: ProjectGroupUpdate) => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

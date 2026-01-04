@@ -63,5 +63,4 @@ const handleCompanySelected = (company: Company) => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

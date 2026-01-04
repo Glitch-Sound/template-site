@@ -32,5 +32,4 @@ const identicon_user = computed(() => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

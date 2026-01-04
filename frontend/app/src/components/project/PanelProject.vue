@@ -131,7 +131,6 @@ const handleDelete = async (data: ProjectUpdate) => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .user {
   min-width: 150px;

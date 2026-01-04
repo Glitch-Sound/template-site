@@ -24,7 +24,6 @@ const emitSelected = () => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .v-row {
   align-items: center;

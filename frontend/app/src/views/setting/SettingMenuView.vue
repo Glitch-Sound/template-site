@@ -103,7 +103,6 @@ const handleAddProject = () => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .v-icon {
   margin: 0 15px 0 0;

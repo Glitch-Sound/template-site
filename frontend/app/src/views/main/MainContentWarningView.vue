@@ -28,6 +28,5 @@ const alertProjects = computed(() => summaryStore.summaries_alert.slice(0, 12))
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 @import '@/views/main/main.css';
 </style>

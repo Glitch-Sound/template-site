@@ -9,5 +9,4 @@ import SettingContentUserView from '@/views/setting/SettingContentUserView.vue'
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

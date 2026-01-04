@@ -13,5 +13,4 @@ const rid = computed(() => String(props.rid).padStart(4, '0'))
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

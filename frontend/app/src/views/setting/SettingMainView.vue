@@ -9,5 +9,4 @@ import SettingContentMainView from '@/views/setting/SettingContentMainView.vue'
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

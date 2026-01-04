@@ -28,6 +28,5 @@ const incompleteProjects = computed(() => summaryStore.summaries_incomplete.slic
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 @import '@/views/main/main.css';
 </style>

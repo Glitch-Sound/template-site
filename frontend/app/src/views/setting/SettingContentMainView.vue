@@ -114,7 +114,6 @@ const handleDelete = async (data: TargetUpdate) => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .text-right {
   text-align: right;

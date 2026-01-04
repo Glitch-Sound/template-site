@@ -248,7 +248,6 @@ const chartOptions: ChartOptions<'line'> = {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 @import './viz.css';
 
 .progress-card {

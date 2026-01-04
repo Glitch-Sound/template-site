@@ -35,34 +35,10 @@ a {
     font-size: 22px;
 }
 
-.primary-light {
-    color: #2196f3 !important;
-}
-
-.primary-dark {
-    color: #124f7c !important;
-}
-
-.red-light {
-    color: #940000 !important;
-}
-
-.red-dark {
-    color: #620000 !important;
-}
-
 .gray-light {
     color: #c0c0c0 !important;
 }
 
 .gray-dark {
     color: #7f7f7f !important;
-}
-
-.gray-light {
-    color: #c0c0c0 !important;
-}
-
-.black {
-    color: #000000 !important;
 }

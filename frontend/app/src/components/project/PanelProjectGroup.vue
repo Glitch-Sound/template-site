@@ -28,7 +28,6 @@ const labelColor = computed(() => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .group {
   color: #c0c0c0;

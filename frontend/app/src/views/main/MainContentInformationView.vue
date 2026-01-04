@@ -28,6 +28,5 @@ const deadlineProjects = computed(() => summaryStore.summaries_deadline.slice(0,
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 @import '@/views/main/main.css';
 </style>

@@ -198,7 +198,6 @@ const handleDelete = async (data: ThreadUpdate) => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .note-check {
   color: #6f6f6f;

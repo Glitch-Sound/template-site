@@ -49,5 +49,4 @@ const canSubmit = computed(() => form_data.value.note !== '')
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>

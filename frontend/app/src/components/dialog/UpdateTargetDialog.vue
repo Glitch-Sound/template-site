@@ -104,7 +104,6 @@ defineExpose({
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 
 .text-right-field :deep(.v-field__input) {
   text-align: right;

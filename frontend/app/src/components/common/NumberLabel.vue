@@ -76,9 +76,19 @@ const isPreApprovalCurrentOrFuture = computed(() => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
-
 .pre-approval-warning {
   color: #c49116 !important;
+}
+
+.primary-light {
+  color: #2196f3 !important;
+}
+
+.red-light {
+  color: #940000 !important;
+}
+
+.black {
+  color: #000000 !important;
 }
 </style>

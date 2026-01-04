@@ -65,5 +65,4 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-@import '@/assets/main.css';
 </style>
