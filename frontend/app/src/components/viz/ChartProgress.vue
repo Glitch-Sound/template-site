@@ -230,7 +230,7 @@ const chartOptions: ChartOptions<'line'> = {
 </script>
 
 <template>
-  <v-card class="progress-card" rounded="xl" variant="tonal">
+  <v-card class="viz-card progress-card" rounded="xl" variant="tonal">
     <v-card-title class="text-subtitle-2 font-weight-medium">
       Progress
       <v-btn-toggle v-model="chartFilterStore.amountMode" mandatory density="compact" class="ml-4">
@@ -249,10 +249,9 @@ const chartOptions: ChartOptions<'line'> = {
 
 <style scoped>
 @import '@/assets/main.css';
+@import './viz.css';
 
 .progress-card {
-  background: rgba(4, 4, 4, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.08);
   height: 100%;
   display: flex;
   flex-direction: column;

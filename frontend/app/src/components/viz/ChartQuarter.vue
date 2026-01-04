@@ -4,6 +4,7 @@ import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
 import { useChartFilterStore } from '@/stores/ChartFilterStore'
 import { TypeRank } from '@/types/Project'
+import { rankOptions } from './vizOptions'
 
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
@@ -11,15 +12,6 @@ const currentYear = new Date().getFullYear()
 const chartFilterStore = useChartFilterStore()
 const draftRanks = ref<TypeRank[]>([...chartFilterStore.selectedRanks])
 const isRankMenuOpen = ref(false)
-
-const rankOptions = [
-  { value: TypeRank.A, label: 'Rank A' },
-  { value: TypeRank.B, label: 'Rank B' },
-  { value: TypeRank.C, label: 'Rank C' },
-  { value: TypeRank.D, label: 'Rank D' },
-  { value: TypeRank.E, label: 'Rank E' },
-  { value: TypeRank.X, label: 'Rank X' },
-]
 
 onMounted(async () => {
   await Promise.all([summaryStore.fetchSummariesAmountLatest(), targetStore.fetchTargets()])
@@ -94,7 +86,7 @@ watch(isRankMenuOpen, (isOpen) => {
 </script>
 
 <template>
-  <v-card class="quarter-card" rounded="xl" variant="tonal">
+  <v-card class="viz-card quarter-card" rounded="xl" variant="tonal">
     <v-card-title class="text-subtitle-2 font-weight-medium">
       Quarter
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
@@ -131,7 +123,7 @@ watch(isRankMenuOpen, (isOpen) => {
       </v-btn-toggle>
     </v-card-title>
 
-    <v-card-text class="pa-4">
+    <v-card-text class="pa-4 viz-card-text">
       <div class="quarter-row">
         <div v-for="quarter in quarters" :key="quarter.title" class="quarter-item">
           <div class="quarter-title text-caption text-medium-emphasis">
@@ -175,16 +167,7 @@ watch(isRankMenuOpen, (isOpen) => {
 
 <style scoped>
 @import '@/assets/main.css';
-
-.quarter-card {
-  background: rgba(4, 4, 4, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.quarter-card :deep(.v-card-text) {
-  padding-top: 18px;
-  padding-bottom: 18px;
-}
+@import './viz.css';
 
 .quarter-row {
   display: grid;
@@ -203,7 +186,7 @@ watch(isRankMenuOpen, (isOpen) => {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.85rem;
-  width: 72px;
+  width: 57px;
   text-align: center;
 }
 
@@ -214,28 +197,11 @@ watch(isRankMenuOpen, (isOpen) => {
   gap: 12px;
 }
 
-.progress {
-  font-weight: 600;
-}
-
-.progress :deep(.v-progress-circular__overlay) {
-  transition: stroke-dashoffset 0.6s ease;
-}
-
 .progress-label {
   font-size: 0.8rem;
 }
 
-.amount-display {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
 .amount-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   text-align: left;
   justify-content: center;
   min-height: 56px;
@@ -243,31 +209,18 @@ watch(isRankMenuOpen, (isOpen) => {
 
 .amount-achieved {
   font-size: 1.05rem;
-  font-weight: 700;
-  margin-right: 5px;
 }
 
 .amount-divider {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.5);
 }
 
 .amount-target {
   font-size: 0.8rem;
-  opacity: 0.8;
 }
 
 .amount-diff {
   font-size: 0.75rem;
-  margin-top: 4px;
-}
-
-.amount-diff--positive {
-  color: #3a8f6b;
-}
-
-.amount-diff--negative {
-  color: #b24b4b;
 }
 
 @media (max-width: 600px) {

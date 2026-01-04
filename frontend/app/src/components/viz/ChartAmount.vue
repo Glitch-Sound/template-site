@@ -4,6 +4,7 @@ import { useSummaryStore } from '@/stores/SummaryStore'
 import { useTargetStore } from '@/stores/TargetStore'
 import { useChartFilterStore } from '@/stores/ChartFilterStore'
 import { TypeRank } from '@/types/Project'
+import { rankOptions } from './vizOptions'
 
 const summaryStore = useSummaryStore()
 const targetStore = useTargetStore()
@@ -11,15 +12,6 @@ const currentYear = new Date().getFullYear()
 const chartFilterStore = useChartFilterStore()
 const draftRanks = ref<TypeRank[]>([...chartFilterStore.selectedRanks])
 const isRankMenuOpen = ref(false)
-
-const rankOptions = [
-  { value: TypeRank.A, label: 'Rank A' },
-  { value: TypeRank.B, label: 'Rank B' },
-  { value: TypeRank.C, label: 'Rank C' },
-  { value: TypeRank.D, label: 'Rank D' },
-  { value: TypeRank.E, label: 'Rank E' },
-  { value: TypeRank.X, label: 'Rank X' },
-]
 
 onMounted(async () => {
   await Promise.all([summaryStore.fetchSummariesAmountLatest(), targetStore.fetchTargets()])
@@ -107,7 +99,7 @@ watch(isRankMenuOpen, (isOpen) => {
 </script>
 
 <template>
-  <v-card class="amount-card" rounded="xl" variant="tonal">
+  <v-card class="viz-card amount-card" rounded="xl" variant="tonal">
     <v-card-title class="text-body-2 font-weight-medium">
       Amount
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
@@ -144,7 +136,7 @@ watch(isRankMenuOpen, (isOpen) => {
       </v-btn-toggle>
     </v-card-title>
 
-    <v-card-text class="pa-4">
+    <v-card-text class="pa-4 viz-card-text">
       <div class="top-row">
         <div class="total-block">
           <div class="total-label text-caption text-medium-emphasis">Total</div>
@@ -207,16 +199,7 @@ watch(isRankMenuOpen, (isOpen) => {
 
 <style scoped>
 @import '@/assets/main.css';
-
-.amount-card {
-  background: rgba(4, 4, 4, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.amount-card :deep(.v-card-text) {
-  padding-top: 18px;
-  padding-bottom: 18px;
-}
+@import './viz.css';
 
 .top-row {
   display: flex;
@@ -234,14 +217,6 @@ watch(isRankMenuOpen, (isOpen) => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.progress {
-  font-weight: 600;
-}
-
-.progress :deep(.v-progress-circular__overlay) {
-  transition: stroke-dashoffset 0.6s ease;
 }
 
 .progress-label {
@@ -268,46 +243,21 @@ watch(isRankMenuOpen, (isOpen) => {
   align-self: center;
 }
 
-.amount-display {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.amount-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
 .amount-achieved {
   font-size: clamp(1.15rem, 1.8vw, 1.5rem);
-  font-weight: 700;
-  margin-right: 5px;
 }
 
 .amount-divider {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.5);
 }
 
 .amount-target {
   font-size: 0.9rem;
-  opacity: 0.8;
 }
 
 .amount-diff {
   font-size: 0.8rem;
-  margin-top: 4px;
   align-self: flex-start;
-}
-
-.amount-diff--positive {
-  color: #3a8f6b;
-}
-
-.amount-diff--negative {
-  color: #b24b4b;
 }
 
 .half-row {

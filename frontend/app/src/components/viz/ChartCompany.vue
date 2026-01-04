@@ -8,6 +8,7 @@ import { useTargetStore } from '@/stores/TargetStore'
 import { useChartFilterStore } from '@/stores/ChartFilterStore'
 import { chartPalette } from '@/constants/chartPalette'
 import { TypeRank } from '@/types/Project'
+import { rankOptions } from './vizOptions'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -16,15 +17,6 @@ const targetStore = useTargetStore()
 const chartFilterStore = useChartFilterStore()
 const draftRanks = ref<TypeRank[]>([...chartFilterStore.selectedRanks])
 const isRankMenuOpen = ref(false)
-
-const rankOptions = [
-  { value: TypeRank.A, label: 'Rank A' },
-  { value: TypeRank.B, label: 'Rank B' },
-  { value: TypeRank.C, label: 'Rank C' },
-  { value: TypeRank.D, label: 'Rank D' },
-  { value: TypeRank.E, label: 'Rank E' },
-  { value: TypeRank.X, label: 'Rank X' },
-]
 
 onMounted(async () => {
   await targetStore.fetchTargets()
@@ -119,7 +111,7 @@ watch(isRankMenuOpen, (isOpen) => {
 </script>
 
 <template>
-  <v-card class="company-card" rounded="xl" variant="tonal">
+  <v-card class="viz-card company-card" rounded="xl" variant="tonal">
     <v-card-title class="text-subtitle-2 font-weight-medium">
       Company
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
@@ -156,7 +148,7 @@ watch(isRankMenuOpen, (isOpen) => {
       </v-btn-toggle>
     </v-card-title>
 
-    <v-card-text class="pa-3">
+    <v-card-text class="pa-3 viz-card-text">
       <div class="chart-wrap">
         <Doughnut :data="chartData" :options="chartOptions" />
       </div>
@@ -166,16 +158,7 @@ watch(isRankMenuOpen, (isOpen) => {
 
 <style scoped>
 @import '@/assets/main.css';
-
-.company-card {
-  background: rgba(4, 4, 4, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.company-card :deep(.v-card-text) {
-  padding-top: 18px;
-  padding-bottom: 18px;
-}
+@import './viz.css';
 
 .chart-wrap {
   display: flex;

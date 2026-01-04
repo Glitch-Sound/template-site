@@ -1,0 +1,54 @@
+.viz-card {
+  background: rgba(4, 4, 4, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.viz-card-text {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.progress {
+  font-weight: 600;
+}
+
+.progress .v-progress-circular__overlay {
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.amount-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.amount-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.amount-achieved {
+  font-weight: 700;
+  margin-right: 5px;
+}
+
+.amount-divider {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.amount-target {
+  opacity: 0.8;
+}
+
+.amount-diff {
+  margin-top: 4px;
+}
+
+.amount-diff--positive {
+  color: #3a8f6b;
+}
+
+.amount-diff--negative {
+  color: #b24b4b;
+}
