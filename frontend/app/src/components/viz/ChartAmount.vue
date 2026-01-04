@@ -99,7 +99,7 @@ watch(isRankMenuOpen, (isOpen) => {
 </script>
 
 <template>
-  <v-card class="viz-card amount-card" rounded="xl" variant="tonal">
+  <v-card class="viz-card viz-card--tall amount-card" rounded="xl" variant="tonal">
     <v-card-title class="text-body-2 font-weight-medium">
       Amount
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">

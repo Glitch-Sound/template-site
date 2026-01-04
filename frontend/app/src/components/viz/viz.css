@@ -8,6 +8,11 @@
   padding-bottom: 18px;
 }
 
+.viz-card--tall .viz-card-text {
+  padding-top: 43px;
+  padding-bottom: 43px;
+}
+
 .progress {
   font-weight: 600;
 }

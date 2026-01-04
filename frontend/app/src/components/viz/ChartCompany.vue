@@ -111,7 +111,7 @@ watch(isRankMenuOpen, (isOpen) => {
 </script>
 
 <template>
-  <v-card class="viz-card company-card" rounded="xl" variant="tonal">
+  <v-card class="viz-card viz-card--tall company-card" rounded="xl" variant="tonal">
     <v-card-title class="text-subtitle-2 font-weight-medium">
       Company
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">

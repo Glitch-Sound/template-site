@@ -86,7 +86,7 @@ watch(isRankMenuOpen, (isOpen) => {
 </script>
 
 <template>
-  <v-card class="viz-card quarter-card" rounded="xl" variant="tonal">
+  <v-card class="viz-card viz-card--tall quarter-card" rounded="xl" variant="tonal">
     <v-card-title class="text-subtitle-2 font-weight-medium">
       Quarter
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
