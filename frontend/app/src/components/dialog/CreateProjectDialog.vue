@@ -69,6 +69,30 @@ const handleRankSelected = (rank: number) => {
   form_data.value.rank = rank
 }
 
+const numberFormatter = new Intl.NumberFormat('ja-JP')
+
+const formatNumber = (value: number) => numberFormatter.format(value)
+
+const parseNumber = (value: string) => {
+  const sanitized = value.replace(/,/g, '').trim()
+  if (sanitized === '') return 0
+  const numberValue = Number(sanitized)
+  return Number.isNaN(numberValue) ? 0 : numberValue
+}
+
+const numericWithComma = (value: string) => rules.numeric(value.replace(/,/g, ''))
+
+const formattedAmountExpected = computed(() => formatNumber(form_data.value.amount_expected))
+const formattedAmountOrder = computed(() => formatNumber(form_data.value.amount_order))
+
+const updateAmountExpected = (value: string) => {
+  form_data.value.amount_expected = parseNumber(value)
+}
+
+const updateAmountOrder = (value: string) => {
+  form_data.value.amount_order = parseNumber(value)
+}
+
 watch(
   () => form_data.value.amount_order,
   (value) => {
@@ -127,17 +151,21 @@ watch(
           <v-row dense class="mb-4">
             <v-col cols="6">
               <v-text-field
-                v-model="form_data.amount_expected"
-                :rules="[rules.numeric]"
+                :model-value="formattedAmountExpected"
+                :rules="[numericWithComma]"
                 label="Amount Expected"
+                inputmode="numeric"
+                @update:model-value="updateAmountExpected"
               />
             </v-col>
 
             <v-col cols="6">
               <v-text-field
-                v-model="form_data.amount_order"
-                :rules="[rules.numeric]"
+                :model-value="formattedAmountOrder"
+                :rules="[numericWithComma]"
                 label="Amount Order"
+                inputmode="numeric"
+                @update:model-value="updateAmountOrder"
               />
             </v-col>
           </v-row>
