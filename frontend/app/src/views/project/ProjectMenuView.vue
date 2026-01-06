@@ -81,10 +81,10 @@ const handleFilter = async () => {
       </v-list-item>
 
       <v-list-item>
-        <v-checkbox v-model="model_none_pre_approval" hide-details label="None Pre-Approval" />
-        <v-checkbox v-model="model_none_number_m" hide-details label="None Number M" />
-        <v-checkbox v-model="model_none_number_s" hide-details label="None Number S" />
-        <v-checkbox v-model="model_none_number_o" hide-details label="None Number Official" />
+        <v-checkbox v-model="model_none_pre_approval" hide-details label="未設定：承認予定日" />
+        <v-checkbox v-model="model_none_number_m" hide-details label="未登録：M番" />
+        <v-checkbox v-model="model_none_number_s" hide-details label="未登録：S番" />
+        <v-checkbox v-model="model_none_number_o" hide-details label="未登録：正式番号" />
       </v-list-item>
 
       <v-list-item>
@@ -96,5 +96,4 @@ const handleFilter = async () => {
   </v-navigation-drawer>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
