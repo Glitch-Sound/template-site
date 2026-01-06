@@ -7,12 +7,12 @@ import { useDisplayDialog } from '@/components/dialog/BaseDialog'
 import { useProjectStore } from '@/stores/ProjectStore'
 
 const headers = [
-  { title: 'RID', width: '50px' },
-  { title: 'TYPE', width: '20px' },
-  { title: 'NUMBER', width: '100px' },
-  { title: 'NOTE', width: '330px' },
-  { title: 'START', width: '100px' },
-  { title: 'END', width: '100px' },
+  { title: 'RID', width: '15px' },
+  { title: 'TYPE', width: '15px' },
+  { title: 'NUMBER', width: '50px' },
+  { title: 'NOTE', width: '500px' },
+  { title: 'START', width: '30px' },
+  { title: 'END', width: '30px' },
 ]
 
 const store_project = useProjectStore()
@@ -77,5 +77,4 @@ defineExpose({
   </v-dialog>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
