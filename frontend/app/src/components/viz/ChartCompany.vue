@@ -72,7 +72,9 @@ const chartOptions: ChartOptions<'doughnut'> = {
     easing: 'easeOutQuart',
   },
   layout: {
-    padding: 0,
+    padding: {
+      right: 5,
+    },
   },
   plugins: {
     legend: {
@@ -163,6 +165,8 @@ watch(isRankMenuOpen, (isOpen) => {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  height: 150px;
+  width: 250px;
+  height: 180px;
+  margin: 0 10px;
 }
 </style>
