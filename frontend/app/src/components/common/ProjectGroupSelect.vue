@@ -55,7 +55,7 @@ onMounted(async () => {
   <v-select
     :items="project_group_items"
     v-model="selected_option"
-    label="Project Group"
+    label="プロジェクト"
     item-title="display_name"
     item-value="rid"
     :loading="is_loading_groups"
@@ -64,5 +64,4 @@ onMounted(async () => {
   />
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -123,22 +123,18 @@ watch(
 
           <RankSelect v-model="form_data.rank" @itemSelected="handleRankSelected" />
 
-          <v-text-field v-model="form_data.pre_approval" label="Pre-Approval" type="date" />
+          <v-text-field v-model="form_data.pre_approval" label="承認予定" type="date" />
 
-          <v-text-field v-model="form_data.name" :rules="[]" label="Name" />
+          <v-text-field v-model="form_data.name" :rules="[]" label="プロジェクト名" />
 
-          <v-text-field
-            v-model="form_data.number_parent"
-            :rules="[rules.text]"
-            label="Number Parent"
-          />
+          <v-text-field v-model="form_data.number_parent" :rules="[rules.text]" label="親番" />
 
           <v-row dense class="mb-4">
             <v-col cols="6">
               <v-text-field
                 :model-value="formattedAmountExpected"
                 :rules="[numericWithComma]"
-                label="Amount Expected"
+                label="見込金額"
                 inputmode="numeric"
                 @update:model-value="updateAmountExpected"
               />
@@ -148,7 +144,7 @@ watch(
               <v-text-field
                 :model-value="formattedAmountOrder"
                 :rules="[numericWithComma]"
-                label="Amount Order"
+                label="受注金額"
                 inputmode="numeric"
                 @update:model-value="updateAmountOrder"
               />
@@ -157,15 +153,15 @@ watch(
 
           <v-row dense class="mb-4">
             <v-col cols="4">
-              <v-text-field v-model="form_data.date_start" label="Date Start" type="date" />
+              <v-text-field v-model="form_data.date_start" label="開始日" type="date" />
             </v-col>
 
             <v-col cols="4">
-              <v-text-field v-model="form_data.date_delivery" label="Date Delivery" type="date" />
+              <v-text-field v-model="form_data.date_delivery" label="納品日" type="date" />
             </v-col>
 
             <v-col cols="4">
-              <v-text-field v-model="form_data.date_end" label="Date End" type="date" />
+              <v-text-field v-model="form_data.date_end" label="検収日" type="date" />
             </v-col>
           </v-row>
         </v-form>
@@ -181,5 +177,4 @@ watch(
   </v-dialog>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
