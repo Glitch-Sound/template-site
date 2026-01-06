@@ -20,12 +20,48 @@ const emitSelected = () => {
 <template>
   <div class="d-flex justify-center">
     <v-chip-group v-model="selected_rank" @update:modelValue="emitSelected">
-      <RankLabel :rank="TypeRank.A" />
-      <RankLabel :rank="TypeRank.B" />
-      <RankLabel :rank="TypeRank.C" />
-      <RankLabel :rank="TypeRank.D" />
-      <RankLabel :rank="TypeRank.E" />
-      <RankLabel :rank="TypeRank.X" />
+      <v-tooltip location="top" text="A ： 作業確定 + 正式番号発行">
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <RankLabel :rank="TypeRank.A" />
+          </span>
+        </template>
+      </v-tooltip>
+      <v-tooltip location="top" text="B ： 作業確定 + 正式番号未発行">
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <RankLabel :rank="TypeRank.B" />
+          </span>
+        </template>
+      </v-tooltip>
+      <v-tooltip location="top" text="C ： 作業内容調整中">
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <RankLabel :rank="TypeRank.C" />
+          </span>
+        </template>
+      </v-tooltip>
+      <v-tooltip location="top" text="D ： 継続予定">
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <RankLabel :rank="TypeRank.D" />
+          </span>
+        </template>
+      </v-tooltip>
+      <v-tooltip location="top" text="E ： 新規予定">
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <RankLabel :rank="TypeRank.E" />
+          </span>
+        </template>
+      </v-tooltip>
+      <v-tooltip location="top" text="X ： ドロップ">
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <RankLabel :rank="TypeRank.X" />
+          </span>
+        </template>
+      </v-tooltip>
     </v-chip-group>
   </div>
 </template>
