@@ -6,18 +6,22 @@ const props = defineProps<{
   project: Project
 }>()
 
-const isPreApprovalCurrentOrFuture = computed(() => {
+const preApprovalClass = computed(() => {
   const value = props.project.pre_approval
-  if (!value) return false
+  if (!value) return 'gray-dark'
 
   const preApprovalDate = new Date(value)
-  if (Number.isNaN(preApprovalDate.getTime())) return false
+  if (Number.isNaN(preApprovalDate.getTime())) return 'gray-dark'
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   preApprovalDate.setHours(0, 0, 0, 0)
 
-  return preApprovalDate.getTime() <= today.getTime()
+  const isPastOrToday = preApprovalDate.getTime() <= today.getTime()
+  if (isPastOrToday && !props.project.number_o) {
+    return 'pre-approval-warning'
+  }
+  return 'gray-dark'
 })
 </script>
 
@@ -36,10 +40,7 @@ const isPreApprovalCurrentOrFuture = computed(() => {
 
     <v-col cols="auto">
       <template v-if="props.project.pre_approval !== ''">
-        <span
-          class="text-caption"
-          :class="isPreApprovalCurrentOrFuture ? 'pre-approval-warning' : 'gray-dark'"
-        >
+        <span class="text-caption" :class="preApprovalClass">
           {{ props.project.pre_approval }}
         </span>
       </template>
