@@ -15,7 +15,7 @@ const route = useRoute()
     <v-app-bar-title>
       <router-link to="/" class="title-link">
         <div class="d-flex align-center">
-          <v-icon color="primary">mdi-grain</v-icon>
+          <v-icon color="primary">mdi-horse-variant</v-icon>
           <span class="ml-2"> muu </span>
         </div>
       </router-link>
@@ -67,7 +67,6 @@ const route = useRoute()
 </template>
 
 <style scoped>
-
 .nav-btn {
   height: auto;
 }

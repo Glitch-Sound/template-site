@@ -119,7 +119,7 @@ const handleDelete = async (data: ThreadUpdate) => {
 </script>
 
 <template>
-  <v-dialog v-model="dialog" max-width="1700px" min-height="1000px">
+  <v-dialog v-model="dialog" max-width="1700px" min-height="700px">
     <v-card class="d-flex flex-column" style="max-height: 80vh">
       <v-card-title>
         <span class="dialog-title">{{ title }}</span>
@@ -141,7 +141,7 @@ const handleDelete = async (data: ThreadUpdate) => {
 
         <v-list v-else density="compact" class="py-0">
           <v-list-item v-for="t in threads" :key="t.rid" density="compact" class="py-0 my-0">
-            <v-row class="ma-0 pa-0 no-gutter">
+            <v-row class="ma-0 pa-0 pb-5 no-gutter">
               <v-col class="pa-0">
                 <div :style="{ paddingLeft: indent_depth(t.depth) }">
                   <template v-if="t.state == TypeThreadState.COMPLETED">
@@ -198,7 +198,6 @@ const handleDelete = async (data: ThreadUpdate) => {
 </template>
 
 <style scoped>
-
 .note-check {
   color: #6f6f6f;
 }
