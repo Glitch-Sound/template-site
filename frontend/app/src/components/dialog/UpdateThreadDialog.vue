@@ -5,8 +5,7 @@ import { useFormDialog } from '@/components/dialog/BaseDialog'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 
 const emit = defineEmits(['submit', 'delete'])
-const { dialog, valid, form_data, form_ref, rules, onSubmit, onDelete } =
-  useFormDialog<ThreadUpdate>(emit)
+const { dialog, valid, form_data, form_ref, onSubmit, onDelete } = useFormDialog<ThreadUpdate>(emit)
 
 defineExpose({
   open(data: Thread, rid_projects: number) {
@@ -25,16 +24,16 @@ defineExpose({
 </script>
 
 <template>
-  <v-dialog v-model="dialog" max-width="1000px">
-    <v-card>
+  <v-dialog v-model="dialog" max-width="1000px" min-height="700px">
+    <v-card class="d-flex flex-column" style="max-height: 80vh">
       <v-card-title>
         <span class="dialog-title">Update Thread</span>
       </v-card-title>
 
-      <v-card-text>
-        <v-form ref="form_ref" v-model="valid" lazy-validation>
-          <v-form ref="form_ref" v-model="valid" lazy-validation>
-            <v-textarea v-model="form_data.note" :rules="[rules.text]" label="Note" />
+      <v-card-text class="flex-grow-1 d-flex">
+        <v-form ref="form_ref" v-model="valid" lazy-validation class="d-flex flex-column flex-grow-1">
+          <v-form ref="form_ref" v-model="valid" lazy-validation class="d-flex flex-column flex-grow-1">
+            <v-textarea v-model="form_data.note" label="Note" class="thread-note-textarea flex-grow-1" />
           </v-form>
         </v-form>
       </v-card-text>
@@ -50,4 +49,15 @@ defineExpose({
 </template>
 
 <style scoped>
+.thread-note-textarea {
+  flex: 1 1 auto;
+}
+
+.thread-note-textarea :deep(.v-field__input) {
+  height: 100%;
+}
+
+.thread-note-textarea :deep(textarea) {
+  height: 100%;
+}
 </style>
