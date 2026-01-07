@@ -34,8 +34,17 @@ const canSubmit = computed(() => form_data.value.note !== '')
       </v-card-title>
 
       <v-card-text class="flex-grow-1 d-flex">
-        <v-form ref="form_ref" v-model="valid" lazy-validation class="d-flex flex-column flex-grow-1">
-          <v-textarea v-model="form_data.note" label="Note" class="thread-note-textarea flex-grow-1" />
+        <v-form
+          ref="form_ref"
+          v-model="valid"
+          lazy-validation
+          class="d-flex flex-column flex-grow-1"
+        >
+          <v-textarea
+            v-model="form_data.note"
+            label="Note"
+            class="thread-note-textarea flex-grow-1"
+          />
         </v-form>
       </v-card-text>
 

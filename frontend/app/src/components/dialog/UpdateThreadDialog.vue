@@ -24,16 +24,30 @@ defineExpose({
 </script>
 
 <template>
-  <v-dialog v-model="dialog" max-width="1000px" min-height="700px">
+  <v-dialog v-model="dialog" max-width="1000px" min-height="500px">
     <v-card class="d-flex flex-column" style="max-height: 80vh">
       <v-card-title>
         <span class="dialog-title">Update Thread</span>
       </v-card-title>
 
       <v-card-text class="flex-grow-1 d-flex">
-        <v-form ref="form_ref" v-model="valid" lazy-validation class="d-flex flex-column flex-grow-1">
-          <v-form ref="form_ref" v-model="valid" lazy-validation class="d-flex flex-column flex-grow-1">
-            <v-textarea v-model="form_data.note" label="Note" class="thread-note-textarea flex-grow-1" />
+        <v-form
+          ref="form_ref"
+          v-model="valid"
+          lazy-validation
+          class="d-flex flex-column flex-grow-1"
+        >
+          <v-form
+            ref="form_ref"
+            v-model="valid"
+            lazy-validation
+            class="d-flex flex-column flex-grow-1"
+          >
+            <v-textarea
+              v-model="form_data.note"
+              label="Note"
+              class="thread-note-textarea flex-grow-1"
+            />
           </v-form>
         </v-form>
       </v-card-text>
