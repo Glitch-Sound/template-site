@@ -69,7 +69,7 @@ const handleApplyFilter = () => {
               />
             </template>
             <v-card class="filter-card">
-              <v-card-title class="filter-title">Filter</v-card-title>
+              <v-card-title class="filter-title">PL</v-card-title>
               <v-card-text>
                 <v-radio-group v-model="draft_user" :disabled="is_loading">
                   <v-radio
@@ -93,7 +93,6 @@ const handleApplyFilter = () => {
 </template>
 
 <style scoped>
-
 .v-icon {
   margin: 0 15px 0 0;
 }
