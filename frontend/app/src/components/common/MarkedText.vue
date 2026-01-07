@@ -11,7 +11,21 @@ const props = defineProps<{
 </script>
 
 <template>
-  <span v-html="marked(props.src)" />
+  <div class="markdown-body" v-html="marked(props.src)" />
 </template>
 
-<style scoped></style>
+<style scoped>
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+
+.markdown-body :deep(ul) {
+  list-style: disc;
+}
+
+.markdown-body :deep(ol) {
+  list-style: decimal;
+}
+</style>
