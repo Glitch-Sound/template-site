@@ -23,6 +23,8 @@ export const useProjectStore = defineStore('project', () => {
   const project_groups = ref<ProjectGroup[]>([])
   const project_numbers = ref<ProjectNumber[]>([])
   const projects = ref<ProjectList[]>([])
+  const projects_report = ref<ProjectList[]>([])
+  const report_user_rid = ref<number | null>(null)
   const condition = ref<SearchCondition>(defaultCondition())
   const project_targets = ref<TargetQuarter[]>([])
   const project_users = ref<User[]>([])
@@ -30,10 +32,12 @@ export const useProjectStore = defineStore('project', () => {
   const is_loading_groups = ref(false)
   const is_loading_numbers = ref(false)
   const is_loading_projects = ref(false)
+  const is_loading_projects_report = ref(false)
 
   let inflight_groups: Promise<void> | null = null
   let inflight_numbers: Promise<void> | null = null
   let inflight_projects: Promise<void> | null = null
+  let inflight_projects_report: Promise<void> | null = null
 
   // getters.
   const by_rid_group = computed(() => new Map(project_groups.value.map((g) => [g.rid, g])))
@@ -168,6 +172,30 @@ export const useProjectStore = defineStore('project', () => {
     return inflight_projects
   }
 
+  async function fetchProjectsReport(rid_users?: number | null): Promise<void> {
+    if (inflight_projects_report) return inflight_projects_report
+
+    is_loading_projects_report.value = true
+    inflight_projects_report = (async () => {
+      try {
+        projects_report.value = await service_project.fetchProjectsReport(rid_users)
+        await fetchProjectTargets()
+        await fetchProjectUsers()
+      } finally {
+        is_loading_projects_report.value = false
+        inflight_projects_report = null
+      }
+    })()
+    return inflight_projects_report
+  }
+
+  function setReportUser(rid: number | null): void {
+    report_user_rid.value = rid
+    if (rid == null) {
+      projects_report.value = []
+    }
+  }
+
   async function createProject(payload: ProjectCreate): Promise<Project> {
     const created = await service_project.createProject(payload)
     await fetchProjects()
@@ -196,6 +224,8 @@ export const useProjectStore = defineStore('project', () => {
   function reset(): void {
     project_groups.value = []
     projects.value = []
+    projects_report.value = []
+    report_user_rid.value = null
     condition.value = defaultCondition()
   }
 
@@ -204,12 +234,15 @@ export const useProjectStore = defineStore('project', () => {
     project_groups,
     project_numbers,
     projects,
+    projects_report,
+    report_user_rid,
     condition,
     project_targets,
     project_users,
     is_loading_groups,
     is_loading_numbers,
     is_loading_projects,
+    is_loading_projects_report,
 
     // getters
     by_rid_group,
@@ -231,9 +264,11 @@ export const useProjectStore = defineStore('project', () => {
     clearCondition,
     defaultCondition,
     fetchProjects,
+    fetchProjectsReport,
     createProject,
     updateProject,
     deleteProject,
+    setReportUser,
 
     // utils
     initSearchCondition,

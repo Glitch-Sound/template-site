@@ -23,6 +23,11 @@ export interface ThreadStatus {
   is_important: boolean
 }
 
+export interface ThreadReport {
+  rid_projects: number
+  threads: Thread[]
+}
+
 export interface ThreadCreate {
   rid_projects: number
   rid_parent: number | null

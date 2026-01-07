@@ -274,7 +274,9 @@ def get_project_users(db: Session) -> schema_user.User:
     return q_users.all()
 
 
-def get_projects(db: Session, condition: schema_project.SearchCondition):
+def get_projects(
+    db: Session, condition: schema_project.SearchCondition
+) -> list[schema_project.ProjectList]:
     child_preds = [model_project.Project.is_deleted == 0]
 
     if condition.target:
@@ -306,6 +308,40 @@ def get_projects(db: Session, condition: schema_project.SearchCondition):
 
     if condition.is_none_number_o:
         child_preds.append(model_project.Project.number_o == 0)
+
+    group_preds = [
+        model_project_group.ProjectGroup.is_deleted == 0,
+        model_project_group.ProjectGroup.projects.any(and_(*child_preds)),
+    ]
+
+    query = (
+        db.query(model_project_group.ProjectGroup)
+        .options(
+            joinedload(
+                model_project_group.ProjectGroup.projects.and_(and_(*child_preds))
+            ).joinedload(model_project.Project.project_numbers)
+        )
+        .filter(and_(*group_preds))
+        .order_by(
+            model_project_group.ProjectGroup.rid_companies,
+            model_project_group.ProjectGroup.rid,
+        )
+    )
+
+    return query.all()
+
+
+def get_project_report(
+    db: Session, rid_users: int | None
+) -> list[schema_project.ProjectList]:
+    today = date.today().isoformat()
+    child_preds = [
+        model_project.Project.is_deleted == 0,
+        model_project.Project.date_start <= today,
+        model_project.Project.date_end >= today,
+    ]
+    if rid_users is not None:
+        child_preds.append(model_project.Project.rid_users_pl == rid_users)
 
     group_preds = [
         model_project_group.ProjectGroup.is_deleted == 0,

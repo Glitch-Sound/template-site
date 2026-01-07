@@ -34,6 +34,24 @@ def get_threads_by_rid(
         re_raise_as_internal_error(e)
 
 
+@router.get(
+    "/threads/user/{rid_users}", response_model=list[schema_thread.ThreadReport]
+)
+def get_threads_by_user(
+    rid_users: int,
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_thread.get_threads_by_user(db, rid_users)
+
+    except Exception as e:
+        re_raise_as_internal_error(e)
+
+    except Exception as e:
+        re_raise_as_internal_error(e)
+
+
 @router.post("/threads", response_model=schema_thread.Thread)
 def create_thread(
     target: schema_thread.ThreadCreate,

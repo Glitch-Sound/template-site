@@ -14,6 +14,11 @@ class Thread(schema_base.ORMBaseModel):
     created_at: datetime
 
 
+class ThreadReport(schema_base.ORMBaseModel):
+    rid_projects: int
+    threads: list[Thread]
+
+
 class ThreadStatus(schema_base.ORMBaseModel):
     rid_projects: int
     count: int

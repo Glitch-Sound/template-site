@@ -181,6 +181,22 @@ def create_project(
         re_raise_as_internal_error(e)
 
 
+@router.get("/projects/report", response_model=list[schema_project.ProjectList])
+@router.get(
+    "/projects/report/{rid_users}", response_model=list[schema_project.ProjectList]
+)
+def get_project_report(
+    rid_users: int | None = None,
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_project.get_project_report(db, rid_users)
+
+    except Exception as e:
+        re_raise_as_internal_error(e)
+
+
 @router.put("/projects", response_model=schema_project.Project)
 def update_project(
     target: schema_project.ProjectUpdate,

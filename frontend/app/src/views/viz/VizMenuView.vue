@@ -4,28 +4,34 @@ import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
 import { useUserStore } from '@/stores/UserStore'
+import { useProjectStore } from '@/stores/ProjectStore'
+import { TypePost } from '@/types/User'
 
 const route = useRoute()
 
-const selected_user = ref<number | null>(null)
 const draft_user = ref<number | null>(null)
 const is_filter_open = ref(false)
 
 const is_report_view = computed(() => route.path === '/viz/report')
 
 const store_user = useUserStore()
+const store_project = useProjectStore()
 const { users, is_loading } = storeToRefs(store_user)
+const { report_user_rid } = storeToRefs(store_project)
 const { fetchUsers } = store_user
+const { setReportUser } = store_project
+
+const filtered_users = computed(() => users.value.filter((user) => user.post !== TypePost.NONE))
 
 watch(is_filter_open, async (is_open) => {
   if (is_open) {
-    draft_user.value = selected_user.value
+    draft_user.value = report_user_rid.value
     await fetchUsers()
   }
 })
 
 const handleApplyFilter = () => {
-  selected_user.value = draft_user.value ?? null
+  setReportUser(draft_user.value ?? null)
   is_filter_open.value = false
 }
 </script>
@@ -67,7 +73,7 @@ const handleApplyFilter = () => {
               <v-card-text>
                 <v-radio-group v-model="draft_user" :disabled="is_loading">
                   <v-radio
-                    v-for="user in users"
+                    v-for="user in filtered_users"
                     :key="user.rid"
                     :label="user.name"
                     :value="user.rid"

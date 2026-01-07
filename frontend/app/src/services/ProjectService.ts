@@ -156,6 +156,20 @@ class ProjectService {
     }
   }
 
+  public async fetchProjectsReport(rid_users?: number | null): Promise<ProjectList[]> {
+    try {
+      const response = await apiClient.get<ProjectList[]>(
+        rid_users == null ? '/projects/report' : `/projects/report/${rid_users}`,
+      )
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `fetchProjectsReport: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
   public async createProject(project: ProjectCreate): Promise<Project> {
     try {
       const response = await apiClient.post<Project>('/projects', project)
