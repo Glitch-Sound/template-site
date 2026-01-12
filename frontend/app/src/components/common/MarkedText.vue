@@ -3,6 +3,7 @@ import { marked } from 'marked'
 
 marked.setOptions({
   breaks: true,
+  gfm: true,
 })
 
 const props = defineProps<{
@@ -128,5 +129,32 @@ const props = defineProps<{
 .markdown-body :deep(th) {
   background: #141414;
   font-weight: 600;
+}
+
+.markdown-body :deep(input[type='checkbox']) {
+  appearance: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0 0.4rem 0 0;
+  vertical-align: middle;
+  border: 1px solid #0f3b8f;
+  border-radius: 3px;
+  background: #1f6feb;
+  display: inline-grid;
+  place-content: center;
+}
+
+.markdown-body :deep(input[type='checkbox']::after) {
+  content: '';
+  width: 0.55rem;
+  height: 0.3rem;
+  border-left: 2px solid #f5f7ff;
+  border-bottom: 2px solid #f5f7ff;
+  transform: rotate(-45deg);
+  opacity: 0;
+}
+
+.markdown-body :deep(input[type='checkbox']:checked::after) {
+  opacity: 1;
 }
 </style>
