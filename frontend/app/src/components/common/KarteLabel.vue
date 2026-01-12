@@ -13,7 +13,7 @@ const props = defineProps<{
     </v-col>
     <v-col cols="auto">
       <template v-if="props.project.karte_plan">
-        <v-chip size="small" color="#198b48" class="font-weight-bold"> PLAN </v-chip>
+        <v-chip size="small" color="#a8326d" class="font-weight-bold"> PLAN </v-chip>
       </template>
       <template v-else>
         <v-chip size="small" disabled> PLAN </v-chip>
@@ -21,7 +21,7 @@ const props = defineProps<{
     </v-col>
     <v-col cols="auto">
       <template v-if="props.project.karte_report">
-        <v-chip size="small" color="#198b48" class="font-weight-bold"> REPORT </v-chip>
+        <v-chip size="small" color="#a8326d" class="font-weight-bold"> REPORT </v-chip>
       </template>
       <template v-else>
         <v-chip size="small" disabled> REPORT </v-chip>
@@ -29,7 +29,7 @@ const props = defineProps<{
     </v-col>
     <v-col cols="auto">
       <template v-if="props.project.checklist">
-        <v-chip size="small" color="#198b48" class="font-weight-bold"> CHECK </v-chip>
+        <v-chip size="small" color="#a8326d" class="font-weight-bold"> CHECK </v-chip>
       </template>
       <template v-else>
         <v-chip size="small" disabled> CHECK </v-chip>
@@ -38,5 +38,4 @@ const props = defineProps<{
   </v-row>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
