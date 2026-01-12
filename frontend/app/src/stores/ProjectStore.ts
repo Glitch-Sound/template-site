@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
 import type { User } from '@/types/User'
+import { TypePost } from '@/types/User'
 import type {
   ProjectGroup,
   ProjectGroupCreate,
@@ -49,6 +50,12 @@ export const useProjectStore = defineStore('project', () => {
   }
   function getProjectByRid(rid: number): ProjectList | undefined {
     return by_rid_project.value.get(rid)
+  }
+
+  function getSelectableUserRids(users: User[]): number[] {
+    return users
+      .filter((user) => user.post !== TypePost.NONE && user.post !== TypePost.GUEST)
+      .map((user) => user.rid)
   }
 
   // function upsertGroup(g: ProjectGroup) {
@@ -218,7 +225,12 @@ export const useProjectStore = defineStore('project', () => {
     await fetchProjectTargets()
     await fetchProjectUsers()
     const condition = await service_project.fetchProjectCondition()
-    patchCondition(condition)
+    const selectable_user_rids = getSelectableUserRids(project_users.value)
+    patchCondition({
+      ...condition,
+      rid_users_pm: selectable_user_rids,
+      rid_users_pl: selectable_user_rids,
+    })
   }
 
   function reset(): void {
