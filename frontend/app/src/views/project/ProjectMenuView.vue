@@ -6,6 +6,7 @@ import ProjectEvent from '@/views/project/ProjectEvent'
 import QuarterFilter from '@/components/common/QuarterFilter.vue'
 import UserFilter from '@/components/common/UserFilter.vue'
 import RankFilter from '@/components/common/RankFilter.vue'
+import CompanyFilter from '@/components/common/CompanyFilter.vue'
 import { useProjectStore } from '@/stores/ProjectStore'
 
 const store = useProjectStore()
@@ -24,6 +25,11 @@ const model_users_pm = computed<number[]>({
 const model_users_pl = computed<number[]>({
   get: () => condition.value.rid_users_pl ?? [],
   set: (v) => store.patchCondition({ rid_users_pl: v ?? [] }),
+})
+
+const model_companies = computed<number[]>({
+  get: () => condition.value.rid_companies ?? [],
+  set: (v) => store.patchCondition({ rid_companies: v ?? [] }),
 })
 
 const model_ranks = computed<number[]>({
@@ -76,6 +82,10 @@ const handleFilter = async () => {
 
       <v-list-item>
         <QuarterFilter v-model="model_quarters" />
+      </v-list-item>
+
+      <v-list-item>
+        <CompanyFilter v-model="model_companies" />
       </v-list-item>
 
       <v-list-item>

@@ -62,6 +62,7 @@ class TargetQuarter(schema_base.ORMBaseModel):
 
 class SearchCondition(schema_base.ORMBaseModel):
     target: List[int]
+    rid_companies: List[int]
     rid_users_pm: List[int]
     rid_users_pl: List[int]
     ranks: List[int]

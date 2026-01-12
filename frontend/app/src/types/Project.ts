@@ -89,6 +89,7 @@ export interface TargetQuarter {
 
 export interface SearchCondition {
   target: number[]
+  rid_companies: number[]
   rid_users_pm: number[]
   rid_users_pl: number[]
   ranks: number[]

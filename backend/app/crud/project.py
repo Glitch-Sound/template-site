@@ -1,6 +1,7 @@
 from datetime import date
 from typing import List
 
+from app.models import company as model_company
 from app.models import project as model_project
 from app.models import project_group as model_project_group
 from app.models import project_number as model_project_number
@@ -194,6 +195,20 @@ def get_project_condition(db: Session) -> schema_project.SearchCondition:
     rid_users_pl = [int(x[0]) for x in query_pl.all()]
     # fmt: on
 
+    # fmt: off
+    query_companies = db.query(
+        model_company.Company.rid
+    )\
+    .filter(
+        and_(
+            model_company.Company.is_deleted == 0,
+        )
+    )\
+    .distinct()\
+    .order_by(model_company.Company.rid.asc())
+    rid_companies = [int(x[0]) for x in query_companies.all()]
+    # fmt: on
+
     ranks = [
         rank.value
         for rank in model_project.TypeRank
@@ -202,6 +217,7 @@ def get_project_condition(db: Session) -> schema_project.SearchCondition:
 
     return schema_project.SearchCondition(
         target=targets,
+        rid_companies=rid_companies,
         rid_users_pm=rid_users_pm,
         rid_users_pl=rid_users_pl,
         ranks=ranks,
@@ -323,6 +339,11 @@ def get_projects(
         model_project_group.ProjectGroup.is_deleted == 0,
         model_project_group.ProjectGroup.projects.any(and_(*child_preds)),
     ]
+
+    if condition.rid_companies:
+        group_preds.append(
+            model_project_group.ProjectGroup.rid_companies.in_(condition.rid_companies)
+        )
 
     query = (
         db.query(model_project_group.ProjectGroup)

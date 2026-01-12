@@ -86,6 +86,7 @@ export const useProjectStore = defineStore('project', () => {
   function defaultCondition(): SearchCondition {
     return {
       target: [],
+      rid_companies: [],
       rid_users_pm: [],
       rid_users_pl: [],
       ranks: getSelectableRanks(),
@@ -236,6 +237,7 @@ export const useProjectStore = defineStore('project', () => {
     const selectable_user_rids = getSelectableUserRids(project_users.value)
     patchCondition({
       ...condition,
+      rid_companies: condition.rid_companies ?? [],
       rid_users_pm: selectable_user_rids,
       rid_users_pl: selectable_user_rids,
       ranks: condition.ranks?.length ? condition.ranks : getSelectableRanks(),
