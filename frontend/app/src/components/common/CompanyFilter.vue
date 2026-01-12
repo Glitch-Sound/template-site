@@ -19,7 +19,6 @@ const { companies, is_loading } = storeToRefs(store_company)
 const { fetchCompanies } = store_company
 
 const selected_option = ref<number[]>(props.modelValue ?? [])
-const is_initialized = ref(false)
 
 onMounted(() => {
   fetchCompanies()
@@ -33,12 +32,10 @@ watch(
 )
 
 watch(companies, (list) => {
-  if (is_initialized.value) return
   if (!list.length) return
-  if (selected_option.value.length === 0) {
-    selected_option.value = list.map((company) => company.rid)
-  }
-  is_initialized.value = true
+  if (selected_option.value.length > 0) return
+  if (props.modelValue && props.modelValue.length > 0) return
+  selected_option.value = list.map((company) => company.rid)
 })
 
 watch(selected_option, (val) => {
@@ -80,5 +77,4 @@ const selectionText = computed(() => {
   </v-select>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
