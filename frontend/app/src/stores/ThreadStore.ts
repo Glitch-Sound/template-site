@@ -67,6 +67,15 @@ export const useThreadStore = defineStore('thread', () => {
 
   async function updateThread(payload: ThreadUpdate): Promise<Thread> {
     const updated = await service_thread.updateThread(payload)
+    const report = threads_report.value.find((entry) => entry.rid_projects === payload.rid_projects)
+    if (report) {
+      const index = report.threads.findIndex((thread) => thread.rid === updated.rid)
+      if (index >= 0) {
+        report.threads.splice(index, 1, updated)
+      } else {
+        report.threads.push(updated)
+      }
+    }
     await fetchThreadsByRID(payload.rid_projects)
     return updated
   }

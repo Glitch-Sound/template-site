@@ -33,7 +33,12 @@ export const useTargetStore = defineStore('target', () => {
 
   async function updateTarget(payload: TargetUpdate): Promise<Target> {
     const updated = await service_target.updateTarget(payload)
-    await fetchTargets()
+    const index = targets.value.findIndex((target) => target.rid === updated.rid)
+    if (index >= 0) {
+      targets.value.splice(index, 1, updated)
+    } else {
+      targets.value.push(updated)
+    }
     return updated
   }
 
