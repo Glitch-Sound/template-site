@@ -147,7 +147,7 @@ const handleClear = async () => {
       </v-list-item>
 
       <v-list-item>
-        <v-btn width="250px" color="#111315" prepend-icon="mdi-close" @click="handleClear">
+        <v-btn width="250px" color="#0b0c0e" prepend-icon="mdi-close" @click="handleClear">
           CLEAR
         </v-btn>
       </v-list-item>
