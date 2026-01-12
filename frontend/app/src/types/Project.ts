@@ -91,6 +91,7 @@ export interface SearchCondition {
   target: number[]
   rid_users_pm: number[]
   rid_users_pl: number[]
+  ranks: number[]
   is_none_pre_approval: boolean
   is_none_number_m: boolean
   is_none_number_s: boolean

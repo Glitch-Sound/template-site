@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 import type { User } from '@/types/User'
 import { TypePost } from '@/types/User'
+import { TypeRank } from '@/types/Project'
 import type {
   ProjectGroup,
   ProjectGroupCreate,
@@ -58,6 +59,12 @@ export const useProjectStore = defineStore('project', () => {
       .map((user) => user.rid)
   }
 
+  function getSelectableRanks(): number[] {
+    return Object.values(TypeRank)
+      .filter((value) => typeof value === 'number' && value !== TypeRank.NONE)
+      .map((value) => value as number)
+  }
+
   // function upsertGroup(g: ProjectGroup) {
   //   const i = project_groups.value.findIndex((x) => x.rid === g.rid)
   //   if (i >= 0) project_groups.value[i] = g
@@ -81,6 +88,7 @@ export const useProjectStore = defineStore('project', () => {
       target: [],
       rid_users_pm: [],
       rid_users_pl: [],
+      ranks: getSelectableRanks(),
       is_none_pre_approval: false,
       is_none_number_m: false,
       is_none_number_s: false,
@@ -230,6 +238,7 @@ export const useProjectStore = defineStore('project', () => {
       ...condition,
       rid_users_pm: selectable_user_rids,
       rid_users_pl: selectable_user_rids,
+      ranks: condition.ranks?.length ? condition.ranks : getSelectableRanks(),
     })
   }
 

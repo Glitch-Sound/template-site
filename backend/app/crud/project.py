@@ -194,10 +194,17 @@ def get_project_condition(db: Session) -> schema_project.SearchCondition:
     rid_users_pl = [int(x[0]) for x in query_pl.all()]
     # fmt: on
 
+    ranks = [
+        rank.value
+        for rank in model_project.TypeRank
+        if rank != model_project.TypeRank.NONE
+    ]
+
     return schema_project.SearchCondition(
         target=targets,
         rid_users_pm=rid_users_pm,
         rid_users_pl=rid_users_pl,
+        ranks=ranks,
         is_none_pre_approval=0,
         is_none_number_m=0,
         is_none_number_s=0,
@@ -291,6 +298,9 @@ def get_projects(
         child_preds.append(
             model_project.Project.rid_users_pl.in_(condition.rid_users_pl)
         )
+
+    if condition.ranks:
+        child_preds.append(model_project.Project.rank.in_(condition.ranks))
 
     if condition.is_none_pre_approval:
         child_preds.append(

@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 import ProjectEvent from '@/views/project/ProjectEvent'
 import QuarterFilter from '@/components/common/QuarterFilter.vue'
 import UserFilter from '@/components/common/UserFilter.vue'
+import RankFilter from '@/components/common/RankFilter.vue'
 import { useProjectStore } from '@/stores/ProjectStore'
 
 const store = useProjectStore()
@@ -23,6 +24,11 @@ const model_users_pm = computed<number[]>({
 const model_users_pl = computed<number[]>({
   get: () => condition.value.rid_users_pl ?? [],
   set: (v) => store.patchCondition({ rid_users_pl: v ?? [] }),
+})
+
+const model_ranks = computed<number[]>({
+  get: () => condition.value.ranks ?? [],
+  set: (v) => store.patchCondition({ ranks: v ?? [] }),
 })
 
 const model_none_pre_approval = computed<boolean>({
@@ -70,6 +76,10 @@ const handleFilter = async () => {
 
       <v-list-item>
         <QuarterFilter v-model="model_quarters" />
+      </v-list-item>
+
+      <v-list-item>
+        <RankFilter v-model="model_ranks" />
       </v-list-item>
 
       <v-list-item>
