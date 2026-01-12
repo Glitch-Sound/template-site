@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import type { Project, ProjectUpdate } from '@/types/Project'
+import { TypeRank } from '@/types/Project'
 import { useProjectStore } from '@/stores/ProjectStore'
 import { useThreadStore } from '@/stores/ThreadStore'
 import QuarterLabel from '@/components/common/QuarterLabel.vue'
@@ -80,7 +81,12 @@ const handleDelete = async (data: ProjectUpdate) => {
         </v-card>
 
         <v-card>
-          <span class="text-subtitle-1">{{ props.project.name }}</span>
+          <span
+            class="text-subtitle-1"
+            :class="{ 'project-name-muted': props.project.rank === TypeRank.X }"
+          >
+            {{ props.project.name }}
+          </span>
         </v-card>
       </v-col>
 
@@ -142,5 +148,9 @@ const handleDelete = async (data: ProjectUpdate) => {
 }
 .opacity-50 {
   opacity: 0.5;
+}
+
+.project-name-muted {
+  color: #9e9e9e;
 }
 </style>
