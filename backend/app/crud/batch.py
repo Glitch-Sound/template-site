@@ -5,15 +5,12 @@ from datetime import date
 
 from app.models import project as model_project
 from app.models import project_number as model_project_number
+import pandas as pd
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 
-def import_number(db: Session) -> None:
-    csv_paths = glob.glob("/app/import/daicholist_*.csv")
-    if not csv_paths:
-        return
-
+def _fetch_project_targets(db: Session):
     today_str = date.today().isoformat()
     # fmt: off
     targets = db.query(
@@ -30,6 +27,15 @@ def import_number(db: Session) -> None:
     )\
     .all()
     # fmt: on
+    return targets
+
+
+def import_number(db: Session) -> None:
+    csv_paths = glob.glob("/app/import/daicholist_*.csv")
+    if not csv_paths:
+        return
+
+    targets = _fetch_project_targets(db)
 
     if not targets:
         return
@@ -114,4 +120,81 @@ def import_number(db: Session) -> None:
 
 
 def import_larte_checklist(db: Session) -> None:
-    pass
+    # fmt: off
+    D_NAME_SHEET    = "xxx"
+    D_COLUMN_NUMBER = 2
+    D_COLUMN_PLAN   = 5
+    D_COLUMN_REPORT = 6
+    D_COLUMN_CHECK  = 7
+
+    # fmt: on
+
+    excel_paths = glob.glob("/app/import/*.xlsx")
+    if not excel_paths:
+        return
+
+    targets = _fetch_project_targets(db)
+
+    if not targets:
+        return
+
+    prefix_map = {}
+    dict_parent_rids = {}
+    for rid, number_parent in targets:
+        prefix = (number_parent or "")[:4]
+        if not prefix:
+            continue
+        prefix_map.setdefault(prefix, set()).add(number_parent)
+        dict_parent_rids.setdefault(number_parent, []).append(rid)
+
+    excel_path = excel_paths[0]
+    df = pd.read_excel(excel_path, sheet_name=D_NAME_SHEET, header=None)
+
+    prefix_flags = {}
+    for _, row in df.iterrows():
+        if len(row) <= D_COLUMN_CHECK:
+            continue
+        number_val = row[D_COLUMN_NUMBER]
+        if pd.isna(number_val):
+            continue
+        number = str(number_val).strip()
+        if not number:
+            continue
+        prefix = number[:4]
+        if prefix not in prefix_map:
+            continue
+
+        plan_val = row[D_COLUMN_PLAN]
+        report_val = row[D_COLUMN_REPORT]
+        check_val = row[D_COLUMN_CHECK]
+
+        flags = prefix_flags.setdefault(
+            prefix, {"plan": False, "report": False, "check": False}
+        )
+        if str(plan_val).strip() == "未提出":
+            flags["plan"] = True
+        if str(report_val).strip() == "未提出":
+            flags["report"] = True
+        if str(check_val).strip() == "未提出":
+            flags["check"] = True
+
+    for number_parent, rid_projects_list in dict_parent_rids.items():
+        prefix = (number_parent or "")[:4]
+        flags = prefix_flags.get(prefix)
+        if not flags:
+            continue
+        update_values = {}
+        if flags["plan"]:
+            update_values["karte_plan"] = 1
+        if flags["report"]:
+            update_values["karte_report"] = 1
+        if flags["check"]:
+            update_values["checklist"] = 1
+        if not update_values:
+            continue
+        for rid_projects in rid_projects_list:
+            db.query(model_project.Project).filter(
+                model_project.Project.rid == rid_projects
+            ).update(update_values, synchronize_session=False)
+
+    db.commit()
