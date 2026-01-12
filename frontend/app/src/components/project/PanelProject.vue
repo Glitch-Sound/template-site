@@ -83,7 +83,10 @@ const handleDelete = async (data: ProjectUpdate) => {
         <v-card>
           <span
             class="text-subtitle-1"
-            :class="{ 'project-name-muted': props.project.rank === TypeRank.X }"
+            :class="{
+              'project-name-muted': props.project.rank === TypeRank.X,
+              'project-name-primary': props.project.rank === TypeRank.E,
+            }"
           >
             {{ props.project.name }}
           </span>
@@ -152,5 +155,9 @@ const handleDelete = async (data: ProjectUpdate) => {
 
 .project-name-muted {
   color: #9e9e9e;
+}
+
+.project-name-primary {
+  color: #c9ddff;
 }
 </style>
