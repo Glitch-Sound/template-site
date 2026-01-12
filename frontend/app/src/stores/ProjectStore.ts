@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import type { User } from '@/types/User'
 import { TypePost } from '@/types/User'
 import { TypeRank } from '@/types/Project'
+import { loadProjectCondition, saveProjectCondition } from '@/stores/LocalStorage'
 import type {
   ProjectGroup,
   ProjectGroupCreate,
@@ -27,7 +28,11 @@ export const useProjectStore = defineStore('project', () => {
   const projects = ref<ProjectList[]>([])
   const projects_report = ref<ProjectList[]>([])
   const report_user_rid = ref<number | null>(null)
-  const condition = ref<SearchCondition>(defaultCondition())
+  const stored_condition = loadProjectCondition()
+  const condition = ref<SearchCondition>({
+    ...defaultCondition(),
+    ...(stored_condition ?? {}),
+  })
   const project_targets = ref<TargetQuarter[]>([])
   const project_users = ref<User[]>([])
 
@@ -35,6 +40,7 @@ export const useProjectStore = defineStore('project', () => {
   const is_loading_numbers = ref(false)
   const is_loading_projects = ref(false)
   const is_loading_projects_report = ref(false)
+  const is_condition_initialized = ref(!!stored_condition)
 
   let inflight_groups: Promise<void> | null = null
   let inflight_numbers: Promise<void> | null = null
@@ -73,14 +79,17 @@ export const useProjectStore = defineStore('project', () => {
 
   function setCondition(cond: SearchCondition) {
     condition.value = cond
+    saveProjectCondition(condition.value)
   }
 
   function patchCondition(patch: Partial<SearchCondition>) {
     condition.value = { ...(condition.value ?? defaultCondition()), ...patch }
+    saveProjectCondition(condition.value)
   }
 
   function clearCondition() {
     condition.value = defaultCondition()
+    saveProjectCondition(condition.value)
   }
 
   function defaultCondition(): SearchCondition {
@@ -233,6 +242,7 @@ export const useProjectStore = defineStore('project', () => {
   async function initSearchCondition(): Promise<void> {
     await fetchProjectTargets()
     await fetchProjectUsers()
+    if (is_condition_initialized.value) return
     const condition = await service_project.fetchProjectCondition()
     const selectable_user_rids = getSelectableUserRids(project_users.value)
     patchCondition({
@@ -242,6 +252,7 @@ export const useProjectStore = defineStore('project', () => {
       rid_users_pl: selectable_user_rids,
       ranks: condition.ranks?.length ? condition.ranks : getSelectableRanks(),
     })
+    is_condition_initialized.value = true
   }
 
   function reset(): void {
@@ -250,6 +261,8 @@ export const useProjectStore = defineStore('project', () => {
     projects_report.value = []
     report_user_rid.value = null
     condition.value = defaultCondition()
+    is_condition_initialized.value = false
+    saveProjectCondition(null)
   }
 
   return {
