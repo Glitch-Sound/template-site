@@ -8,6 +8,7 @@ import { TypeThreadState } from '@/types/Thread'
 import PanelProject from '@/components/project/PanelProject.vue'
 import PanelProjectGroup from '@/components/project/PanelProjectGroup.vue'
 import MarkedText from '@/components/common/MarkedText.vue'
+import { threadIndentStyle } from '@/utils/threadIndent'
 
 const store_project = useProjectStore()
 const { projects_report, report_user_rid, is_loading_projects_report } =
@@ -17,8 +18,6 @@ const { fetchProjectsReport } = store_project
 const store_thread = useThreadStore()
 const { threads_report, is_loading_report } = storeToRefs(store_thread)
 const { fetchThreadsByUser } = store_thread
-
-const indent_depth = (d: number) => `${Math.max(0, d) * 22}px`
 
 const threads_by_project = computed(
   () => new Map(threads_report.value.map((r) => [r.rid_projects, r.threads])),
@@ -62,7 +61,7 @@ watch(
                 >
                   <v-row class="ma-0 pa-0 pb-5 no-gutter">
                     <v-col class="pa-0">
-                      <div :style="{ paddingLeft: indent_depth(t.depth) }">
+                      <div :style="threadIndentStyle(t.depth)">
                         <template v-if="t.state == TypeThreadState.COMPLETED">
                           <MarkedText class="text-body-2 pr-6 note-check" :src="t.note" />
                         </template>

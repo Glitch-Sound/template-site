@@ -10,6 +10,7 @@ import { useThreadStore } from '@/stores/ThreadStore'
 import MarkedText from '@/components/common/MarkedText.vue'
 import CreateThreadDialog from '@/components/dialog/CreateThreadDialog.vue'
 import UpdateThreadDialog from '@/components/dialog/UpdateThreadDialog.vue'
+import { threadIndentStyle } from '@/utils/threadIndent'
 
 const store_thread = useThreadStore()
 const { fetchThreadsByRID, fetchThreadsStatus, createThread, updateThread, deleteThread } =
@@ -24,25 +25,6 @@ const title = computed(() => project.value?.name ?? '')
 const dialog_thread_create = ref()
 const dialog_thread_update = ref()
 
-const indent_depth = (d: number) => Math.max(0, d)
-const threadIndentStyle = (depth: number) => {
-  const level = indent_depth(depth)
-  const line_color = '#2e2e2e'
-  const line_gap = 8
-  const line_width = 2
-  const lines = Array.from({ length: level }, () => `linear-gradient(${line_color}, ${line_color})`)
-  const positions = Array.from({ length: level }, (_, i) => `${i * line_gap}px 0`)
-  const sizes = Array.from({ length: level }, () => `${line_width}px 100%`)
-
-  return {
-    marginLeft: `${level * 40}px`,
-    paddingLeft: level ? `${level * line_gap + 10}px` : '0',
-    backgroundImage: lines.join(', '),
-    backgroundPosition: positions.join(', '),
-    backgroundSize: sizes.join(', '),
-    backgroundRepeat: 'no-repeat',
-  }
-}
 
 watch(
   () => dialog.value,
