@@ -26,6 +26,15 @@ const props = defineProps<{
   list-style: disc;
 }
 
+.markdown-body :deep(ul ul) {
+  list-style: none;
+}
+
+.markdown-body :deep(ul ul > li::marker) {
+  content: '▸ ';
+  font-size: 0.8em;
+}
+
 .markdown-body :deep(ul.contains-task-list) {
   list-style: none;
   padding-left: 0;
