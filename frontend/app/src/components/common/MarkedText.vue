@@ -26,6 +26,38 @@ const props = defineProps<{
   list-style: disc;
 }
 
+.markdown-body :deep(ul.contains-task-list) {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-body :deep(li.task-list-item) {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-body :deep(li.task-list-item::marker) {
+  content: '';
+}
+
+.markdown-body :deep(li.task-list-item input[type='checkbox']) {
+  margin-left: 0;
+}
+
+.markdown-body :deep(ul:has(> li > input[type='checkbox'])) {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-body :deep(li:has(> input[type='checkbox'])) {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-body :deep(li:has(> input[type='checkbox'])::marker) {
+  content: '';
+}
+
 .markdown-body :deep(ol) {
   list-style: decimal;
 }
