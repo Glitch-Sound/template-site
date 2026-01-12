@@ -37,6 +37,9 @@ const props = defineProps<{
 .markdown-body :deep(h6) {
   margin: 0.6rem 0 0.35rem;
   font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
 }
 
 .markdown-body :deep(h1) {
@@ -92,7 +95,8 @@ const props = defineProps<{
   background: #141414;
   border: 1px solid #2a2a2a;
   border-radius: 4px;
-  font-family: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+  font-family:
+    'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;
   font-size: 0.92em;
 }

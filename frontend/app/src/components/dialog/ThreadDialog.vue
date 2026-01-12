@@ -165,7 +165,7 @@ const handleDelete = async (data: ThreadUpdate) => {
               </v-col>
 
               <v-col cols="auto" class="pa-0 d-flex align-end" style="gap: 0">
-                <v-icon size="small" color="#c0c0c0" class="ml-5" @click="handleCheckThread(t)">
+                <v-icon size="small" color="#4d8dff" class="ml-5" @click="handleCheckThread(t)">
                   mdi-check
                 </v-icon>
 
