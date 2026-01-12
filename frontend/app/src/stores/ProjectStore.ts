@@ -88,7 +88,17 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   function clearCondition() {
-    condition.value = defaultCondition()
+    condition.value = {
+      target: [],
+      rid_companies: [],
+      rid_users_pm: [],
+      rid_users_pl: [],
+      ranks: [],
+      is_none_pre_approval: false,
+      is_none_number_m: false,
+      is_none_number_s: false,
+      is_none_number_o: false,
+    }
     saveProjectCondition(condition.value)
   }
 
@@ -291,6 +301,8 @@ export const useProjectStore = defineStore('project', () => {
     createProjectGroup,
     updateProjectGroup,
     deleteProjectGroup,
+    fetchProjectTargets,
+    fetchProjectUsers,
     fetchProjectNumbers,
     createProjectNumber,
     updateProjectNumber,

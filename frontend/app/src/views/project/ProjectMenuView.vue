@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import ProjectEvent from '@/views/project/ProjectEvent'
@@ -8,9 +8,28 @@ import UserFilter from '@/components/common/UserFilter.vue'
 import RankFilter from '@/components/common/RankFilter.vue'
 import CompanyFilter from '@/components/common/CompanyFilter.vue'
 import { useProjectStore } from '@/stores/ProjectStore'
+import { useCompanyStore } from '@/stores/CompanyStore'
+import { TypePost } from '@/types/User'
+import { TypeQuarter } from '@/types/Project'
 
 const store = useProjectStore()
-const { condition } = storeToRefs(store)
+const store_company = useCompanyStore()
+const { condition, project_targets, project_users } = storeToRefs(store)
+const { companies } = storeToRefs(store_company)
+const { fetchProjectTargets, fetchProjectUsers, fetchProjects } = store
+const { fetchCompanies } = store_company
+
+const selectable_quarters = computed(() =>
+  project_targets.value
+    .filter((fq) => fq.quarter !== TypeQuarter.NONE)
+    .map((fq) => fq.year * 10 + fq.quarter),
+)
+
+const selectable_users = computed(() =>
+  project_users.value
+    .filter((user) => user.post !== TypePost.NONE && user.post !== TypePost.GUEST)
+    .map((user) => user.rid),
+)
 
 const model_quarters = computed<number[]>({
   get: () => condition.value.target ?? [],
@@ -62,7 +81,21 @@ const handleAddProject = () => {
 }
 
 const handleFilter = async () => {
-  await store.fetchProjects()
+  await fetchProjects()
+}
+
+const handleClear = async () => {
+  await Promise.all([fetchProjectTargets(), fetchProjectUsers(), fetchCompanies()])
+  await nextTick()
+  model_quarters.value = selectable_quarters.value
+  model_companies.value = companies.value.map((company) => company.rid)
+  model_users_pm.value = selectable_users.value
+  model_users_pl.value = selectable_users.value
+  model_none_pre_approval.value = false
+  model_none_number_m.value = false
+  model_none_number_s.value = false
+  model_none_number_o.value = false
+  await fetchProjects()
 }
 </script>
 
@@ -110,6 +143,12 @@ const handleFilter = async () => {
       <v-list-item>
         <v-btn width="250px" color="#282B31" prepend-icon="mdi-tune-variant" @click="handleFilter">
           Filter
+        </v-btn>
+      </v-list-item>
+
+      <v-list-item>
+        <v-btn width="250px" color="#111315" prepend-icon="mdi-close" @click="handleClear">
+          CLEAR
         </v-btn>
       </v-list-item>
     </v-sheet>
