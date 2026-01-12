@@ -117,6 +117,7 @@ const handleDelete = async (data: ProjectUpdate) => {
       </v-col>
 
       <v-col cols="auto" class="d-flex align-center justify-center ga-5">
+        <v-icon color="#c0c0c0" @click="openUpdateProjectDialog()"> mdi-pencil </v-icon>
         <v-badge
           :content="thread_status_count"
           :model-value="thread_status_count > 0"
@@ -129,7 +130,6 @@ const handleDelete = async (data: ProjectUpdate) => {
             mdi-message-bulleted
           </v-icon>
         </v-badge>
-        <v-icon color="#c0c0c0" @click="openUpdateProjectDialog()"> mdi-pencil </v-icon>
       </v-col>
     </v-row>
   </v-sheet>
@@ -140,7 +140,6 @@ const handleDelete = async (data: ProjectUpdate) => {
 </template>
 
 <style scoped>
-
 .user {
   min-width: 150px;
   max-width: 150px;
