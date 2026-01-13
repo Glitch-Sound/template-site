@@ -88,13 +88,6 @@ const handleApplyFilter = () => {
           </v-menu>
         </div>
       </v-list-item>
-
-      <v-list-item>
-        <router-link to="/viz/export" class="link--normal" active-class="link--active">
-          <v-icon icon="mdi-download-box-outline" />
-          Export
-        </router-link>
-      </v-list-item>
     </v-sheet>
   </v-navigation-drawer>
 </template>
