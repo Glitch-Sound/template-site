@@ -3,10 +3,10 @@ import glob
 import io
 from datetime import date
 
+import pandas as pd
 from app.models import project as model_project
 from app.models import project_number as model_project_number
-import pandas as pd
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 
@@ -121,11 +121,11 @@ def import_number(db: Session) -> None:
 
 def import_larte_checklist(db: Session) -> None:
     # fmt: off
-    D_NAME_SHEET    = "xxx"
-    D_COLUMN_NUMBER = 2
-    D_COLUMN_PLAN   = 5
-    D_COLUMN_REPORT = 6
-    D_COLUMN_CHECK  = 7
+    D_NAME_SHEET    = "未提出一覧"
+    D_COLUMN_NUMBER =  4
+    D_COLUMN_PLAN   = 10
+    D_COLUMN_REPORT = 11
+    D_COLUMN_CHECK  = 12
 
     # fmt: on
 
@@ -137,6 +137,21 @@ def import_larte_checklist(db: Session) -> None:
 
     if not targets:
         return
+
+    db.query(model_project.Project).filter(
+        or_(
+            model_project.Project.karte_plan == 1,
+            model_project.Project.karte_report == 1,
+            model_project.Project.checklist == 1,
+        )
+    ).update(
+        {
+            "karte_plan": 0,
+            "karte_report": 0,
+            "checklist": 0,
+        },
+        synchronize_session=False,
+    )
 
     prefix_map = {}
     dict_parent_rids = {}

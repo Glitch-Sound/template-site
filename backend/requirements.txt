@@ -11,3 +11,4 @@ ruff-lsp
 sqlalchemy
 uvicorn
 pandas
+openpyxl
