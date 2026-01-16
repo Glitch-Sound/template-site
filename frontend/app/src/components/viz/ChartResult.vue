@@ -904,7 +904,7 @@ onBeforeUnmount(() => {
 
 <template>
   <v-card class="viz-card viz-card--tall company-card sankey-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-subtitle-2 font-weight-medium"> Results </v-card-title>
+    <v-card-title class="text-body-2 font-weight-medium"> Results </v-card-title>
 
     <v-card-text class="pa-3 viz-card-text sankey-body">
       <div ref="sankeyWrap" class="sankey-wrap">
