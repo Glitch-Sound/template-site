@@ -344,7 +344,7 @@ const renderSankey = () => {
     const xMid = (node.x0 + node.x1) / 2
     const yMid = node.y0 + (node.y1 - node.y0) / 2
     label.setAttribute('y', `${yMid}`)
-    label.setAttribute('fill', '#d8d8d8')
+    label.setAttribute('fill', '#efefef')
     label.setAttribute('font-size', '12')
     label.setAttribute('dominant-baseline', 'middle')
 
@@ -391,7 +391,7 @@ const renderSankey = () => {
       const metricLabel = document.createElementNS(ns, 'text')
       metricLabel.setAttribute('x', `${metricAnchor.x}`)
       metricLabel.setAttribute('y', `${yMid}`)
-      metricLabel.setAttribute('fill', '#bdbdbd')
+      metricLabel.setAttribute('fill', '#efefef')
       metricLabel.setAttribute('font-size', '11')
       metricLabel.setAttribute('dominant-baseline', 'middle')
       metricLabel.setAttribute('text-anchor', metricAnchor.align)
