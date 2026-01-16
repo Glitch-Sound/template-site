@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { Chart } from 'vue-chartjs'
-import { Chart as ChartJS, Tooltip, Legend } from 'chart.js'
-import { SankeyController, Flow } from 'chartjs-chart-sankey'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { sankey as d3Sankey, sankeyJustify, sankeyLinkHorizontal } from 'd3-sankey'
 import { chartPalette } from '@/constants/chartPalette'
 import { useSummaryStore } from '@/stores/SummaryStore'
 
-ChartJS.register(SankeyController, Flow, Tooltip, Legend)
-
 const summaryStore = useSummaryStore()
 const primaryColor = ref('#2196f3')
+const sankeySvg = ref<SVGSVGElement | null>(null)
+const sankeyWrap = ref<HTMLElement | null>(null)
+const wrapSize = ref({ width: 0, height: 0 })
+let resizeObserver: ResizeObserver | null = null
 
 onMounted(async () => {
   await summaryStore.fetchSummariesSankey()
@@ -49,105 +49,275 @@ const colorForPerson = (rid: number) => {
   return `hsl(${hue}, 55%, 55%)`
 }
 
-const nodeColors = computed(() => {
-  const map = new Map<string, string>()
+const nodeRegistry = computed(() => {
   const summary = sankeySummary.value
-  map.set(rootLabel.value, primaryColor.value)
-  if (!summary) return map
+  const nodes = new Map<
+    string,
+    { id: string; name: string; color: string; display: string }
+  >()
+  nodes.set('root', {
+    id: 'root',
+    name: rootLabel.value,
+    display: rootLabel.value,
+    color: primaryColor.value,
+  })
+  if (!summary) return nodes
 
   summary.companies.forEach((company) => {
-    map.set(companyLabel(company.name, company.rid), colorForCompany(company.rid))
+    const id = `company:${company.rid}`
+    nodes.set(id, {
+      id,
+      name: companyLabel(company.name, company.rid),
+      display: company.name,
+      color: colorForCompany(company.rid),
+    })
   })
 
   summary.company_pm.forEach((item) => {
-    map.set(pmLabel(item.pm_name, item.pm_rid), colorForPerson(item.pm_rid))
+    const id = `pm:${item.pm_rid}`
+    if (nodes.has(id)) return
+    nodes.set(id, {
+      id,
+      name: pmLabel(item.pm_name, item.pm_rid),
+      display: `PM ${item.pm_name || 'Unknown'}`,
+      color: colorForPerson(item.pm_rid),
+    })
   })
 
   summary.pm_pl.forEach((item) => {
-    map.set(plLabel(item.pl_name, item.pl_rid), colorForPerson(item.pl_rid))
+    const id = `pl:${item.pl_rid}`
+    if (nodes.has(id)) return
+    nodes.set(id, {
+      id,
+      name: plLabel(item.pl_name, item.pl_rid),
+      display: `PL ${item.pl_name || 'Unknown'}`,
+      color: colorForPerson(item.pl_rid),
+    })
   })
 
-  return map
+  return nodes
 })
 
-const chartLinks = computed(() => {
+const sankeyLinks = computed(() => {
   const summary = sankeySummary.value
   if (!summary) return []
 
-  const links: Array<{ from: string; to: string; flow: number }> = []
-  const root = rootLabel.value
+  const links: Array<{
+    source: string
+    target: string
+    value: number
+    projectName?: string
+    projectRid?: number
+  }> = []
 
   summary.companies.forEach((company) => {
     if (!company.amount) return
     links.push({
-      from: root,
-      to: companyLabel(company.name, company.rid),
-      flow: company.amount,
+      source: 'root',
+      target: `company:${company.rid}`,
+      value: company.amount,
     })
   })
 
   summary.company_pm.forEach((item) => {
     if (!item.amount) return
     links.push({
-      from: companyLabel(item.company_name, item.company_rid),
-      to: pmLabel(item.pm_name, item.pm_rid),
-      flow: item.amount,
+      source: `company:${item.company_rid}`,
+      target: `pm:${item.pm_rid}`,
+      value: item.amount,
+      projectName: item.project_name,
+      projectRid: item.project_rid,
     })
   })
 
   summary.pm_pl.forEach((item) => {
     if (!item.amount) return
     links.push({
-      from: pmLabel(item.pm_name, item.pm_rid),
-      to: plLabel(item.pl_name, item.pl_rid),
-      flow: item.amount,
+      source: `pm:${item.pm_rid}`,
+      target: `pl:${item.pl_rid}`,
+      value: item.amount,
+      projectName: item.project_name,
+      projectRid: item.project_rid,
     })
   })
 
   return links
 })
 
-const chartData = computed(() => ({
-  datasets: [
-    {
-      label: 'Sankey',
-      data: chartLinks.value,
-      colorFrom: (context: { raw?: { from?: string } }) =>
-        (context.raw?.from ? nodeColors.value.get(context.raw.from) : null) ?? '#888888',
-      colorTo: (context: { raw?: { to?: string } }) =>
-        (context.raw?.to ? nodeColors.value.get(context.raw.to) : null) ?? '#888888',
-      colorMode: 'gradient',
-      borderWidth: 0,
-    },
-  ],
-}))
-
-const chartOptions = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: {
-    duration: 900,
-    easing: 'easeOutQuart',
-  },
-  plugins: {
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        label: (context: { raw?: { from?: string; to?: string; flow?: number } }) => {
-          const raw = context.raw
-          if (!raw || typeof raw.flow !== 'number') return ''
-          return `${raw.from ?? ''} → ${raw.to ?? ''}: ${currencyFormatter.format(raw.flow)}`
-        },
-      },
-    },
-  },
-}))
-
 const totalAmountText = computed(() => {
   const total = sankeySummary.value?.total_amount ?? 0
   return currencyFormatter.format(total)
+})
+
+const isEmpty = computed(() => !sankeyLinks.value.length)
+
+const renderSankey = () => {
+  const svg = sankeySvg.value
+  const size = wrapSize.value
+  const nodesMap = nodeRegistry.value
+  if (!svg || !size.width || !size.height || !nodesMap.size) return
+
+  while (svg.firstChild) {
+    svg.removeChild(svg.firstChild)
+  }
+
+  const ns = 'http://www.w3.org/2000/svg'
+  const width = size.width
+  const height = size.height
+  svg.setAttribute('width', `${width}`)
+  svg.setAttribute('height', `${height}`)
+
+  const nodes = Array.from(nodesMap.values()).map((node) => ({
+    id: node.id,
+    name: node.name,
+    display: node.display,
+    color: node.color,
+  }))
+
+  const links = sankeyLinks.value.map((link) => ({
+    source: link.source,
+    target: link.target,
+    value: link.value,
+    projectName: link.projectName,
+    projectRid: link.projectRid,
+  }))
+
+  if (!links.length) return
+
+  const paddingLeft = 160
+  const paddingRight = 160
+  const paddingTop = 20
+  const paddingBottom = 12
+  const layout = d3Sankey()
+    .nodeId((d: { id: string }) => d.id)
+    .nodeWidth(18)
+    .nodePadding(18)
+    .nodeAlign(sankeyJustify)
+    .extent([
+      [paddingLeft, paddingTop],
+      [width - paddingRight, height - paddingBottom],
+    ])
+
+  const graph = layout({
+    nodes: nodes.map((node) => ({ ...node })),
+    links: links.map((link) => ({ ...link })),
+  })
+
+  const linkGroup = document.createElementNS(ns, 'g')
+  const nodeGroup = document.createElementNS(ns, 'g')
+  svg.appendChild(linkGroup)
+  svg.appendChild(nodeGroup)
+
+  const linkPath = sankeyLinkHorizontal()
+  const totalAmount = sankeySummary.value?.total_amount ?? 0
+  const centerX = width / 2
+  const leftEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.35
+  const rightEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.65
+
+  graph.links.forEach((link: any) => {
+    const path = document.createElementNS(ns, 'path')
+    const d = linkPath(link)
+    if (!d) return
+    path.setAttribute('d', d)
+    path.setAttribute('fill', 'none')
+    const color = link.source?.color ?? '#888888'
+    path.setAttribute('stroke', color)
+    path.setAttribute('stroke-opacity', '0.22')
+    path.setAttribute('stroke-width', `${Math.max(1, link.width ?? 1)}`)
+    path.setAttribute('stroke-linecap', 'round')
+
+    const title = document.createElementNS(ns, 'title')
+    const projectLabel = link.projectName
+      ? ` (${link.projectName}${link.projectRid ? `#${link.projectRid}` : ''})`
+      : ''
+    title.textContent = `${link.source?.display ?? ''} → ${link.target?.display ?? ''}${projectLabel}: ${currencyFormatter.format(link.value ?? 0)}`
+    path.appendChild(title)
+    linkGroup.appendChild(path)
+  })
+
+  graph.nodes.forEach((node: any) => {
+    const rect = document.createElementNS(ns, 'rect')
+    rect.setAttribute('x', `${node.x0}`)
+    rect.setAttribute('y', `${node.y0}`)
+    rect.setAttribute('width', `${Math.max(2, node.x1 - node.x0)}`)
+    rect.setAttribute('height', `${Math.max(2, node.y1 - node.y0)}`)
+    rect.setAttribute('fill', node.color ?? '#888888')
+    rect.setAttribute('rx', '2')
+    nodeGroup.appendChild(rect)
+
+    const nodeValue = node.value ?? 0
+    const percent = totalAmount ? Math.round((nodeValue / totalAmount) * 100) : 0
+
+    const label = document.createElementNS(ns, 'text')
+    const xMid = (node.x0 + node.x1) / 2
+    const yMid = node.y0 + (node.y1 - node.y0) / 2
+    label.setAttribute('y', `${yMid}`)
+    label.setAttribute('fill', '#d8d8d8')
+    label.setAttribute('font-size', '12')
+    label.setAttribute('dominant-baseline', 'middle')
+
+    if (node.x0 < leftEdge) {
+      label.setAttribute('x', `${node.x0 - 12}`)
+      label.setAttribute('text-anchor', 'end')
+    } else if (node.x0 > rightEdge) {
+      label.setAttribute('x', `${node.x1 + 12}`)
+      label.setAttribute('text-anchor', 'start')
+    } else {
+      label.setAttribute('x', `${centerX}`)
+      label.setAttribute('text-anchor', 'middle')
+    }
+    label.textContent = node.display ?? node.name ?? ''
+    nodeGroup.appendChild(label)
+
+    if (percent) {
+      const percentText = document.createElementNS(ns, 'text')
+      percentText.setAttribute('fill', node.color ?? '#bdbdbd')
+      percentText.setAttribute('font-size', '12')
+      percentText.setAttribute('font-weight', '600')
+      percentText.setAttribute('dominant-baseline', 'middle')
+      percentText.textContent = `${percent}%`
+      const percentY = Math.max(paddingTop + 8, node.y0 - 10)
+      if (node.x0 < leftEdge) {
+        percentText.setAttribute('x', `${node.x0 - 12}`)
+        percentText.setAttribute('text-anchor', 'end')
+      } else if (node.x0 > rightEdge) {
+        percentText.setAttribute('x', `${node.x1 + 12}`)
+        percentText.setAttribute('text-anchor', 'start')
+      } else {
+        percentText.setAttribute('x', `${centerX}`)
+        percentText.setAttribute('text-anchor', 'middle')
+      }
+      percentText.setAttribute('y', `${percentY}`)
+      nodeGroup.appendChild(percentText)
+    }
+  })
+}
+
+const updateSize = () => {
+  if (!sankeyWrap.value) return
+  wrapSize.value = {
+    width: Math.max(0, sankeyWrap.value.clientWidth),
+    height: Math.max(0, sankeyWrap.value.clientHeight),
+  }
+}
+
+watch([sankeySummary, wrapSize], () => {
+  renderSankey()
+})
+
+onMounted(() => {
+  updateSize()
+  if (sankeyWrap.value) {
+    resizeObserver = new ResizeObserver(() => {
+      updateSize()
+    })
+    resizeObserver.observe(sankeyWrap.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
 })
 </script>
 
@@ -160,9 +330,9 @@ const totalAmountText = computed(() => {
         <div class="text-caption text-medium-emphasis">Sales Total</div>
         <div class="sankey-total">{{ totalAmountText }}</div>
       </div>
-      <div class="sankey-wrap">
-        <Chart v-if="chartLinks.length" type="sankey" :data="chartData" :options="chartOptions" />
-        <div v-else class="sankey-empty text-caption text-medium-emphasis">No data</div>
+      <div ref="sankeyWrap" class="sankey-wrap">
+        <svg ref="sankeySvg" class="sankey-svg" role="img" aria-label="Sankey diagram" />
+        <div v-if="isEmpty" class="sankey-empty text-caption text-medium-emphasis">No data</div>
       </div>
     </v-card-text>
   </v-card>
@@ -200,7 +370,14 @@ const totalAmountText = computed(() => {
   min-height: 0;
 }
 
+.sankey-svg {
+  width: 100%;
+  height: 100%;
+}
+
 .sankey-empty {
+  position: absolute;
+  inset: 0;
   height: 100%;
   display: flex;
   align-items: center;
