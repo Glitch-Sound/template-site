@@ -349,6 +349,20 @@ const renderSankey = () => {
     color: node.color,
   }))
 
+  const summary = sankeySummary.value
+  const projectGroupNameById = new Map<number, string>()
+  const projectNameById = new Map<number, string>()
+  if (summary) {
+    summary.project_groups.forEach((group) => {
+      projectGroupNameById.set(group.rid, group.name)
+    })
+    summary.pm_pl.forEach((item) => {
+      if (item.project_rid) {
+        projectNameById.set(item.project_rid, item.project_name)
+      }
+    })
+  }
+
   const links = sankeyLinks.value.map((link) => ({
     source: link.source,
     target: link.target,
@@ -691,6 +705,44 @@ const renderSankey = () => {
     rect.setAttribute('height', `${Math.max(2, node.y1 - node.y0)}`)
     rect.setAttribute('fill', node.color ?? '#888888')
     rect.setAttribute('rx', '2')
+    rect.addEventListener('mouseenter', (event) => {
+      const wrap = sankeyWrap.value
+      if (!wrap) return
+      const rectBox = wrap.getBoundingClientRect()
+      const rawName = (node.display ?? node.name ?? '').trim()
+      let labelText = rawName
+      if (nodeId.startsWith('project-company:')) {
+        const name = projectGroupNameById.get(nodeRid)
+        labelText = name ?? rawName
+      } else if (nodeId.startsWith('project-pm:')) {
+        const name = projectNameById.get(nodeRid)
+        labelText = name ?? rawName
+      } else if (nodeId.startsWith('pm:')) {
+        labelText = rawName.replace(/^PM\\s*/, '')
+      } else if (nodeId.startsWith('pl:')) {
+        labelText = rawName.replace(/^PL\\s*/, '')
+      }
+      const valueText = currencyFormatter.format(node.value ?? 0)
+      tooltip.value = {
+        visible: true,
+        x: event.clientX - rectBox.left + 12,
+        y: event.clientY - rectBox.top + 12,
+        text: `${labelText}: ${valueText}`,
+      }
+    })
+    rect.addEventListener('mousemove', (event) => {
+      const wrap = sankeyWrap.value
+      if (!wrap) return
+      const rectBox = wrap.getBoundingClientRect()
+      tooltip.value = {
+        ...tooltip.value,
+        x: event.clientX - rectBox.left + 12,
+        y: event.clientY - rectBox.top + 12,
+      }
+    })
+    rect.addEventListener('mouseleave', () => {
+      tooltip.value = { ...tooltip.value, visible: false }
+    })
     rect.addEventListener('click', () => {
       const nodeRid = Number(nodeId.split(':')[1] ?? 0)
       let selectionInfo: typeof selectedLink.value = null
