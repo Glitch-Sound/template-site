@@ -82,8 +82,8 @@ class SankeyPmPl(schema_base.ORMBaseModel):
     pm_name: str
     pl_rid: int
     pl_name: str
-    project_group_rid: int
-    project_group_name: str
+    project_rid: int
+    project_name: str
     amount: int
 
 

@@ -259,9 +259,9 @@ def get_summaries_sankey(
         pm_name_expr.label("pm_name"),
         pl_rid_expr.label("pl_rid"),
         pl_name_expr.label("pl_name"),
-        model_project_group.ProjectGroup.rid.label("project_group_rid"),
-        model_project_group.ProjectGroup.name.label("project_group_name"),
-        func.sum(model_project.Project.amount_order).label("amount"),
+        model_project.Project.rid.label("project_rid"),
+        model_project.Project.name.label("project_name"),
+        model_project.Project.amount_order.label("amount"),
     )\
     .join(
         model_project_group.ProjectGroup,
@@ -282,15 +282,7 @@ def get_summaries_sankey(
     .filter(*base_filters)\
     .filter(model_project.Project.rid_users_pm.isnot(None))\
     .filter(model_project.Project.rid_users_pl.isnot(None))\
-    .group_by(
-        pm_rid_expr,
-        pm_name_expr,
-        pl_rid_expr,
-        pl_name_expr,
-        model_project_group.ProjectGroup.rid,
-        model_project_group.ProjectGroup.name,
-    )\
-    .order_by(func.sum(model_project.Project.amount_order).desc())\
+    .order_by(model_project.Project.amount_order.desc())\
     .all()
     # fmt: on
 
@@ -383,8 +375,8 @@ def get_summaries_sankey(
             pm_name=row.pm_name or "Unknown",
             pl_rid=row.pl_rid or 0,
             pl_name=row.pl_name or "Unknown",
-            project_group_rid=row.project_group_rid or 0,
-            project_group_name=row.project_group_name or "Unknown",
+            project_rid=row.project_rid or 0,
+            project_name=row.project_name or "Unknown",
             amount=row.amount or 0,
         )
         for row in pm_pl_rows

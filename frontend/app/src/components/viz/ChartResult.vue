@@ -156,11 +156,11 @@ const nodeRegistry = computed(() => {
   })
 
   summary.pm_pl.forEach((item) => {
-    const projectId = `project-pm:${item.project_group_rid}`
+    const projectId = `project-pm:${item.project_rid}`
     if (!nodes.has(projectId)) {
       nodes.set(projectId, {
         id: projectId,
-        name: projectLabel(item.project_group_name),
+        name: projectLabel(item.project_name),
         display: '',
         color: colorForPerson(item.pm_rid),
       })
@@ -226,17 +226,17 @@ const sankeyLinks = computed(() => {
     if (!item.amount) return
     links.push({
       source: `pm:${item.pm_rid}`,
-      target: `project-pm:${item.project_group_rid}`,
+      target: `project-pm:${item.project_rid}`,
       value: item.amount,
-      projectName: item.project_group_name,
-      projectRid: item.project_group_rid,
+      projectName: item.project_name,
+      projectRid: item.project_rid,
     })
     links.push({
-      source: `project-pm:${item.project_group_rid}`,
+      source: `project-pm:${item.project_rid}`,
       target: `pl:${item.pl_rid}`,
       value: item.amount,
-      projectName: item.project_group_name,
-      projectRid: item.project_group_rid,
+      projectName: item.project_name,
+      projectRid: item.project_rid,
     })
   })
 
@@ -333,10 +333,23 @@ const renderSankey = () => {
     path.setAttribute('stroke-linecap', 'butt')
 
     const title = document.createElementNS(ns, 'title')
-    const projectLabel = link.projectName
-      ? ` (${link.projectName}${link.projectRid ? `#${link.projectRid}` : ''})`
-      : ''
-    title.textContent = `${link.source?.display ?? ''} → ${link.target?.display ?? ''}${projectLabel}: ${currencyFormatter.format(link.value ?? 0)}`
+    const sourceId = String(link.source?.id ?? '')
+    const targetId = String(link.target?.id ?? '')
+    const targetName = (link.target?.display ?? link.target?.name ?? '').trim()
+    const projectName = (link.projectName ?? '').trim()
+    const tooltipLabel = (() => {
+      if (sourceId === 'root' && targetId.startsWith('company:')) return targetName
+      if (sourceId.startsWith('company:') && targetId.startsWith('project-company:'))
+        return projectName || targetName
+      if (sourceId.startsWith('project-company:') && targetId.startsWith('pm:'))
+        return targetName.replace(/^PM\\s*/, '')
+      if (sourceId.startsWith('pm:') && targetId.startsWith('project-pm:'))
+        return projectName || targetName
+      if (sourceId.startsWith('project-pm:') && targetId.startsWith('pl:'))
+        return targetName.replace(/^PL\\s*/, '')
+      return targetName
+    })()
+    title.textContent = `${tooltipLabel}: ${currencyFormatter.format(link.value ?? 0)}`
     path.appendChild(title)
     linkGroup.appendChild(path)
   })

@@ -77,8 +77,8 @@ export interface SankeyPmPl {
   pm_name: string
   pl_rid: number
   pl_name: string
-  project_group_rid: number
-  project_group_name: string
+  project_rid: number
+  project_name: string
   amount: number
 }
 
