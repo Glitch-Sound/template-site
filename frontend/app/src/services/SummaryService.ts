@@ -51,9 +51,11 @@ class SummaryService {
     }
   }
 
-  public async fetchSummariesSankey(): Promise<SankeySummary> {
+  public async fetchSummariesSankey(period?: string): Promise<SankeySummary> {
     try {
-      const response = await apiClient.get<SankeySummary>('/summaries/sankey')
+      const response = await apiClient.get<SankeySummary>('/summaries/sankey', {
+        params: { period: period ?? 'year' },
+      })
       return response.data
     } catch (error: unknown) {
       console.error(error)

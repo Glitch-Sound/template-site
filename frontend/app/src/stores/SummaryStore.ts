@@ -14,6 +14,7 @@ export const useSummaryStore = defineStore('summary', () => {
   const summaries_incomplete = ref<Project[]>([])
   const summaries_alert = ref<Project[]>([])
   const summaries_sankey = ref<SankeySummary | null>(null)
+  const sankey_period = ref('year')
 
   const amount_year = ref<number | null>(null)
   const company_year = ref<number | null>(null)
@@ -35,6 +36,7 @@ export const useSummaryStore = defineStore('summary', () => {
   let inflight_incomplete: Promise<void> | null = null
   let inflight_alert: Promise<void> | null = null
   let inflight_sankey: Promise<void> | null = null
+  let inflight_sankey_period: string | null = null
 
   async function fetchSummariesAmountLatest(): Promise<void> {
     if (inflight_amount_latest) return inflight_amount_latest
@@ -136,15 +138,22 @@ export const useSummaryStore = defineStore('summary', () => {
     return inflight_alert
   }
 
-  async function fetchSummariesSankey(): Promise<void> {
-    if (inflight_sankey) return inflight_sankey
+  async function fetchSummariesSankey(period?: string): Promise<void> {
+    const key = period ?? 'year'
+    sankey_period.value = key
+    if (inflight_sankey && inflight_sankey_period === key) return inflight_sankey
     is_loading_sankey.value = true
+    inflight_sankey_period = key
     inflight_sankey = (async () => {
       try {
-        summaries_sankey.value = await service_summary.fetchSummariesSankey()
+        const result = await service_summary.fetchSummariesSankey(key)
+        if (sankey_period.value === key) {
+          summaries_sankey.value = result
+        }
       } finally {
         is_loading_sankey.value = false
         inflight_sankey = null
+        inflight_sankey_period = null
       }
     })()
     return inflight_sankey
@@ -173,6 +182,7 @@ export const useSummaryStore = defineStore('summary', () => {
     summaries_incomplete,
     summaries_alert,
     summaries_sankey,
+    sankey_period,
     amount_year,
     company_year,
     is_loading_amount_latest,

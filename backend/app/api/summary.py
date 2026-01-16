@@ -7,7 +7,7 @@ from app.crud import summary as crud_summary
 from app.database import SessionLocal, get_db
 from app.schemas import project as schema_project
 from app.schemas import summary as schema_summary
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 router = APIRouter(tags=["Summary"])
@@ -76,11 +76,12 @@ def get_summaries_company(
     response_model=schema_summary.SankeySummary,
 )
 def get_summaries_sankey(
+    period: str | None = Query(default=None, description="year|h1|h2|q1|q2|q3|q4"),
     db: Session = Depends(get_db),
     _current_user=Depends(api_common.log_token_user),
 ):
     try:
-        return crud_summary.get_summaries_sankey(db)
+        return crud_summary.get_summaries_sankey(db, period)
     except Exception as e:
         re_raise_as_internal_error(e)
 

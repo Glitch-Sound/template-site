@@ -87,17 +87,27 @@ def get_summaries_company_latest(
 
 def get_summaries_sankey(
     db: Session,
+    period: str | None = None,
 ) -> schema_summary.SankeySummary:
     year = datetime.now(JST).year
-    quarter_start = year * 10 + 1
-    quarter_end = year * 10 + 4
+    period_key = (period or "year").lower()
+    quarter_map = {
+        "year": [1, 2, 3, 4],
+        "h1": [1, 2],
+        "h2": [3, 4],
+        "q1": [1],
+        "q2": [2],
+        "q3": [3],
+        "q4": [4],
+    }
+    quarters = quarter_map.get(period_key, quarter_map["year"])
+    quarter_ids = [year * 10 + quarter for quarter in quarters]
     target_ranks = [model_project.TypeRank.A.value, model_project.TypeRank.B.value]
 
     base_filters = [
         model_project.Project.is_deleted.is_(False),
         model_project.Project.rank.in_(target_ranks),
-        model_project.Project.target_quarter >= quarter_start,
-        model_project.Project.target_quarter <= quarter_end,
+        model_project.Project.target_quarter.in_(quarter_ids),
         model_project_group.ProjectGroup.is_deleted.is_(False),
         model_company.Company.is_deleted.is_(False),
     ]

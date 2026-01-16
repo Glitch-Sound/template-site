@@ -12,12 +12,7 @@ const wrapSize = ref({ width: 0, height: 0 })
 const tooltip = ref({ visible: false, x: 0, y: 0, text: '' })
 const selectedLink = ref<{
   key: string
-  type:
-    | 'root-company'
-    | 'company-project-group'
-    | 'project-group-pm'
-    | 'pm-project'
-    | 'project-pl'
+  type: 'root-company' | 'company-project-group' | 'project-group-pm' | 'pm-project' | 'project-pl'
   companyRid?: number
   projectGroupRid?: number
   pmRid?: number
@@ -26,14 +21,31 @@ const selectedLink = ref<{
 } | null>(null)
 let resizeObserver: ResizeObserver | null = null
 
+const periodOptions = [
+  { label: 'Total', value: 'year' },
+  { label: 'H1', value: 'h1' },
+  { label: 'H2', value: 'h2' },
+  { label: '1Q', value: 'q1' },
+  { label: '2Q', value: 'q2' },
+  { label: '3Q', value: 'q3' },
+  { label: '4Q', value: 'q4' },
+]
+const selectedPeriod = ref('year')
+
 onMounted(async () => {
-  await summaryStore.fetchSummariesSankey()
+  await summaryStore.fetchSummariesSankey(selectedPeriod.value)
   const primary = getComputedStyle(document.documentElement)
     .getPropertyValue('--v-theme-primary')
     .trim()
   if (primary) {
     primaryColor.value = primary.includes(',') ? `rgb(${primary})` : primary
   }
+})
+
+watch(selectedPeriod, async (next) => {
+  await summaryStore.fetchSummariesSankey(next)
+  selectedLink.value = null
+  tooltip.value = { ...tooltip.value, visible: false }
 })
 
 const sankeySummary = computed(() => summaryStore.summaries_sankey)
@@ -462,15 +474,13 @@ const renderSankey = () => {
     return pls
   }
 
-  let selectionSets:
-    | {
-        companyRids?: Set<number>
-        projectGroupRids?: Set<number>
-        pmRids?: Set<number>
-        projectRids?: Set<number>
-        plRids?: Set<number>
-      }
-    | null = null
+  let selectionSets: {
+    companyRids?: Set<number>
+    projectGroupRids?: Set<number>
+    pmRids?: Set<number>
+    projectRids?: Set<number>
+    plRids?: Set<number>
+  } | null = null
 
   if (selection && index) {
     if (selection.type === 'root-company' && selection.companyRid) {
@@ -512,7 +522,9 @@ const renderSankey = () => {
       const projectRids = new Set([selection.projectRid])
       const projectGroupRids = collectGroupsFromProjects(projectRids)
       const companyRids = collectCompaniesFromGroups(projectGroupRids)
-      const pmRids = selection.pmRid ? new Set([selection.pmRid]) : collectPmsFromProjects(projectRids)
+      const pmRids = selection.pmRid
+        ? new Set([selection.pmRid])
+        : collectPmsFromProjects(projectRids)
       const plRids = collectPlsFromProjects(projectRids)
       selectionSets = {
         companyRids,
@@ -556,8 +568,12 @@ const renderSankey = () => {
     const linkKey = linkKeyMap.get(link) ?? ''
     const projectGroupRid = link.projectGroupRid ?? 0
     const projectRid = link.projectRid ?? 0
-    let linkType: 'root-company' | 'company-project-group' | 'project-group-pm' | 'pm-project' | 'project-pl' =
-      'root-company'
+    let linkType:
+      | 'root-company'
+      | 'company-project-group'
+      | 'project-group-pm'
+      | 'pm-project'
+      | 'project-pl' = 'root-company'
     let pmRid = 0
     let plRid = 0
     let companyRid = 0
@@ -594,13 +610,9 @@ const renderSankey = () => {
         )
       }
       if (linkType === 'pm-project') {
-        return (
-          inSet(selectionSets.projectRids, projectRid) && inSet(selectionSets.pmRids, pmRid)
-        )
+        return inSet(selectionSets.projectRids, projectRid) && inSet(selectionSets.pmRids, pmRid)
       }
-      return (
-        inSet(selectionSets.projectRids, projectRid) && inSet(selectionSets.plRids, plRid)
-      )
+      return inSet(selectionSets.projectRids, projectRid) && inSet(selectionSets.plRids, plRid)
     })()
 
     if (isActive) {
@@ -747,7 +759,11 @@ const renderSankey = () => {
       const nodeRid = Number(nodeId.split(':')[1] ?? 0)
       let selectionInfo: typeof selectedLink.value = null
       if (nodeId.startsWith('company:')) {
-        selectionInfo = { key: `node:company:${nodeRid}`, type: 'root-company', companyRid: nodeRid }
+        selectionInfo = {
+          key: `node:company:${nodeRid}`,
+          type: 'root-company',
+          companyRid: nodeRid,
+        }
       } else if (nodeId.startsWith('project-company:')) {
         selectionInfo = {
           key: `node:project-group:${nodeRid}`,
@@ -851,7 +867,6 @@ const renderSankey = () => {
       metricLabel.style.transition = 'opacity 10ms ease'
       nodeGroup.appendChild(metricLabel)
     }
-
   })
 
   if (selectionSets) {
@@ -904,7 +919,19 @@ onBeforeUnmount(() => {
 
 <template>
   <v-card class="viz-card viz-card--tall company-card sankey-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-body-2 font-weight-medium"> Results </v-card-title>
+    <v-card-title class="text-body-2 font-weight-medium">
+      Results
+      <v-btn-toggle v-model="selectedPeriod" mandatory density="compact" class="ml-4">
+        <v-btn
+          v-for="option in periodOptions"
+          :key="option.value"
+          :value="option.value"
+          size="small"
+        >
+          {{ option.label }}
+        </v-btn>
+      </v-btn-toggle>
+    </v-card-title>
 
     <v-card-text class="pa-3 viz-card-text sankey-body">
       <div ref="sankeyWrap" class="sankey-wrap">
