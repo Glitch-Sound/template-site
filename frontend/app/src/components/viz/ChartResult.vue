@@ -152,10 +152,10 @@ const totalAmountText = computed(() => {
 </script>
 
 <template>
-  <v-card class="viz-card viz-card--tall company-card" rounded="xl" variant="tonal">
+  <v-card class="viz-card viz-card--tall company-card sankey-card" rounded="xl" variant="tonal">
     <v-card-title class="text-subtitle-2 font-weight-medium"> Results </v-card-title>
 
-    <v-card-text class="pa-3 viz-card-text">
+    <v-card-text class="pa-3 viz-card-text sankey-body">
       <div class="sankey-header">
         <div class="text-caption text-medium-emphasis">Sales Total</div>
         <div class="sankey-total">{{ totalAmountText }}</div>
@@ -170,6 +170,16 @@ const totalAmountText = computed(() => {
 
 <style scoped>
 @import './viz.css';
+
+.sankey-card {
+  height: 100%;
+}
+
+.sankey-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
 .sankey-header {
   display: flex;
@@ -186,7 +196,8 @@ const totalAmountText = computed(() => {
 .sankey-wrap {
   position: relative;
   width: 100%;
-  height: 320px;
+  flex: 1;
+  min-height: 0;
 }
 
 .sankey-empty {
