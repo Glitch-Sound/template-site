@@ -45,3 +45,33 @@ class SummaryCompany(schema_base.ORMBaseModel):
 
 class SummaryCreate(schema_base.ORMBaseModel):
     date_snap: str
+
+
+class SankeyCompany(schema_base.ORMBaseModel):
+    rid: int
+    name: str
+    amount: int
+
+
+class SankeyCompanyPm(schema_base.ORMBaseModel):
+    company_rid: int
+    company_name: str
+    pm_rid: int
+    pm_name: str
+    amount: int
+
+
+class SankeyPmPl(schema_base.ORMBaseModel):
+    pm_rid: int
+    pm_name: str
+    pl_rid: int
+    pl_name: str
+    amount: int
+
+
+class SankeySummary(schema_base.ORMBaseModel):
+    year: int
+    total_amount: int
+    companies: list[SankeyCompany]
+    company_pm: list[SankeyCompanyPm]
+    pm_pl: list[SankeyPmPl]

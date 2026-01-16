@@ -11,6 +11,7 @@ const {
   is_loading_amount_year,
   is_loading_company_latest,
   is_loading_company_year,
+  is_loading_sankey,
 } = storeToRefs(summaryStore)
 const { is_loading: is_loading_targets } = storeToRefs(targetStore)
 </script>
@@ -24,6 +25,7 @@ const { is_loading: is_loading_targets } = storeToRefs(targetStore)
           is_loading_amount_year ||
           is_loading_company_latest ||
           is_loading_company_year ||
+          is_loading_sankey ||
           is_loading_targets
         "
         contained

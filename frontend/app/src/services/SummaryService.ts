@@ -1,5 +1,5 @@
 import apiClient from '@/services/ApiClient'
-import type { SummaryAmount, SummaryCompany } from '@/types/Summary'
+import type { SankeySummary, SummaryAmount, SummaryCompany } from '@/types/Summary'
 import type { Project } from '@/types/Project'
 
 class SummaryService {
@@ -47,6 +47,18 @@ class SummaryService {
       console.error(error)
       throw new Error(
         `fetchSummariesCompany: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  public async fetchSummariesSankey(): Promise<SankeySummary> {
+    try {
+      const response = await apiClient.get<SankeySummary>('/summaries/sankey')
+      return response.data
+    } catch (error: unknown) {
+      console.error(error)
+      throw new Error(
+        `fetchSummariesSankey: ${error instanceof Error ? error.message : String(error)}`,
       )
     }
   }

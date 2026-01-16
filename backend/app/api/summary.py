@@ -71,6 +71,20 @@ def get_summaries_company(
         re_raise_as_internal_error(e)
 
 
+@router.get(
+    "/summaries/sankey",
+    response_model=schema_summary.SankeySummary,
+)
+def get_summaries_sankey(
+    db: Session = Depends(get_db),
+    _current_user=Depends(api_common.log_token_user),
+):
+    try:
+        return crud_summary.get_summaries_sankey(db)
+    except Exception as e:
+        re_raise_as_internal_error(e)
+
+
 @router.post("/summaries", response_model=None)
 def create_summaries(
     target: schema_summary.SummaryCreate,

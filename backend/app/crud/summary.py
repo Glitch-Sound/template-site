@@ -1,14 +1,16 @@
 from calendar import monthrange
 from datetime import date, datetime, timedelta
 
+from app.models import company as model_company
 from app.models import project as model_project
 from app.models import project_group as model_project_group
 from app.models import summary as model_summary
+from app.models import user as model_user
 from app.schemas import project as schema_project
 from app.schemas import summary as schema_summary
 from pytz import timezone
 from sqlalchemy import Date, and_, cast, func, literal, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 JST = timezone("Asia/Tokyo")
 
@@ -81,6 +83,181 @@ def get_summaries_company_latest(
     # fmt: on
 
     return query.all()
+
+
+def get_summaries_sankey(
+    db: Session,
+) -> schema_summary.SankeySummary:
+    year = datetime.now(JST).year
+    quarter_start = year * 10 + 1
+    quarter_end = year * 10 + 4
+    target_ranks = [model_project.TypeRank.A.value, model_project.TypeRank.B.value]
+
+    base_filters = [
+        model_project.Project.is_deleted.is_(False),
+        model_project.Project.rank.in_(target_ranks),
+        model_project.Project.target_quarter >= quarter_start,
+        model_project.Project.target_quarter <= quarter_end,
+        model_project_group.ProjectGroup.is_deleted.is_(False),
+        model_company.Company.is_deleted.is_(False),
+    ]
+
+    # fmt: off
+    total_amount = db.query(
+        func.sum(model_project.Project.amount_order)
+    )\
+    .join(
+        model_project_group.ProjectGroup,
+        model_project.Project.rid_project_groups == model_project_group.ProjectGroup.rid,
+    )\
+    .join(
+        model_company.Company,
+        model_project_group.ProjectGroup.rid_companies == model_company.Company.rid,
+    )\
+    .filter(*base_filters)\
+    .scalar() or 0
+    # fmt: on
+
+    # fmt: off
+    company_rows = db.query(
+        model_project_group.ProjectGroup.rid_companies.label("company_rid"),
+        model_company.Company.name.label("company_name"),
+        func.sum(model_project.Project.amount_order).label("amount"),
+    )\
+    .join(
+        model_project_group.ProjectGroup,
+        model_project.Project.rid_project_groups == model_project_group.ProjectGroup.rid,
+    )\
+    .join(
+        model_company.Company,
+        model_project_group.ProjectGroup.rid_companies == model_company.Company.rid,
+    )\
+    .filter(*base_filters)\
+    .group_by(
+        model_project_group.ProjectGroup.rid_companies,
+        model_company.Company.name,
+    )\
+    .order_by(func.sum(model_project.Project.amount_order).desc())\
+    .all()
+    # fmt: on
+
+    pm_user = aliased(model_user.User)
+    pm_rid_expr = func.coalesce(model_project.Project.rid_users_pm, literal(0))
+    pm_name_expr = func.coalesce(pm_user.name, literal("Unknown"))
+
+    # fmt: off
+    company_pm_rows = db.query(
+        model_project_group.ProjectGroup.rid_companies.label("company_rid"),
+        model_company.Company.name.label("company_name"),
+        pm_rid_expr.label("pm_rid"),
+        pm_name_expr.label("pm_name"),
+        func.sum(model_project.Project.amount_order).label("amount"),
+    )\
+    .join(
+        model_project_group.ProjectGroup,
+        model_project.Project.rid_project_groups == model_project_group.ProjectGroup.rid,
+    )\
+    .join(
+        model_company.Company,
+        model_project_group.ProjectGroup.rid_companies == model_company.Company.rid,
+    )\
+    .outerjoin(
+        pm_user,
+        model_project.Project.rid_users_pm == pm_user.rid,
+    )\
+    .filter(*base_filters)\
+    .group_by(
+        model_project_group.ProjectGroup.rid_companies,
+        model_company.Company.name,
+        pm_rid_expr,
+        pm_name_expr,
+    )\
+    .order_by(func.sum(model_project.Project.amount_order).desc())\
+    .all()
+    # fmt: on
+
+    pm_user = aliased(model_user.User)
+    pl_user = aliased(model_user.User)
+    pm_rid_expr = func.coalesce(model_project.Project.rid_users_pm, literal(0))
+    pm_name_expr = func.coalesce(pm_user.name, literal("Unknown"))
+    pl_rid_expr = func.coalesce(model_project.Project.rid_users_pl, literal(0))
+    pl_name_expr = func.coalesce(pl_user.name, literal("Unknown"))
+
+    # fmt: off
+    pm_pl_rows = db.query(
+        pm_rid_expr.label("pm_rid"),
+        pm_name_expr.label("pm_name"),
+        pl_rid_expr.label("pl_rid"),
+        pl_name_expr.label("pl_name"),
+        func.sum(model_project.Project.amount_order).label("amount"),
+    )\
+    .join(
+        model_project_group.ProjectGroup,
+        model_project.Project.rid_project_groups == model_project_group.ProjectGroup.rid,
+    )\
+    .join(
+        model_company.Company,
+        model_project_group.ProjectGroup.rid_companies == model_company.Company.rid,
+    )\
+    .outerjoin(
+        pm_user,
+        model_project.Project.rid_users_pm == pm_user.rid,
+    )\
+    .outerjoin(
+        pl_user,
+        model_project.Project.rid_users_pl == pl_user.rid,
+    )\
+    .filter(*base_filters)\
+    .group_by(
+        pm_rid_expr,
+        pm_name_expr,
+        pl_rid_expr,
+        pl_name_expr,
+    )\
+    .order_by(func.sum(model_project.Project.amount_order).desc())\
+    .all()
+    # fmt: on
+
+    companies = [
+        schema_summary.SankeyCompany(
+            rid=row.company_rid,
+            name=row.company_name,
+            amount=row.amount or 0,
+        )
+        for row in company_rows
+        if row.company_rid is not None
+    ]
+
+    company_pm = [
+        schema_summary.SankeyCompanyPm(
+            company_rid=row.company_rid,
+            company_name=row.company_name,
+            pm_rid=row.pm_rid or 0,
+            pm_name=row.pm_name or "Unknown",
+            amount=row.amount or 0,
+        )
+        for row in company_pm_rows
+        if row.company_rid is not None
+    ]
+
+    pm_pl = [
+        schema_summary.SankeyPmPl(
+            pm_rid=row.pm_rid or 0,
+            pm_name=row.pm_name or "Unknown",
+            pl_rid=row.pl_rid or 0,
+            pl_name=row.pl_name or "Unknown",
+            amount=row.amount or 0,
+        )
+        for row in pm_pl_rows
+    ]
+
+    return schema_summary.SankeySummary(
+        year=year,
+        total_amount=total_amount,
+        companies=companies,
+        company_pm=company_pm,
+        pm_pl=pm_pl,
+    )
 
 
 # ---------------------------------------------------------------------------

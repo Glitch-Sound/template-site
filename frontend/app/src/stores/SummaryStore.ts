@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import type { SummaryAmount, SummaryCompany } from '@/types/Summary'
+import type { SankeySummary, SummaryAmount, SummaryCompany } from '@/types/Summary'
 import type { Project } from '@/types/Project'
 import service_summary from '@/services/SummaryService'
 
@@ -13,6 +13,7 @@ export const useSummaryStore = defineStore('summary', () => {
   const summaries_deadline = ref<Project[]>([])
   const summaries_incomplete = ref<Project[]>([])
   const summaries_alert = ref<Project[]>([])
+  const summaries_sankey = ref<SankeySummary | null>(null)
 
   const amount_year = ref<number | null>(null)
   const company_year = ref<number | null>(null)
@@ -24,6 +25,7 @@ export const useSummaryStore = defineStore('summary', () => {
   const is_loading_deadline = ref(false)
   const is_loading_incomplete = ref(false)
   const is_loading_alert = ref(false)
+  const is_loading_sankey = ref(false)
 
   let inflight_amount_latest: Promise<void> | null = null
   let inflight_amount_year: Promise<void> | null = null
@@ -32,6 +34,7 @@ export const useSummaryStore = defineStore('summary', () => {
   let inflight_deadline: Promise<void> | null = null
   let inflight_incomplete: Promise<void> | null = null
   let inflight_alert: Promise<void> | null = null
+  let inflight_sankey: Promise<void> | null = null
 
   async function fetchSummariesAmountLatest(): Promise<void> {
     if (inflight_amount_latest) return inflight_amount_latest
@@ -133,6 +136,20 @@ export const useSummaryStore = defineStore('summary', () => {
     return inflight_alert
   }
 
+  async function fetchSummariesSankey(): Promise<void> {
+    if (inflight_sankey) return inflight_sankey
+    is_loading_sankey.value = true
+    inflight_sankey = (async () => {
+      try {
+        summaries_sankey.value = await service_summary.fetchSummariesSankey()
+      } finally {
+        is_loading_sankey.value = false
+        inflight_sankey = null
+      }
+    })()
+    return inflight_sankey
+  }
+
   function reset(): void {
     summaries_amount_latest.value = []
     summaries_amount_year.value = []
@@ -141,6 +158,7 @@ export const useSummaryStore = defineStore('summary', () => {
     summaries_deadline.value = []
     summaries_incomplete.value = []
     summaries_alert.value = []
+    summaries_sankey.value = null
     amount_year.value = null
     company_year.value = null
   }
@@ -154,6 +172,7 @@ export const useSummaryStore = defineStore('summary', () => {
     summaries_deadline,
     summaries_incomplete,
     summaries_alert,
+    summaries_sankey,
     amount_year,
     company_year,
     is_loading_amount_latest,
@@ -163,6 +182,7 @@ export const useSummaryStore = defineStore('summary', () => {
     is_loading_deadline,
     is_loading_incomplete,
     is_loading_alert,
+    is_loading_sankey,
 
     // actions
     fetchSummariesAmountLatest,
@@ -172,6 +192,7 @@ export const useSummaryStore = defineStore('summary', () => {
     fetchSummariesDeadline,
     fetchSummariesIncomplete,
     fetchSummariesAlert,
+    fetchSummariesSankey,
     reset,
   }
 })

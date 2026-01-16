@@ -41,3 +41,33 @@ export interface SummaryCompany {
   all_expected: number
   all_order: number
 }
+
+export interface SankeyCompany {
+  rid: number
+  name: string
+  amount: number
+}
+
+export interface SankeyCompanyPm {
+  company_rid: number
+  company_name: string
+  pm_rid: number
+  pm_name: string
+  amount: number
+}
+
+export interface SankeyPmPl {
+  pm_rid: number
+  pm_name: string
+  pl_rid: number
+  pl_name: string
+  amount: number
+}
+
+export interface SankeySummary {
+  year: number
+  total_amount: number
+  companies: SankeyCompany[]
+  company_pm: SankeyCompanyPm[]
+  pm_pl: SankeyPmPl[]
+}
