@@ -50,6 +50,52 @@ const colorForPerson = (rid: number) => {
   return `hsl(${hue}, 55%, 55%)`
 }
 
+const metricsByNode = computed(() => {
+  const summary = sankeySummary.value
+  const empty = {
+    totalAmount: 0,
+    company: new Map<number, { amount: number; projects: Set<number> }>(),
+    pm: new Map<number, { amount: number; projects: Set<number> }>(),
+    pl: new Map<number, { amount: number; projects: Set<number> }>(),
+  }
+  if (!summary) return empty
+
+  const company = new Map<number, { amount: number; projects: Set<number> }>()
+  const pm = new Map<number, { amount: number; projects: Set<number> }>()
+  const pl = new Map<number, { amount: number; projects: Set<number> }>()
+
+  summary.projects.forEach((project) => {
+    if (!project.company_rid) return
+    const entry = company.get(project.company_rid) ?? { amount: 0, projects: new Set<number>() }
+    entry.amount += project.amount
+    entry.projects.add(project.rid)
+    company.set(project.company_rid, entry)
+  })
+
+  summary.company_pm.forEach((item) => {
+    if (!item.pm_rid) return
+    const entry = pm.get(item.pm_rid) ?? { amount: 0, projects: new Set<number>() }
+    entry.amount += item.amount
+    entry.projects.add(item.project_rid)
+    pm.set(item.pm_rid, entry)
+  })
+
+  summary.pm_pl.forEach((item) => {
+    if (!item.pl_rid) return
+    const entry = pl.get(item.pl_rid) ?? { amount: 0, projects: new Set<number>() }
+    entry.amount += item.amount
+    entry.projects.add(item.project_rid)
+    pl.set(item.pl_rid, entry)
+  })
+
+  return {
+    totalAmount: summary.total_amount ?? 0,
+    company,
+    pm,
+    pl,
+  }
+})
+
 const nodeRegistry = computed(() => {
   const summary = sankeySummary.value
   const nodes = new Map<string, { id: string; name: string; color: string; display: string }>()
@@ -319,6 +365,38 @@ const renderSankey = () => {
     if (text) {
       label.textContent = text
       nodeGroup.appendChild(label)
+    }
+
+    const metrics = metricsByNode.value
+    const ridPart = Number(nodeId.split(':')[1] ?? 0)
+    let metricSource: { amount: number; projects: Set<number> } | undefined
+    let metricAnchor: { x: number; align: 'start' | 'end' } | null = null
+    if (nodeId.startsWith('company:')) {
+      metricSource = metrics.company.get(ridPart)
+      metricAnchor = { x: node.x1 + 12, align: 'start' }
+    } else if (nodeId.startsWith('pm:')) {
+      metricSource = metrics.pm.get(ridPart)
+      metricAnchor = { x: node.x0 - 12, align: 'end' }
+    } else if (nodeId.startsWith('pl:')) {
+      metricSource = metrics.pl.get(ridPart)
+      metricAnchor = { x: node.x0 - 12, align: 'end' }
+    }
+
+    if (metricSource && metricAnchor) {
+      const percent = metrics.totalAmount
+        ? (metricSource.amount / metrics.totalAmount) * 100
+        : 0
+      const projectCount = metricSource.projects.size
+      const metricText = `${percent.toFixed(1)}% (${projectCount}PJ)`
+      const metricLabel = document.createElementNS(ns, 'text')
+      metricLabel.setAttribute('x', `${metricAnchor.x}`)
+      metricLabel.setAttribute('y', `${yMid}`)
+      metricLabel.setAttribute('fill', '#bdbdbd')
+      metricLabel.setAttribute('font-size', '11')
+      metricLabel.setAttribute('dominant-baseline', 'middle')
+      metricLabel.setAttribute('text-anchor', metricAnchor.align)
+      metricLabel.textContent = metricText
+      nodeGroup.appendChild(metricLabel)
     }
   })
 }
