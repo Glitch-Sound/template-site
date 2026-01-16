@@ -72,7 +72,7 @@ const nodeRegistry = computed(() => {
   })
 
   summary.projects.forEach((project) => {
-    const id = `project:${project.rid}`
+    const id = `project-company:${project.rid}`
     nodes.set(id, {
       id,
       name: projectLabel(project.name, project.rid),
@@ -93,6 +93,16 @@ const nodeRegistry = computed(() => {
   })
 
   summary.pm_pl.forEach((item) => {
+    const projectId = `project-pm:${item.project_rid}`
+    if (!nodes.has(projectId)) {
+      nodes.set(projectId, {
+        id: projectId,
+        name: projectLabel(item.project_name, item.project_rid),
+        display: '',
+        color: colorForPerson(item.pm_rid),
+      })
+    }
+
     const id = `pl:${item.pl_rid}`
     if (nodes.has(id)) return
     nodes.set(id, {
@@ -131,7 +141,7 @@ const sankeyLinks = computed(() => {
     if (!project.amount) return
     links.push({
       source: `company:${project.company_rid}`,
-      target: `project:${project.rid}`,
+      target: `project-company:${project.rid}`,
       value: project.amount,
       projectName: project.name,
       projectRid: project.rid,
@@ -141,7 +151,7 @@ const sankeyLinks = computed(() => {
   summary.company_pm.forEach((item) => {
     if (!item.amount) return
     links.push({
-      source: `project:${item.project_rid}`,
+      source: `project-company:${item.project_rid}`,
       target: `pm:${item.pm_rid}`,
       value: item.amount,
       projectName: item.project_name,
@@ -153,6 +163,13 @@ const sankeyLinks = computed(() => {
     if (!item.amount) return
     links.push({
       source: `pm:${item.pm_rid}`,
+      target: `project-pm:${item.project_rid}`,
+      value: item.amount,
+      projectName: item.project_name,
+      projectRid: item.project_rid,
+    })
+    links.push({
+      source: `project-pm:${item.project_rid}`,
       target: `pl:${item.pl_rid}`,
       value: item.amount,
       projectName: item.project_name,
@@ -247,10 +264,18 @@ const renderSankey = () => {
   })
 
   graph.nodes.forEach((node: any) => {
+    const nodeId = String(node.id ?? '')
+    const isProjectNode =
+      nodeId.startsWith('project-company:') || nodeId.startsWith('project-pm:')
+    const fullWidth = node.x1 - node.x0
+    const targetWidth = isProjectNode ? 8 : fullWidth
+    const widthDiff = Math.max(0, fullWidth - targetWidth)
+    const x0 = node.x0 + widthDiff / 2
+    const x1 = node.x1 - widthDiff / 2
     const rect = document.createElementNS(ns, 'rect')
-    rect.setAttribute('x', `${node.x0}`)
+    rect.setAttribute('x', `${x0}`)
     rect.setAttribute('y', `${node.y0}`)
-    rect.setAttribute('width', `${Math.max(2, node.x1 - node.x0)}`)
+    rect.setAttribute('width', `${Math.max(2, x1 - x0)}`)
     rect.setAttribute('height', `${Math.max(2, node.y1 - node.y0)}`)
     rect.setAttribute('fill', node.color ?? '#888888')
     rect.setAttribute('rx', '2')
@@ -264,7 +289,10 @@ const renderSankey = () => {
     label.setAttribute('font-size', '12')
     label.setAttribute('dominant-baseline', 'middle')
 
-    if (node.x0 < leftEdge) {
+    if (nodeId.startsWith('pm:')) {
+      label.setAttribute('x', `${node.x1 + 12}`)
+      label.setAttribute('text-anchor', 'start')
+    } else if (node.x0 < leftEdge) {
       label.setAttribute('x', `${node.x0 - 12}`)
       label.setAttribute('text-anchor', 'end')
     } else if (node.x0 > rightEdge) {
