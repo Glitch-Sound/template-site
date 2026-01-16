@@ -58,7 +58,18 @@ const currencyFormatter = new Intl.NumberFormat('ja-JP', {
 
 const rootLabel = computed(() => {
   const year = sankeySummary.value?.year
-  return year ? `Total ${year}` : 'Total'
+  const period = selectedPeriod.value
+  const labelByPeriod: Record<string, string> = {
+    year: 'Total',
+    h1: 'H1',
+    h2: 'H2',
+    q1: '1Q',
+    q2: '2Q',
+    q3: '3Q',
+    q4: '4Q',
+  }
+  const periodLabel = labelByPeriod[period] ?? 'Total'
+  return year ? `${year} ${periodLabel}` : periodLabel
 })
 
 const companyLabel = (name: string) => `${name}`
