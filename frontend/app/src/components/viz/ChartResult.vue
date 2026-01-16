@@ -241,6 +241,19 @@ const renderSankey = () => {
   const centerX = width / 2
   const leftEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.35
   const rightEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.65
+  const companyShift = 12
+  const pmShift = 10
+
+  graph.nodes.forEach((node: any) => {
+    const nodeId = String(node.id ?? '')
+    if (nodeId.startsWith('company:')) {
+      node.x0 += companyShift
+      node.x1 += companyShift
+    } else if (nodeId.startsWith('pm:')) {
+      node.x0 += pmShift
+      node.x1 += pmShift
+    }
+  })
 
   graph.links.forEach((link: any) => {
     const path = document.createElementNS(ns, 'path')
