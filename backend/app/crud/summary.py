@@ -261,6 +261,7 @@ def get_summaries_sankey(
         pl_name_expr.label("pl_name"),
         model_project.Project.rid.label("project_rid"),
         model_project.Project.name.label("project_name"),
+        model_project_group.ProjectGroup.rid.label("project_group_rid"),
         model_project.Project.amount_order.label("amount"),
     )\
     .join(
@@ -377,6 +378,7 @@ def get_summaries_sankey(
             pl_name=row.pl_name or "Unknown",
             project_rid=row.project_rid or 0,
             project_name=row.project_name or "Unknown",
+            project_group_rid=row.project_group_rid or 0,
             amount=row.amount or 0,
         )
         for row in pm_pl_rows

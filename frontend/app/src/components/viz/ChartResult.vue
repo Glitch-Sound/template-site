@@ -10,6 +10,20 @@ const sankeySvg = ref<SVGSVGElement | null>(null)
 const sankeyWrap = ref<HTMLElement | null>(null)
 const wrapSize = ref({ width: 0, height: 0 })
 const tooltip = ref({ visible: false, x: 0, y: 0, text: '' })
+const selectedLink = ref<{
+  key: string
+  type:
+    | 'root-company'
+    | 'company-project-group'
+    | 'project-group-pm'
+    | 'pm-project'
+    | 'project-pl'
+  companyRid?: number
+  projectGroupRid?: number
+  pmRid?: number
+  projectRid?: number
+  plRid?: number
+} | null>(null)
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(async () => {
@@ -114,6 +128,69 @@ const metricsByNode = computed(() => {
   }
 })
 
+const sankeyIndex = computed(() => {
+  const summary = sankeySummary.value
+  if (!summary) return null
+
+  const projectGroupById = new Map<number, { companyRid: number }>()
+  const projectGroupsByCompany = new Map<number, Set<number>>()
+  summary.project_groups.forEach((group) => {
+    projectGroupById.set(group.rid, { companyRid: group.company_rid })
+    const set = projectGroupsByCompany.get(group.company_rid) ?? new Set<number>()
+    set.add(group.rid)
+    projectGroupsByCompany.set(group.company_rid, set)
+  })
+
+  const projectGroupsByPm = new Map<number, Set<number>>()
+  const pmsByProjectGroup = new Map<number, Set<number>>()
+  summary.company_pm.forEach((item) => {
+    const pmSet = projectGroupsByPm.get(item.pm_rid) ?? new Set<number>()
+    pmSet.add(item.project_group_rid)
+    projectGroupsByPm.set(item.pm_rid, pmSet)
+
+    const groupSet = pmsByProjectGroup.get(item.project_group_rid) ?? new Set<number>()
+    groupSet.add(item.pm_rid)
+    pmsByProjectGroup.set(item.project_group_rid, groupSet)
+  })
+
+  const projectGroupByProject = new Map<number, number>()
+  const projectsByProjectGroup = new Map<number, Set<number>>()
+  const projectsByPm = new Map<number, Set<number>>()
+  const projectsByPl = new Map<number, Set<number>>()
+  const pmByProject = new Map<number, number>()
+  const plByProject = new Map<number, number>()
+  summary.pm_pl.forEach((item) => {
+    projectGroupByProject.set(item.project_rid, item.project_group_rid)
+    pmByProject.set(item.project_rid, item.pm_rid)
+    plByProject.set(item.project_rid, item.pl_rid)
+
+    const groupProjects = projectsByProjectGroup.get(item.project_group_rid) ?? new Set<number>()
+    groupProjects.add(item.project_rid)
+    projectsByProjectGroup.set(item.project_group_rid, groupProjects)
+
+    const pmProjects = projectsByPm.get(item.pm_rid) ?? new Set<number>()
+    pmProjects.add(item.project_rid)
+    projectsByPm.set(item.pm_rid, pmProjects)
+
+    const plProjects = projectsByPl.get(item.pl_rid) ?? new Set<number>()
+    plProjects.add(item.project_rid)
+    projectsByPl.set(item.pl_rid, plProjects)
+  })
+
+  return {
+    projectGroupById,
+    projectGroupsByCompany,
+    projectGroupsByPm,
+    pmsByProjectGroup,
+    projectGroupByProject,
+    projectsByProjectGroup,
+    projectsByPm,
+    projectsByPl,
+    pmByProject,
+    plByProject,
+  }
+})
+
 const nodeRegistry = computed(() => {
   const summary = sankeySummary.value
   const nodes = new Map<string, { id: string; name: string; color: string; display: string }>()
@@ -190,6 +267,7 @@ const sankeyLinks = computed(() => {
     value: number
     projectName?: string
     projectRid?: number
+    projectGroupRid?: number
   }> = []
 
   summary.companies.forEach((company) => {
@@ -209,6 +287,7 @@ const sankeyLinks = computed(() => {
       value: projectGroup.amount,
       projectName: projectGroup.name,
       projectRid: projectGroup.rid,
+      projectGroupRid: projectGroup.rid,
     })
   })
 
@@ -220,6 +299,7 @@ const sankeyLinks = computed(() => {
       value: item.amount,
       projectName: item.project_group_name,
       projectRid: item.project_group_rid,
+      projectGroupRid: item.project_group_rid,
     })
   })
 
@@ -231,6 +311,7 @@ const sankeyLinks = computed(() => {
       value: item.amount,
       projectName: item.project_name,
       projectRid: item.project_rid,
+      projectGroupRid: item.project_group_rid,
     })
     links.push({
       source: `project-pm:${item.project_rid}`,
@@ -238,6 +319,7 @@ const sankeyLinks = computed(() => {
       value: item.amount,
       projectName: item.project_name,
       projectRid: item.project_rid,
+      projectGroupRid: item.project_group_rid,
     })
   })
 
@@ -273,6 +355,7 @@ const renderSankey = () => {
     value: link.value,
     projectName: link.projectName,
     projectRid: link.projectRid,
+    projectGroupRid: link.projectGroupRid,
   }))
 
   if (!links.length) return
@@ -321,7 +404,197 @@ const renderSankey = () => {
     node.x1 += match.shift
   })
 
+  const index = sankeyIndex.value
+  const selection = selectedLink.value
+  const parseRid = (id: string) => Number(id.split(':')[1] ?? 0)
+  const addAll = (target: Set<number>, source?: Set<number>) => {
+    if (!source) return
+    source.forEach((value) => target.add(value))
+  }
+  const collectCompaniesFromGroups = (groupIds: Set<number>) => {
+    const companies = new Set<number>()
+    if (!index) return companies
+    groupIds.forEach((groupId) => {
+      const companyRid = index.projectGroupById.get(groupId)?.companyRid
+      if (companyRid) companies.add(companyRid)
+    })
+    return companies
+  }
+  const collectGroupsFromProjects = (projectIds: Set<number>) => {
+    const groups = new Set<number>()
+    if (!index) return groups
+    projectIds.forEach((projectId) => {
+      const groupId = index.projectGroupByProject.get(projectId)
+      if (groupId) groups.add(groupId)
+    })
+    return groups
+  }
+  const collectPmsFromProjects = (projectIds: Set<number>) => {
+    const pms = new Set<number>()
+    if (!index) return pms
+    projectIds.forEach((projectId) => {
+      const pmRid = index.pmByProject.get(projectId)
+      if (pmRid) pms.add(pmRid)
+    })
+    return pms
+  }
+  const collectPlsFromProjects = (projectIds: Set<number>) => {
+    const pls = new Set<number>()
+    if (!index) return pls
+    projectIds.forEach((projectId) => {
+      const plRid = index.plByProject.get(projectId)
+      if (plRid) pls.add(plRid)
+    })
+    return pls
+  }
+
+  let selectionSets:
+    | {
+        companyRids?: Set<number>
+        projectGroupRids?: Set<number>
+        pmRids?: Set<number>
+        projectRids?: Set<number>
+        plRids?: Set<number>
+      }
+    | null = null
+
+  if (selection && index) {
+    if (selection.type === 'root-company' && selection.companyRid) {
+      const companyRids = new Set([selection.companyRid])
+      const projectGroupRids = index.projectGroupsByCompany.get(selection.companyRid) ?? new Set()
+      const projectRids = new Set<number>()
+      projectGroupRids.forEach((groupId) => {
+        addAll(projectRids, index.projectsByProjectGroup.get(groupId))
+      })
+      selectionSets = {
+        companyRids,
+        projectGroupRids,
+        projectRids,
+      }
+    } else if (selection.type === 'company-project-group' && selection.projectGroupRid) {
+      const projectGroupRids = new Set([selection.projectGroupRid])
+      const companyRids = collectCompaniesFromGroups(projectGroupRids)
+      const projectRids = new Set<number>()
+      projectGroupRids.forEach((groupId) => {
+        addAll(projectRids, index.projectsByProjectGroup.get(groupId))
+      })
+      selectionSets = {
+        companyRids,
+        projectGroupRids,
+        projectRids,
+      }
+    } else if (selection.type === 'project-group-pm' && selection.pmRid) {
+      const pmRids = new Set([selection.pmRid])
+      const projectGroupRids = index.projectGroupsByPm.get(selection.pmRid) ?? new Set()
+      const projectRids = index.projectsByPm.get(selection.pmRid) ?? new Set()
+      const companyRids = collectCompaniesFromGroups(projectGroupRids)
+      selectionSets = {
+        companyRids,
+        projectGroupRids,
+        pmRids,
+        projectRids,
+      }
+    } else if (selection.type === 'pm-project' && selection.projectRid) {
+      const projectRids = new Set([selection.projectRid])
+      const projectGroupRids = collectGroupsFromProjects(projectRids)
+      const companyRids = collectCompaniesFromGroups(projectGroupRids)
+      const pmRids = selection.pmRid ? new Set([selection.pmRid]) : collectPmsFromProjects(projectRids)
+      const plRids = collectPlsFromProjects(projectRids)
+      selectionSets = {
+        companyRids,
+        projectGroupRids,
+        pmRids,
+        projectRids,
+        plRids,
+      }
+    } else if (selection.type === 'project-pl' && selection.plRid) {
+      const plRids = new Set([selection.plRid])
+      const projectRids = index.projectsByPl.get(selection.plRid) ?? new Set()
+      const projectGroupRids = collectGroupsFromProjects(projectRids)
+      const companyRids = collectCompaniesFromGroups(projectGroupRids)
+      const pmRids = collectPmsFromProjects(projectRids)
+      selectionSets = {
+        companyRids,
+        projectGroupRids,
+        pmRids,
+        projectRids,
+        plRids,
+      }
+    }
+  }
+
+  const linkKeyMap = new Map<any, string>()
   graph.links.forEach((link: any) => {
+    const sourceId = String(link.source?.id ?? '')
+    const targetId = String(link.target?.id ?? '')
+    const linkKey = `${sourceId}|${targetId}|${link.projectRid ?? ''}|${link.value ?? ''}`
+    linkKeyMap.set(link, linkKey)
+  })
+
+  const activeLinkKeys = new Set<string>()
+  const activeNodeIds = new Set<string>()
+
+  graph.links.forEach((link: any) => {
+    const sourceId = String(link.source?.id ?? '')
+    const targetId = String(link.target?.id ?? '')
+    const sourceRid = parseRid(sourceId)
+    const targetRid = parseRid(targetId)
+    const linkKey = linkKeyMap.get(link) ?? ''
+    const projectGroupRid = link.projectGroupRid ?? 0
+    const projectRid = link.projectRid ?? 0
+    let linkType: 'root-company' | 'company-project-group' | 'project-group-pm' | 'pm-project' | 'project-pl' =
+      'root-company'
+    let pmRid = 0
+    let plRid = 0
+    let companyRid = 0
+    if (sourceId === 'root' && targetId.startsWith('company:')) {
+      linkType = 'root-company'
+      companyRid = targetRid
+    } else if (sourceId.startsWith('company:') && targetId.startsWith('project-company:')) {
+      linkType = 'company-project-group'
+      companyRid = sourceRid
+    } else if (sourceId.startsWith('project-company:') && targetId.startsWith('pm:')) {
+      linkType = 'project-group-pm'
+      pmRid = targetRid
+    } else if (sourceId.startsWith('pm:') && targetId.startsWith('project-pm:')) {
+      linkType = 'pm-project'
+      pmRid = sourceRid
+    } else if (sourceId.startsWith('project-pm:') && targetId.startsWith('pl:')) {
+      linkType = 'project-pl'
+      plRid = targetRid
+    }
+
+    const inSet = (set: Set<number> | undefined, value: number) => !set || set.has(value)
+    const isActive = (() => {
+      if (!selectionSets) return true
+      if (linkType === 'root-company') {
+        return inSet(selectionSets.companyRids, companyRid)
+      }
+      if (linkType === 'company-project-group') {
+        return inSet(selectionSets.projectGroupRids, projectGroupRid)
+      }
+      if (linkType === 'project-group-pm') {
+        return (
+          inSet(selectionSets.projectGroupRids, projectGroupRid) &&
+          inSet(selectionSets.pmRids, pmRid)
+        )
+      }
+      if (linkType === 'pm-project') {
+        return (
+          inSet(selectionSets.projectRids, projectRid) && inSet(selectionSets.pmRids, pmRid)
+        )
+      }
+      return (
+        inSet(selectionSets.projectRids, projectRid) && inSet(selectionSets.plRids, plRid)
+      )
+    })()
+
+    if (isActive) {
+      activeLinkKeys.add(linkKey)
+      activeNodeIds.add(sourceId)
+      activeNodeIds.add(targetId)
+    }
+
     const path = document.createElementNS(ns, 'path')
     const d = linkPath(link)
     if (!d) return
@@ -329,12 +602,10 @@ const renderSankey = () => {
     path.setAttribute('fill', 'none')
     const color = link.source?.color ?? '#888888'
     path.setAttribute('stroke', color)
-    path.setAttribute('stroke-opacity', '0.22')
+    path.setAttribute('stroke-opacity', !selectionSets || isActive ? '0.3' : '0.08')
     path.setAttribute('stroke-width', `${Math.max(1, link.width ?? 1)}`)
     path.setAttribute('stroke-linecap', 'butt')
 
-    const sourceId = String(link.source?.id ?? '')
-    const targetId = String(link.target?.id ?? '')
     const targetName = (link.target?.display ?? link.target?.name ?? '').trim()
     const projectName = (link.projectName ?? '').trim()
     const tooltipLabel = (() => {
@@ -377,6 +648,23 @@ const renderSankey = () => {
     path.addEventListener('mouseleave', () => {
       tooltip.value = { ...tooltip.value, visible: false }
     })
+    path.addEventListener('click', () => {
+      let selectionInfo: typeof selectedLink.value = null
+      if (linkType === 'root-company') {
+        selectionInfo = { key: linkKey, type: linkType, companyRid }
+      } else if (linkType === 'company-project-group') {
+        selectionInfo = { key: linkKey, type: linkType, projectGroupRid }
+      } else if (linkType === 'project-group-pm') {
+        selectionInfo = { key: linkKey, type: linkType, pmRid }
+      } else if (linkType === 'pm-project') {
+        selectionInfo = { key: linkKey, type: linkType, pmRid, projectRid }
+      } else if (linkType === 'project-pl') {
+        selectionInfo = { key: linkKey, type: linkType, plRid }
+      }
+      selectedLink.value =
+        selectedLink.value && selectedLink.value.key === linkKey ? null : selectionInfo
+      renderSankey()
+    })
 
     linkGroup.appendChild(path)
   })
@@ -396,6 +684,9 @@ const renderSankey = () => {
     rect.setAttribute('height', `${Math.max(2, node.y1 - node.y0)}`)
     rect.setAttribute('fill', node.color ?? '#888888')
     rect.setAttribute('rx', '2')
+    if (selectionSets) {
+      rect.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.2')
+    }
     nodeGroup.appendChild(rect)
 
     const label = document.createElementNS(ns, 'text')
@@ -422,6 +713,9 @@ const renderSankey = () => {
     const text = (node.display ?? node.name ?? '').trim()
     if (text) {
       label.textContent = text
+      if (selectionSets) {
+        label.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.2')
+      }
       nodeGroup.appendChild(label)
     }
 
@@ -452,6 +746,9 @@ const renderSankey = () => {
       metricLabel.setAttribute('dominant-baseline', 'middle')
       metricLabel.setAttribute('text-anchor', metricAnchor.align)
       metricLabel.textContent = metricText
+      if (selectionSets) {
+        metricLabel.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.2')
+      }
       nodeGroup.appendChild(metricLabel)
     }
 
