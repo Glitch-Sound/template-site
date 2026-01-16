@@ -48,19 +48,25 @@ export interface SankeyCompany {
   amount: number
 }
 
-export interface SankeyProject {
+export interface SankeyProjectGroup {
   rid: number
   name: string
   company_rid: number
   company_name: string
   amount: number
+  project_count: number
+}
+
+export interface SankeyProjectCount {
+  rid: number
+  project_count: number
 }
 
 export interface SankeyCompanyPm {
   company_rid: number
   company_name: string
-  project_rid: number
-  project_name: string
+  project_group_rid: number
+  project_group_name: string
   pm_rid: number
   pm_name: string
   amount: number
@@ -71,8 +77,8 @@ export interface SankeyPmPl {
   pm_name: string
   pl_rid: number
   pl_name: string
-  project_rid: number
-  project_name: string
+  project_group_rid: number
+  project_group_name: string
   amount: number
 }
 
@@ -80,7 +86,10 @@ export interface SankeySummary {
   year: number
   total_amount: number
   companies: SankeyCompany[]
-  projects: SankeyProject[]
+  project_groups: SankeyProjectGroup[]
+  company_project_counts: SankeyProjectCount[]
+  pm_project_counts: SankeyProjectCount[]
+  pl_project_counts: SankeyProjectCount[]
   company_pm: SankeyCompanyPm[]
   pm_pl: SankeyPmPl[]
 }

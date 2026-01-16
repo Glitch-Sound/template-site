@@ -34,8 +34,8 @@ const rootLabel = computed(() => {
   return year ? `Total ${year}` : 'Total'
 })
 
-const companyLabel = (name: string, rid: number) => `Company: ${name} (${rid || 0})`
-const projectLabel = (name: string, rid: number) => `Project: ${name || 'Unknown'} (${rid || 0})`
+const companyLabel = (name: string) => `${name}`
+const projectLabel = (name: string) => `${name || 'Unknown'}`
 const pmLabel = (name: string, rid: number) => `PM: ${name || 'Unknown'} (${rid || 0})`
 const plLabel = (name: string, rid: number) => `PL: ${name || 'Unknown'} (${rid || 0})`
 
@@ -54,42 +54,59 @@ const metricsByNode = computed(() => {
   const summary = sankeySummary.value
   const empty = {
     totalAmount: 0,
-    company: new Map<number, { amount: number; projects: Set<number> }>(),
-    pm: new Map<number, { amount: number; projects: Set<number> }>(),
-    pl: new Map<number, { amount: number; projects: Set<number> }>(),
+    company: new Map<number, { amount: number; projectCount: number }>(),
+    pm: new Map<number, { amount: number; projectCount: number }>(),
+    pl: new Map<number, { amount: number; projectCount: number }>(),
   }
   if (!summary) return empty
 
-  const company = new Map<number, { amount: number; projects: Set<number> }>()
-  const pm = new Map<number, { amount: number; projects: Set<number> }>()
-  const pl = new Map<number, { amount: number; projects: Set<number> }>()
+  const company = new Map<number, { amount: number; projectCount: number }>()
+  const pm = new Map<number, { amount: number; projectCount: number }>()
+  const pl = new Map<number, { amount: number; projectCount: number }>()
+  const companyCounts = new Map(
+    summary.company_project_counts.map((row) => [row.rid, row.project_count]),
+  )
+  const pmCounts = new Map(summary.pm_project_counts.map((row) => [row.rid, row.project_count]))
+  const plCounts = new Map(summary.pl_project_counts.map((row) => [row.rid, row.project_count]))
 
-  summary.projects.forEach((project) => {
-    if (!project.company_rid) return
-    const entry = company.get(project.company_rid) ?? { amount: 0, projects: new Set<number>() }
-    entry.amount += project.amount
-    entry.projects.add(project.rid)
-    company.set(project.company_rid, entry)
+  summary.project_groups.forEach((projectGroup) => {
+    if (!projectGroup.company_rid) return
+    const entry = company.get(projectGroup.company_rid) ?? {
+      amount: 0,
+      projectCount: companyCounts.get(projectGroup.company_rid) ?? 0,
+    }
+    entry.amount += projectGroup.amount
+    company.set(projectGroup.company_rid, entry)
   })
 
   summary.company_pm.forEach((item) => {
     if (!item.pm_rid) return
-    const entry = pm.get(item.pm_rid) ?? { amount: 0, projects: new Set<number>() }
+    const entry = pm.get(item.pm_rid) ?? {
+      amount: 0,
+      projectCount: pmCounts.get(item.pm_rid) ?? 0,
+    }
     entry.amount += item.amount
-    entry.projects.add(item.project_rid)
     pm.set(item.pm_rid, entry)
   })
 
   summary.pm_pl.forEach((item) => {
     if (!item.pl_rid) return
-    const entry = pl.get(item.pl_rid) ?? { amount: 0, projects: new Set<number>() }
+    const entry = pl.get(item.pl_rid) ?? {
+      amount: 0,
+      projectCount: plCounts.get(item.pl_rid) ?? 0,
+    }
     entry.amount += item.amount
-    entry.projects.add(item.project_rid)
     pl.set(item.pl_rid, entry)
   })
 
   return {
     totalAmount: summary.total_amount ?? 0,
+    projectGroups: new Map(
+      summary.project_groups.map((group) => [
+        group.rid,
+        { amount: group.amount, projectCount: group.project_count },
+      ]),
+    ),
     company,
     pm,
     pl,
@@ -111,19 +128,19 @@ const nodeRegistry = computed(() => {
     const id = `company:${company.rid}`
     nodes.set(id, {
       id,
-      name: companyLabel(company.name, company.rid),
+      name: companyLabel(company.name),
       display: company.name,
       color: colorForCompany(company.rid),
     })
   })
 
-  summary.projects.forEach((project) => {
-    const id = `project-company:${project.rid}`
+  summary.project_groups.forEach((projectGroup) => {
+    const id = `project-company:${projectGroup.rid}`
     nodes.set(id, {
       id,
-      name: projectLabel(project.name, project.rid),
+      name: projectLabel(projectGroup.name),
       display: '',
-      color: colorForCompany(project.company_rid),
+      color: colorForCompany(projectGroup.company_rid),
     })
   })
 
@@ -139,11 +156,11 @@ const nodeRegistry = computed(() => {
   })
 
   summary.pm_pl.forEach((item) => {
-    const projectId = `project-pm:${item.project_rid}`
+    const projectId = `project-pm:${item.project_group_rid}`
     if (!nodes.has(projectId)) {
       nodes.set(projectId, {
         id: projectId,
-        name: projectLabel(item.project_name, item.project_rid),
+        name: projectLabel(item.project_group_name),
         display: '',
         color: colorForPerson(item.pm_rid),
       })
@@ -183,25 +200,25 @@ const sankeyLinks = computed(() => {
     })
   })
 
-  summary.projects.forEach((project) => {
-    if (!project.amount) return
+  summary.project_groups.forEach((projectGroup) => {
+    if (!projectGroup.amount) return
     links.push({
-      source: `company:${project.company_rid}`,
-      target: `project-company:${project.rid}`,
-      value: project.amount,
-      projectName: project.name,
-      projectRid: project.rid,
+      source: `company:${projectGroup.company_rid}`,
+      target: `project-company:${projectGroup.rid}`,
+      value: projectGroup.amount,
+      projectName: projectGroup.name,
+      projectRid: projectGroup.rid,
     })
   })
 
   summary.company_pm.forEach((item) => {
     if (!item.amount) return
     links.push({
-      source: `project-company:${item.project_rid}`,
+      source: `project-company:${item.project_group_rid}`,
       target: `pm:${item.pm_rid}`,
       value: item.amount,
-      projectName: item.project_name,
-      projectRid: item.project_rid,
+      projectName: item.project_group_name,
+      projectRid: item.project_group_rid,
     })
   })
 
@@ -209,17 +226,17 @@ const sankeyLinks = computed(() => {
     if (!item.amount) return
     links.push({
       source: `pm:${item.pm_rid}`,
-      target: `project-pm:${item.project_rid}`,
+      target: `project-pm:${item.project_group_rid}`,
       value: item.amount,
-      projectName: item.project_name,
-      projectRid: item.project_rid,
+      projectName: item.project_group_name,
+      projectRid: item.project_group_rid,
     })
     links.push({
-      source: `project-pm:${item.project_rid}`,
+      source: `project-pm:${item.project_group_rid}`,
       target: `pl:${item.pl_rid}`,
       value: item.amount,
-      projectName: item.project_name,
-      projectRid: item.project_rid,
+      projectName: item.project_group_name,
+      projectRid: item.project_group_rid,
     })
   })
 
@@ -259,8 +276,8 @@ const renderSankey = () => {
 
   if (!links.length) return
 
-  const paddingLeft = 160
-  const paddingRight = 160
+  const paddingLeft = 80
+  const paddingRight = 80
   const paddingTop = 20
   const paddingBottom = 36
   const layout = d3Sankey()
@@ -287,18 +304,20 @@ const renderSankey = () => {
   const centerX = width / 2
   const leftEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.35
   const rightEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.65
-  const companyShift = 12
-  const pmShift = 10
+  const shiftByType = [
+    { prefix: 'company:', shift: 8 },
+    { prefix: 'project-company:', shift: -6 },
+    { prefix: 'pm:', shift: -10 },
+    { prefix: 'project-pm:', shift: -12 },
+    { prefix: 'pl:', shift: -10 },
+  ]
 
   graph.nodes.forEach((node: any) => {
     const nodeId = String(node.id ?? '')
-    if (nodeId.startsWith('company:')) {
-      node.x0 += companyShift
-      node.x1 += companyShift
-    } else if (nodeId.startsWith('pm:')) {
-      node.x0 += pmShift
-      node.x1 += pmShift
-    }
+    const match = shiftByType.find((entry) => nodeId.startsWith(entry.prefix))
+    if (!match) return
+    node.x0 += match.shift
+    node.x1 += match.shift
   })
 
   graph.links.forEach((link: any) => {
@@ -324,8 +343,7 @@ const renderSankey = () => {
 
   graph.nodes.forEach((node: any) => {
     const nodeId = String(node.id ?? '')
-    const isProjectNode =
-      nodeId.startsWith('project-company:') || nodeId.startsWith('project-pm:')
+    const isProjectNode = nodeId.startsWith('project-company:') || nodeId.startsWith('project-pm:')
     const fullWidth = node.x1 - node.x0
     const targetWidth = isProjectNode ? 8 : fullWidth
     const widthDiff = Math.max(0, fullWidth - targetWidth)
@@ -369,7 +387,7 @@ const renderSankey = () => {
 
     const metrics = metricsByNode.value
     const ridPart = Number(nodeId.split(':')[1] ?? 0)
-    let metricSource: { amount: number; projects: Set<number> } | undefined
+    let metricSource: { amount: number; projectCount: number } | undefined
     let metricAnchor: { x: number; align: 'start' | 'end' } | null = null
     if (nodeId.startsWith('company:')) {
       metricSource = metrics.company.get(ridPart)
@@ -383,10 +401,8 @@ const renderSankey = () => {
     }
 
     if (metricSource && metricAnchor) {
-      const percent = metrics.totalAmount
-        ? (metricSource.amount / metrics.totalAmount) * 100
-        : 0
-      const projectCount = metricSource.projects.size
+      const percent = metrics.totalAmount ? (metricSource.amount / metrics.totalAmount) * 100 : 0
+      const projectCount = metricSource.projectCount
       const metricText = `${percent.toFixed(1)}% (${projectCount}PJ)`
       const metricLabel = document.createElementNS(ns, 'text')
       metricLabel.setAttribute('x', `${metricAnchor.x}`)
@@ -398,6 +414,7 @@ const renderSankey = () => {
       metricLabel.textContent = metricText
       nodeGroup.appendChild(metricLabel)
     }
+
   })
 }
 
