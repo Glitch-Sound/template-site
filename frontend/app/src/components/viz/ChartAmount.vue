@@ -139,7 +139,7 @@ watch(isRankMenuOpen, (isOpen) => {
     <v-card-text class="pa-4 viz-card-text">
       <div class="top-row">
         <div class="total-block">
-          <div class="total-label text-caption text-medium-emphasis">Total</div>
+          <div class="total-label text-caption viz-label">Total</div>
           <v-progress-circular
             :model-value="totalProgress"
             size="72"
@@ -174,7 +174,7 @@ watch(isRankMenuOpen, (isOpen) => {
 
       <div class="half-row">
         <div v-for="half in amount.halves" :key="half.title" class="half-card">
-          <div class="half-title text-caption text-medium-emphasis">
+          <div class="half-title text-caption viz-label">
             {{ half.title }}
           </div>
           <div class="amount-stack">

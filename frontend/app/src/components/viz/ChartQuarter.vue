@@ -126,7 +126,7 @@ watch(isRankMenuOpen, (isOpen) => {
     <v-card-text class="pa-4 viz-card-text">
       <div class="quarter-row">
         <div v-for="quarter in quarters" :key="quarter.title" class="quarter-item">
-          <div class="quarter-title text-caption text-medium-emphasis">
+          <div class="quarter-title text-caption viz-label">
             {{ quarter.title }}
           </div>
 
