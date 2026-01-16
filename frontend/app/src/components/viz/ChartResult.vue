@@ -929,8 +929,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <v-card class="viz-card viz-card--tall company-card sankey-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-body-2 font-weight-medium">
+  <v-card
+    class="viz-card viz-card--tall company-card sankey-card"
+    color="#808080"
+    rounded="xl"
+    variant="tonal"
+  >
+    <v-card-title class="text-body-2 font-weight-medium sankey-title">
       Results
       <v-btn-toggle v-model="selectedPeriod" mandatory density="compact" class="ml-4">
         <v-btn
@@ -982,6 +987,10 @@ onBeforeUnmount(() => {
 .sankey-total {
   font-size: 18px;
   font-weight: 600;
+}
+
+.sankey-title {
+  color: #efefef;
 }
 
 .sankey-wrap {

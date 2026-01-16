@@ -86,8 +86,8 @@ watch(isRankMenuOpen, (isOpen) => {
 </script>
 
 <template>
-  <v-card class="viz-card viz-card--tall quarter-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-subtitle-2 font-weight-medium">
+  <v-card class="viz-card viz-card--tall quarter-card" color="#808080" rounded="xl" variant="tonal">
+  <v-card-title class="text-subtitle-2 font-weight-medium viz-title">
       Quarter
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
         <template #activator="{ props }">
@@ -168,6 +168,9 @@ watch(isRankMenuOpen, (isOpen) => {
 <style scoped>
 @import './viz.css';
 
+.viz-title {
+  color: #efefef;
+}
 .quarter-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

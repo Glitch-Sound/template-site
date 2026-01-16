@@ -99,8 +99,8 @@ watch(isRankMenuOpen, (isOpen) => {
 </script>
 
 <template>
-  <v-card class="viz-card viz-card--tall amount-card" rounded="xl" variant="tonal">
-    <v-card-title class="text-body-2 font-weight-medium">
+  <v-card class="viz-card viz-card--tall amount-card" color="#808080" rounded="xl" variant="tonal">
+  <v-card-title class="text-body-2 font-weight-medium viz-title">
       Amount
       <v-menu v-model="isRankMenuOpen" location="bottom end" :close-on-content-click="false">
         <template #activator="{ props }">
@@ -200,6 +200,9 @@ watch(isRankMenuOpen, (isOpen) => {
 <style scoped>
 @import './viz.css';
 
+.viz-title {
+  color: #efefef;
+}
 .top-row {
   display: flex;
   gap: 12px;
