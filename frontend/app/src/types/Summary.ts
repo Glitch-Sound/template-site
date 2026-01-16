@@ -51,6 +51,8 @@ export interface SankeyCompany {
 export interface SankeyCompanyPm {
   company_rid: number
   company_name: string
+  project_rid: number
+  project_name: string
   pm_rid: number
   pm_name: string
   amount: number
@@ -61,6 +63,8 @@ export interface SankeyPmPl {
   pm_name: string
   pl_rid: number
   pl_name: string
+  project_rid: number
+  project_name: string
   amount: number
 }
 

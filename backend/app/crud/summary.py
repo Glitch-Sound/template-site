@@ -142,16 +142,18 @@ def get_summaries_sankey(
     # fmt: on
 
     pm_user = aliased(model_user.User)
-    pm_rid_expr = func.coalesce(model_project.Project.rid_users_pm, literal(0))
+    pm_rid_expr = model_project.Project.rid_users_pm
     pm_name_expr = func.coalesce(pm_user.name, literal("Unknown"))
 
     # fmt: off
     company_pm_rows = db.query(
         model_project_group.ProjectGroup.rid_companies.label("company_rid"),
         model_company.Company.name.label("company_name"),
+        model_project.Project.rid.label("project_rid"),
+        model_project.Project.name.label("project_name"),
         pm_rid_expr.label("pm_rid"),
         pm_name_expr.label("pm_name"),
-        func.sum(model_project.Project.amount_order).label("amount"),
+        model_project.Project.amount_order.label("amount"),
     )\
     .join(
         model_project_group.ProjectGroup,
@@ -166,21 +168,16 @@ def get_summaries_sankey(
         model_project.Project.rid_users_pm == pm_user.rid,
     )\
     .filter(*base_filters)\
-    .group_by(
-        model_project_group.ProjectGroup.rid_companies,
-        model_company.Company.name,
-        pm_rid_expr,
-        pm_name_expr,
-    )\
-    .order_by(func.sum(model_project.Project.amount_order).desc())\
+    .filter(model_project.Project.rid_users_pm.isnot(None))\
+    .order_by(model_project.Project.amount_order.desc())\
     .all()
     # fmt: on
 
     pm_user = aliased(model_user.User)
     pl_user = aliased(model_user.User)
-    pm_rid_expr = func.coalesce(model_project.Project.rid_users_pm, literal(0))
+    pm_rid_expr = model_project.Project.rid_users_pm
     pm_name_expr = func.coalesce(pm_user.name, literal("Unknown"))
-    pl_rid_expr = func.coalesce(model_project.Project.rid_users_pl, literal(0))
+    pl_rid_expr = model_project.Project.rid_users_pl
     pl_name_expr = func.coalesce(pl_user.name, literal("Unknown"))
 
     # fmt: off
@@ -189,7 +186,9 @@ def get_summaries_sankey(
         pm_name_expr.label("pm_name"),
         pl_rid_expr.label("pl_rid"),
         pl_name_expr.label("pl_name"),
-        func.sum(model_project.Project.amount_order).label("amount"),
+        model_project.Project.rid.label("project_rid"),
+        model_project.Project.name.label("project_name"),
+        model_project.Project.amount_order.label("amount"),
     )\
     .join(
         model_project_group.ProjectGroup,
@@ -208,13 +207,9 @@ def get_summaries_sankey(
         model_project.Project.rid_users_pl == pl_user.rid,
     )\
     .filter(*base_filters)\
-    .group_by(
-        pm_rid_expr,
-        pm_name_expr,
-        pl_rid_expr,
-        pl_name_expr,
-    )\
-    .order_by(func.sum(model_project.Project.amount_order).desc())\
+    .filter(model_project.Project.rid_users_pm.isnot(None))\
+    .filter(model_project.Project.rid_users_pl.isnot(None))\
+    .order_by(model_project.Project.amount_order.desc())\
     .all()
     # fmt: on
 
@@ -232,6 +227,8 @@ def get_summaries_sankey(
         schema_summary.SankeyCompanyPm(
             company_rid=row.company_rid,
             company_name=row.company_name,
+            project_rid=row.project_rid or 0,
+            project_name=row.project_name or "Unknown",
             pm_rid=row.pm_rid or 0,
             pm_name=row.pm_name or "Unknown",
             amount=row.amount or 0,
@@ -246,6 +243,8 @@ def get_summaries_sankey(
             pm_name=row.pm_name or "Unknown",
             pl_rid=row.pl_rid or 0,
             pl_name=row.pl_name or "Unknown",
+            project_rid=row.project_rid or 0,
+            project_name=row.project_name or "Unknown",
             amount=row.amount or 0,
         )
         for row in pm_pl_rows

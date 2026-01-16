@@ -254,7 +254,6 @@ const renderSankey = () => {
     }
     label.textContent = node.display ?? node.name ?? ''
     nodeGroup.appendChild(label)
-
   })
 }
 

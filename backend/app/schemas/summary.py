@@ -56,6 +56,8 @@ class SankeyCompany(schema_base.ORMBaseModel):
 class SankeyCompanyPm(schema_base.ORMBaseModel):
     company_rid: int
     company_name: str
+    project_rid: int
+    project_name: str
     pm_rid: int
     pm_name: str
     amount: int
@@ -66,6 +68,8 @@ class SankeyPmPl(schema_base.ORMBaseModel):
     pm_name: str
     pl_rid: int
     pl_name: str
+    project_rid: int
+    project_name: str
     amount: int
 
 
