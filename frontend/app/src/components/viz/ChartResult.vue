@@ -691,6 +691,32 @@ const renderSankey = () => {
     rect.setAttribute('height', `${Math.max(2, node.y1 - node.y0)}`)
     rect.setAttribute('fill', node.color ?? '#888888')
     rect.setAttribute('rx', '2')
+    rect.addEventListener('click', () => {
+      const nodeRid = Number(nodeId.split(':')[1] ?? 0)
+      let selectionInfo: typeof selectedLink.value = null
+      if (nodeId.startsWith('company:')) {
+        selectionInfo = { key: `node:company:${nodeRid}`, type: 'root-company', companyRid: nodeRid }
+      } else if (nodeId.startsWith('project-company:')) {
+        selectionInfo = {
+          key: `node:project-group:${nodeRid}`,
+          type: 'company-project-group',
+          projectGroupRid: nodeRid,
+        }
+      } else if (nodeId.startsWith('pm:')) {
+        selectionInfo = { key: `node:pm:${nodeRid}`, type: 'project-group-pm', pmRid: nodeRid }
+      } else if (nodeId.startsWith('project-pm:')) {
+        selectionInfo = { key: `node:project:${nodeRid}`, type: 'pm-project', projectRid: nodeRid }
+      } else if (nodeId.startsWith('pl:')) {
+        selectionInfo = { key: `node:pl:${nodeRid}`, type: 'project-pl', plRid: nodeRid }
+      } else {
+        selectionInfo = null
+      }
+      selectedLink.value =
+        selectedLink.value && selectionInfo && selectedLink.value.key === selectionInfo.key
+          ? null
+          : selectionInfo
+      renderSankey()
+    })
     if (selectionSets) {
       rect.style.opacity = activeNodeIds.has(nodeId) ? '1' : '0.6'
       rect.dataset.fadeTo = activeNodeIds.has(nodeId) ? '1' : '0.12'
