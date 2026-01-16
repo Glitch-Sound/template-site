@@ -35,6 +35,7 @@ const rootLabel = computed(() => {
 })
 
 const companyLabel = (name: string, rid: number) => `Company: ${name} (${rid || 0})`
+const projectLabel = (name: string, rid: number) => `Project: ${name || 'Unknown'} (${rid || 0})`
 const pmLabel = (name: string, rid: number) => `PM: ${name || 'Unknown'} (${rid || 0})`
 const plLabel = (name: string, rid: number) => `PL: ${name || 'Unknown'} (${rid || 0})`
 
@@ -67,6 +68,16 @@ const nodeRegistry = computed(() => {
       name: companyLabel(company.name, company.rid),
       display: company.name,
       color: colorForCompany(company.rid),
+    })
+  })
+
+  summary.projects.forEach((project) => {
+    const id = `project:${project.rid}`
+    nodes.set(id, {
+      id,
+      name: projectLabel(project.name, project.rid),
+      display: '',
+      color: colorForCompany(project.company_rid),
     })
   })
 
@@ -116,10 +127,21 @@ const sankeyLinks = computed(() => {
     })
   })
 
+  summary.projects.forEach((project) => {
+    if (!project.amount) return
+    links.push({
+      source: `company:${project.company_rid}`,
+      target: `project:${project.rid}`,
+      value: project.amount,
+      projectName: project.name,
+      projectRid: project.rid,
+    })
+  })
+
   summary.company_pm.forEach((item) => {
     if (!item.amount) return
     links.push({
-      source: `company:${item.company_rid}`,
+      source: `project:${item.project_rid}`,
       target: `pm:${item.pm_rid}`,
       value: item.amount,
       projectName: item.project_name,
@@ -177,7 +199,7 @@ const renderSankey = () => {
   const paddingLeft = 160
   const paddingRight = 160
   const paddingTop = 20
-  const paddingBottom = 12
+  const paddingBottom = 36
   const layout = d3Sankey()
     .nodeId((d: { id: string }) => d.id)
     .nodeWidth(18)
@@ -252,8 +274,11 @@ const renderSankey = () => {
       label.setAttribute('x', `${centerX}`)
       label.setAttribute('text-anchor', 'middle')
     }
-    label.textContent = node.display ?? node.name ?? ''
-    nodeGroup.appendChild(label)
+    const text = (node.display ?? node.name ?? '').trim()
+    if (text) {
+      label.textContent = text
+      nodeGroup.appendChild(label)
+    }
   })
 }
 

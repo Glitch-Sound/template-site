@@ -141,6 +141,27 @@ def get_summaries_sankey(
     .all()
     # fmt: on
 
+    # fmt: off
+    project_rows = db.query(
+        model_project.Project.rid.label("project_rid"),
+        model_project.Project.name.label("project_name"),
+        model_project_group.ProjectGroup.rid_companies.label("company_rid"),
+        model_company.Company.name.label("company_name"),
+        model_project.Project.amount_order.label("amount"),
+    )\
+    .join(
+        model_project_group.ProjectGroup,
+        model_project.Project.rid_project_groups == model_project_group.ProjectGroup.rid,
+    )\
+    .join(
+        model_company.Company,
+        model_project_group.ProjectGroup.rid_companies == model_company.Company.rid,
+    )\
+    .filter(*base_filters)\
+    .order_by(model_project.Project.amount_order.desc())\
+    .all()
+    # fmt: on
+
     pm_user = aliased(model_user.User)
     pm_rid_expr = model_project.Project.rid_users_pm
     pm_name_expr = func.coalesce(pm_user.name, literal("Unknown"))
@@ -223,6 +244,18 @@ def get_summaries_sankey(
         if row.company_rid is not None
     ]
 
+    projects = [
+        schema_summary.SankeyProject(
+            rid=row.project_rid,
+            name=row.project_name or "Unknown",
+            company_rid=row.company_rid,
+            company_name=row.company_name,
+            amount=row.amount or 0,
+        )
+        for row in project_rows
+        if row.project_rid is not None and row.company_rid is not None
+    ]
+
     company_pm = [
         schema_summary.SankeyCompanyPm(
             company_rid=row.company_rid,
@@ -254,6 +287,7 @@ def get_summaries_sankey(
         year=year,
         total_amount=total_amount,
         companies=companies,
+        projects=projects,
         company_pm=company_pm,
         pm_pl=pm_pl,
     )

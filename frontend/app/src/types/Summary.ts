@@ -48,6 +48,14 @@ export interface SankeyCompany {
   amount: number
 }
 
+export interface SankeyProject {
+  rid: number
+  name: string
+  company_rid: number
+  company_name: string
+  amount: number
+}
+
 export interface SankeyCompanyPm {
   company_rid: number
   company_name: string
@@ -72,6 +80,7 @@ export interface SankeySummary {
   year: number
   total_amount: number
   companies: SankeyCompany[]
+  projects: SankeyProject[]
   company_pm: SankeyCompanyPm[]
   pm_pl: SankeyPmPl[]
 }

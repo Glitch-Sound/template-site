@@ -53,6 +53,14 @@ class SankeyCompany(schema_base.ORMBaseModel):
     amount: int
 
 
+class SankeyProject(schema_base.ORMBaseModel):
+    rid: int
+    name: str
+    company_rid: int
+    company_name: str
+    amount: int
+
+
 class SankeyCompanyPm(schema_base.ORMBaseModel):
     company_rid: int
     company_name: str
@@ -77,5 +85,6 @@ class SankeySummary(schema_base.ORMBaseModel):
     year: int
     total_amount: int
     companies: list[SankeyCompany]
+    projects: list[SankeyProject]
     company_pm: list[SankeyCompanyPm]
     pm_pl: list[SankeyPmPl]
