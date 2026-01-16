@@ -400,7 +400,7 @@ const renderSankey = () => {
   const paddingLeft = 80
   const paddingRight = 80
   const paddingTop = 20
-  const paddingBottom = 36
+  const paddingBottom = 64
   const layout = d3Sankey()
     .nodeId((d: { id: string }) => d.id)
     .nodeWidth(18)
