@@ -602,9 +602,16 @@ const renderSankey = () => {
     path.setAttribute('fill', 'none')
     const color = link.source?.color ?? '#888888'
     path.setAttribute('stroke', color)
-    path.setAttribute('stroke-opacity', !selectionSets || isActive ? '0.3' : '0.03')
+    if (selectionSets) {
+      path.style.strokeOpacity = '0.3'
+      path.dataset.fadeToStroke = isActive ? '0.3' : '0.03'
+    } else {
+      path.style.strokeOpacity = '0.3'
+      delete path.dataset.fadeToStroke
+    }
     path.setAttribute('stroke-width', `${Math.max(1, link.width ?? 1)}`)
     path.setAttribute('stroke-linecap', 'butt')
+    path.style.transition = 'stroke-opacity 10ms ease'
 
     const targetName = (link.target?.display ?? link.target?.name ?? '').trim()
     const projectName = (link.projectName ?? '').trim()
@@ -685,8 +692,13 @@ const renderSankey = () => {
     rect.setAttribute('fill', node.color ?? '#888888')
     rect.setAttribute('rx', '2')
     if (selectionSets) {
-      rect.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.12')
+      rect.style.opacity = activeNodeIds.has(nodeId) ? '1' : '0.6'
+      rect.dataset.fadeTo = activeNodeIds.has(nodeId) ? '1' : '0.12'
+    } else {
+      rect.style.opacity = '1'
+      delete rect.dataset.fadeTo
     }
+    rect.style.transition = 'opacity 10ms ease'
     nodeGroup.appendChild(rect)
 
     const label = document.createElementNS(ns, 'text')
@@ -714,8 +726,13 @@ const renderSankey = () => {
     if (text) {
       label.textContent = text
       if (selectionSets) {
-        label.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.12')
+        label.style.opacity = activeNodeIds.has(nodeId) ? '1' : '0.6'
+        label.dataset.fadeTo = activeNodeIds.has(nodeId) ? '1' : '0.12'
+      } else {
+        label.style.opacity = '1'
+        delete label.dataset.fadeTo
       }
+      label.style.transition = 'opacity 10ms ease'
       nodeGroup.appendChild(label)
     }
 
@@ -747,12 +764,36 @@ const renderSankey = () => {
       metricLabel.setAttribute('text-anchor', metricAnchor.align)
       metricLabel.textContent = metricText
       if (selectionSets) {
-        metricLabel.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.12')
+        metricLabel.style.opacity = activeNodeIds.has(nodeId) ? '1' : '0.6'
+        metricLabel.dataset.fadeTo = activeNodeIds.has(nodeId) ? '1' : '0.12'
+      } else {
+        metricLabel.style.opacity = '1'
+        delete metricLabel.dataset.fadeTo
       }
+      metricLabel.style.transition = 'opacity 10ms ease'
       nodeGroup.appendChild(metricLabel)
     }
 
   })
+
+  if (selectionSets) {
+    requestAnimationFrame(() => {
+      const svgEl = sankeySvg.value
+      if (!svgEl) return
+      svgEl.querySelectorAll<SVGElement>('[data-fade-to]').forEach((element) => {
+        const target = element.dataset.fadeTo
+        if (target) {
+          element.style.opacity = target
+        }
+      })
+      svgEl.querySelectorAll<SVGElement>('[data-fade-to-stroke]').forEach((element) => {
+        const target = element.dataset.fadeToStroke
+        if (target) {
+          element.style.strokeOpacity = target
+        }
+      })
+    })
+  }
 }
 
 const updateSize = () => {
