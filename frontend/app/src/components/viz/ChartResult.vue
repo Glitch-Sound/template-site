@@ -141,13 +141,6 @@ const sankeyLinks = computed(() => {
   return links
 })
 
-const totalAmountText = computed(() => {
-  const total = sankeySummary.value?.total_amount ?? 0
-  return currencyFormatter.format(total)
-})
-
-const isEmpty = computed(() => !sankeyLinks.value.length)
-
 const renderSankey = () => {
   const svg = sankeySvg.value
   const size = wrapSize.value
@@ -206,7 +199,6 @@ const renderSankey = () => {
   svg.appendChild(nodeGroup)
 
   const linkPath = sankeyLinkHorizontal()
-  const totalAmount = sankeySummary.value?.total_amount ?? 0
   const centerX = width / 2
   const leftEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.35
   const rightEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.65
@@ -242,9 +234,6 @@ const renderSankey = () => {
     rect.setAttribute('rx', '2')
     nodeGroup.appendChild(rect)
 
-    const nodeValue = node.value ?? 0
-    const percent = totalAmount ? Math.round((nodeValue / totalAmount) * 100) : 0
-
     const label = document.createElementNS(ns, 'text')
     const xMid = (node.x0 + node.x1) / 2
     const yMid = node.y0 + (node.y1 - node.y0) / 2
@@ -266,27 +255,6 @@ const renderSankey = () => {
     label.textContent = node.display ?? node.name ?? ''
     nodeGroup.appendChild(label)
 
-    if (percent) {
-      const percentText = document.createElementNS(ns, 'text')
-      percentText.setAttribute('fill', node.color ?? '#bdbdbd')
-      percentText.setAttribute('font-size', '12')
-      percentText.setAttribute('font-weight', '600')
-      percentText.setAttribute('dominant-baseline', 'middle')
-      percentText.textContent = `${percent}%`
-      const percentY = Math.max(paddingTop + 8, node.y0 - 10)
-      if (node.x0 < leftEdge) {
-        percentText.setAttribute('x', `${node.x0 - 12}`)
-        percentText.setAttribute('text-anchor', 'end')
-      } else if (node.x0 > rightEdge) {
-        percentText.setAttribute('x', `${node.x1 + 12}`)
-        percentText.setAttribute('text-anchor', 'start')
-      } else {
-        percentText.setAttribute('x', `${centerX}`)
-        percentText.setAttribute('text-anchor', 'middle')
-      }
-      percentText.setAttribute('y', `${percentY}`)
-      nodeGroup.appendChild(percentText)
-    }
   })
 }
 
