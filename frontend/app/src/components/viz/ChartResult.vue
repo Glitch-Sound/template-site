@@ -602,7 +602,7 @@ const renderSankey = () => {
     path.setAttribute('fill', 'none')
     const color = link.source?.color ?? '#888888'
     path.setAttribute('stroke', color)
-    path.setAttribute('stroke-opacity', !selectionSets || isActive ? '0.3' : '0.08')
+    path.setAttribute('stroke-opacity', !selectionSets || isActive ? '0.3' : '0.03')
     path.setAttribute('stroke-width', `${Math.max(1, link.width ?? 1)}`)
     path.setAttribute('stroke-linecap', 'butt')
 
@@ -685,7 +685,7 @@ const renderSankey = () => {
     rect.setAttribute('fill', node.color ?? '#888888')
     rect.setAttribute('rx', '2')
     if (selectionSets) {
-      rect.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.2')
+      rect.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.12')
     }
     nodeGroup.appendChild(rect)
 
@@ -714,7 +714,7 @@ const renderSankey = () => {
     if (text) {
       label.textContent = text
       if (selectionSets) {
-        label.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.2')
+        label.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.12')
       }
       nodeGroup.appendChild(label)
     }
@@ -747,7 +747,7 @@ const renderSankey = () => {
       metricLabel.setAttribute('text-anchor', metricAnchor.align)
       metricLabel.textContent = metricText
       if (selectionSets) {
-        metricLabel.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.2')
+        metricLabel.setAttribute('opacity', activeNodeIds.has(nodeId) ? '1' : '0.12')
       }
       nodeGroup.appendChild(metricLabel)
     }
