@@ -6,6 +6,7 @@ import MainView from '@/views/main/MainView.vue'
 import ProjectView from '@/views/project/ProjectView.vue'
 import VizMainView from '@/views/viz/VizMainView.vue'
 import VizReportView from '@/views/viz/VizReportView.vue'
+import VizResultView from '@/views/viz/VizResultView.vue'
 import SettingMainView from '@/views/setting/SettingMainView.vue'
 import SettingUserView from '@/views/setting/SettingUserView.vue'
 import SettingCompanyView from '@/views/setting/SettingCompanyView.vue'
@@ -34,6 +35,10 @@ const router = createRouter({
         {
           path: 'report',
           component: VizReportView,
+        },
+        {
+          path: 'result',
+          component: VizResultView,
         },
       ],
       meta: { requiresAuth: true },

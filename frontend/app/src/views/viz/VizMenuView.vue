@@ -88,6 +88,13 @@ const handleApplyFilter = () => {
           </v-menu>
         </div>
       </v-list-item>
+
+      <v-list-item>
+        <router-link to="/viz/result" class="link--normal" active-class="link--active">
+          <v-icon icon="mdi-chart-sankey-variant" />
+          Result
+        </router-link>
+      </v-list-item>
     </v-sheet>
   </v-navigation-drawer>
 </template>
