@@ -51,10 +51,7 @@ const colorForPerson = (rid: number) => {
 
 const nodeRegistry = computed(() => {
   const summary = sankeySummary.value
-  const nodes = new Map<
-    string,
-    { id: string; name: string; color: string; display: string }
-  >()
+  const nodes = new Map<string, { id: string; name: string; color: string; display: string }>()
   nodes.set('root', {
     id: 'root',
     name: rootLabel.value,
@@ -224,7 +221,7 @@ const renderSankey = () => {
     path.setAttribute('stroke', color)
     path.setAttribute('stroke-opacity', '0.22')
     path.setAttribute('stroke-width', `${Math.max(1, link.width ?? 1)}`)
-    path.setAttribute('stroke-linecap', 'round')
+    path.setAttribute('stroke-linecap', 'butt')
 
     const title = document.createElementNS(ns, 'title')
     const projectLabel = link.projectName
@@ -326,13 +323,8 @@ onBeforeUnmount(() => {
     <v-card-title class="text-subtitle-2 font-weight-medium"> Results </v-card-title>
 
     <v-card-text class="pa-3 viz-card-text sankey-body">
-      <div class="sankey-header">
-        <div class="text-caption text-medium-emphasis">Sales Total</div>
-        <div class="sankey-total">{{ totalAmountText }}</div>
-      </div>
       <div ref="sankeyWrap" class="sankey-wrap">
         <svg ref="sankeySvg" class="sankey-svg" role="img" aria-label="Sankey diagram" />
-        <div v-if="isEmpty" class="sankey-empty text-caption text-medium-emphasis">No data</div>
       </div>
     </v-card-text>
   </v-card>
