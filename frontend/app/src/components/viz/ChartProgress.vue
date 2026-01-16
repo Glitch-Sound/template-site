@@ -250,9 +250,6 @@ const chartOptions: ChartOptions<'line'> = {
 <style scoped>
 @import './viz.css';
 
-.viz-title {
-  color: #efefef;
-}
 .progress-card {
   height: 100%;
   display: flex;

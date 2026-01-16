@@ -168,9 +168,6 @@ watch(isRankMenuOpen, (isOpen) => {
 <style scoped>
 @import './viz.css';
 
-.viz-title {
-  color: #efefef;
-}
 .quarter-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -13,6 +13,10 @@
   padding-bottom: 43px;
 }
 
+.viz-title {
+  color: #efefef;
+}
+
 .progress {
   font-weight: 600;
 }

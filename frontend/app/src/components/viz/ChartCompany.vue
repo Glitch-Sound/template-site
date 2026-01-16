@@ -161,9 +161,6 @@ watch(isRankMenuOpen, (isOpen) => {
 <style scoped>
 @import './viz.css';
 
-.viz-title {
-  color: #efefef;
-}
 .chart-wrap {
   display: flex;
   justify-content: flex-start;

@@ -200,9 +200,6 @@ watch(isRankMenuOpen, (isOpen) => {
 <style scoped>
 @import './viz.css';
 
-.viz-title {
-  color: #efefef;
-}
 .top-row {
   display: flex;
   gap: 12px;

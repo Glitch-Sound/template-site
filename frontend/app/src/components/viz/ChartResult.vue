@@ -935,7 +935,7 @@ onBeforeUnmount(() => {
     rounded="xl"
     variant="tonal"
   >
-    <v-card-title class="text-body-2 font-weight-medium sankey-title">
+    <v-card-title class="text-body-2 font-weight-medium viz-title">
       Results
       <v-btn-toggle v-model="selectedPeriod" mandatory density="compact" class="ml-4">
         <v-btn
@@ -989,9 +989,6 @@ onBeforeUnmount(() => {
   font-weight: 600;
 }
 
-.sankey-title {
-  color: #efefef;
-}
 
 .sankey-wrap {
   position: relative;
