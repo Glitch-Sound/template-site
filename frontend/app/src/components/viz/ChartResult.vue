@@ -9,6 +9,7 @@ const primaryColor = ref('#2196f3')
 const sankeySvg = ref<SVGSVGElement | null>(null)
 const sankeyWrap = ref<HTMLElement | null>(null)
 const wrapSize = ref({ width: 0, height: 0 })
+const tooltip = ref({ visible: false, x: 0, y: 0, text: '' })
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(async () => {
@@ -332,7 +333,6 @@ const renderSankey = () => {
     path.setAttribute('stroke-width', `${Math.max(1, link.width ?? 1)}`)
     path.setAttribute('stroke-linecap', 'butt')
 
-    const title = document.createElementNS(ns, 'title')
     const sourceId = String(link.source?.id ?? '')
     const targetId = String(link.target?.id ?? '')
     const targetName = (link.target?.display ?? link.target?.name ?? '').trim()
@@ -345,12 +345,39 @@ const renderSankey = () => {
         return targetName.replace(/^PM\\s*/, '')
       if (sourceId.startsWith('pm:') && targetId.startsWith('project-pm:'))
         return projectName || targetName
-      if (sourceId.startsWith('project-pm:') && targetId.startsWith('pl:'))
-        return targetName.replace(/^PL\\s*/, '')
+      if (sourceId.startsWith('project-pm:') && targetId.startsWith('pl:')) {
+        const plName = targetName.replace(/^PL\\s*/, '')
+        return projectName ? `${projectName}: ${plName}` : plName
+      }
       return targetName
     })()
-    title.textContent = `${tooltipLabel}: ${currencyFormatter.format(link.value ?? 0)}`
-    path.appendChild(title)
+    const tooltipText = `${tooltipLabel}: ${currencyFormatter.format(link.value ?? 0)}`
+
+    path.addEventListener('mouseenter', (event) => {
+      const wrap = sankeyWrap.value
+      if (!wrap) return
+      const rect = wrap.getBoundingClientRect()
+      tooltip.value = {
+        visible: true,
+        x: event.clientX - rect.left + 12,
+        y: event.clientY - rect.top + 12,
+        text: tooltipText,
+      }
+    })
+    path.addEventListener('mousemove', (event) => {
+      const wrap = sankeyWrap.value
+      if (!wrap) return
+      const rect = wrap.getBoundingClientRect()
+      tooltip.value = {
+        ...tooltip.value,
+        x: event.clientX - rect.left + 12,
+        y: event.clientY - rect.top + 12,
+      }
+    })
+    path.addEventListener('mouseleave', () => {
+      tooltip.value = { ...tooltip.value, visible: false }
+    })
+
     linkGroup.appendChild(path)
   })
 
@@ -466,6 +493,13 @@ onBeforeUnmount(() => {
     <v-card-text class="pa-3 viz-card-text sankey-body">
       <div ref="sankeyWrap" class="sankey-wrap">
         <svg ref="sankeySvg" class="sankey-svg" role="img" aria-label="Sankey diagram" />
+        <div
+          v-if="tooltip.visible"
+          class="sankey-tooltip"
+          :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
+        >
+          {{ tooltip.text }}
+        </div>
       </div>
     </v-card-text>
   </v-card>
@@ -506,6 +540,18 @@ onBeforeUnmount(() => {
 .sankey-svg {
   width: 100%;
   height: 100%;
+}
+
+.sankey-tooltip {
+  position: absolute;
+  z-index: 2;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(6, 6, 6, 0.95);
+  color: #efefef;
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .sankey-empty {
