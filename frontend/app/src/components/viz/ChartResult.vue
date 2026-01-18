@@ -416,8 +416,10 @@ const renderSankey = () => {
     links: links.map((link) => ({ ...link })),
   })
 
+  const defs = document.createElementNS(ns, 'defs')
   const linkGroup = document.createElementNS(ns, 'g')
   const nodeGroup = document.createElementNS(ns, 'g')
+  svg.appendChild(defs)
   svg.appendChild(linkGroup)
   svg.appendChild(nodeGroup)
 
@@ -561,6 +563,7 @@ const renderSankey = () => {
   }
 
   const linkKeyMap = new Map<any, string>()
+  let gradientCounter = 0
   graph.links.forEach((link: any) => {
     const sourceId = String(link.source?.id ?? '')
     const targetId = String(link.target?.id ?? '')
@@ -635,10 +638,27 @@ const renderSankey = () => {
     const path = document.createElementNS(ns, 'path')
     const d = linkPath(link)
     if (!d) return
+    const gradientId = `sankey-link-${gradientCounter++}`
+    const gradient = document.createElementNS(ns, 'linearGradient')
+    gradient.setAttribute('id', gradientId)
+    gradient.setAttribute('gradientUnits', 'userSpaceOnUse')
+    const yMid = (link.y0 + link.y1) / 2
+    gradient.setAttribute('x1', `${link.source?.x1 ?? link.x0}`)
+    gradient.setAttribute('y1', `${yMid}`)
+    gradient.setAttribute('x2', `${link.target?.x0 ?? link.x1}`)
+    gradient.setAttribute('y2', `${yMid}`)
+    const stopStart = document.createElementNS(ns, 'stop')
+    stopStart.setAttribute('offset', '0%')
+    stopStart.setAttribute('stop-color', link.source?.color ?? '#888888')
+    const stopEnd = document.createElementNS(ns, 'stop')
+    stopEnd.setAttribute('offset', '100%')
+    stopEnd.setAttribute('stop-color', link.target?.color ?? '#888888')
+    gradient.appendChild(stopStart)
+    gradient.appendChild(stopEnd)
+    defs.appendChild(gradient)
     path.setAttribute('d', d)
     path.setAttribute('fill', 'none')
-    const color = link.source?.color ?? '#888888'
-    path.setAttribute('stroke', color)
+    path.setAttribute('stroke', `url(#${gradientId})`)
     if (selectionSets) {
       path.style.strokeOpacity = '0.3'
       path.dataset.fadeToStroke = isActive ? '0.3' : '0.03'
