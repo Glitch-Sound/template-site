@@ -676,8 +676,13 @@ const renderSankey = () => {
       if (sourceId === 'root' && targetId.startsWith('company:')) return targetName
       if (sourceId.startsWith('company:') && targetId.startsWith('project-company:'))
         return projectName || targetName
-      if (sourceId.startsWith('project-company:') && targetId.startsWith('pm:'))
-        return targetName.replace(/^PM\\s*/, '')
+      if (sourceId.startsWith('project-company:') && targetId.startsWith('pm:')) {
+        const pmName = targetName.replace(/^PM\\s*/, '')
+        const groupName =
+          projectGroupNameById.get(Number(link.projectGroupRid ?? 0)) ?? link.projectName ?? ''
+        if (groupName) return `${groupName}: ${pmName}`
+        return pmName
+      }
       if (sourceId.startsWith('pm:') && targetId.startsWith('project-pm:'))
         return projectName || targetName
       if (sourceId.startsWith('project-pm:') && targetId.startsWith('pl:')) {
