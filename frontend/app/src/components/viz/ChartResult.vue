@@ -21,6 +21,8 @@ const selectedLink = ref<{
   plRid?: number
 } | null>(null)
 let resizeObserver: ResizeObserver | null = null
+let removeDragListeners: (() => void) | null = null
+let removeBackgroundClick: (() => void) | null = null
 
 const periodOptions = [
   { label: 'Total', value: 'year' },
@@ -761,7 +763,8 @@ const renderSankey = () => {
     path.addEventListener('mouseleave', () => {
       tooltip.value = { ...tooltip.value, visible: false }
     })
-    path.addEventListener('click', () => {
+    path.addEventListener('click', (event) => {
+      event.stopPropagation()
       let selectionInfo: typeof selectedLink.value = null
       if (linkType === 'root-company') {
         selectionInfo = { key: linkKey, type: linkType, companyRid }
@@ -835,7 +838,8 @@ const renderSankey = () => {
     rect.addEventListener('mouseleave', () => {
       tooltip.value = { ...tooltip.value, visible: false }
     })
-    rect.addEventListener('click', () => {
+    rect.addEventListener('click', (event) => {
+      event.stopPropagation()
       const nodeRid = Number(nodeId.split(':')[1] ?? 0)
       let selectionInfo: typeof selectedLink.value = null
       if (nodeId.startsWith('company:')) {
@@ -989,11 +993,65 @@ onMounted(() => {
     })
     resizeObserver.observe(sankeyWrap.value)
   }
+
+  const wrap = sankeyWrap.value
+  const svg = sankeySvg.value
+  if (wrap && svg) {
+    const dragState = {
+      active: false,
+      startY: 0,
+      startScrollTop: 0,
+    }
+    const onMouseDown = (event: MouseEvent) => {
+      if (!useMinNodeHeight.value) return
+      if (event.button !== 0) return
+      if (event.target !== svg) return
+      dragState.active = true
+      dragState.startY = event.clientY
+      dragState.startScrollTop = wrap.scrollTop
+      wrap.classList.add('sankey-wrap--dragging')
+      event.preventDefault()
+    }
+    const onMouseMove = (event: MouseEvent) => {
+      if (!dragState.active) return
+      const deltaY = event.clientY - dragState.startY
+      wrap.scrollTop = dragState.startScrollTop - deltaY
+    }
+    const onMouseUp = () => {
+      if (!dragState.active) return
+      dragState.active = false
+      wrap.classList.remove('sankey-wrap--dragging')
+    }
+    wrap.addEventListener('mousedown', onMouseDown)
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    removeDragListeners = () => {
+      wrap.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    const onBackgroundClick = (event: MouseEvent) => {
+      if (event.target !== svg && event.target !== wrap) return
+      if (!selectedLink.value) return
+      selectedLink.value = null
+      tooltip.value = { ...tooltip.value, visible: false }
+      renderSankey()
+    }
+    wrap.addEventListener('click', onBackgroundClick)
+    removeBackgroundClick = () => {
+      wrap.removeEventListener('click', onBackgroundClick)
+    }
+  }
 })
 
 onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
+  removeDragListeners?.()
+  removeDragListeners = null
+  removeBackgroundClick?.()
+  removeBackgroundClick = null
 })
 </script>
 
@@ -1031,7 +1089,10 @@ onBeforeUnmount(() => {
       <div
         ref="sankeyWrap"
         class="sankey-wrap"
-        :class="{ 'sankey-wrap--scroll': useMinNodeHeight }"
+        :class="{
+          'sankey-wrap--scroll': useMinNodeHeight,
+          'sankey-wrap--draggable': useMinNodeHeight,
+        }"
       >
         <svg
           ref="sankeySvg"
@@ -1104,6 +1165,14 @@ onBeforeUnmount(() => {
   scrollbar-gutter: stable;
   scrollbar-width: none;
   padding-right: 8px;
+}
+
+.sankey-wrap--draggable {
+  cursor: grab;
+}
+
+.sankey-wrap--dragging {
+  cursor: grabbing;
 }
 
 .sankey-wrap--scroll::-webkit-scrollbar {
