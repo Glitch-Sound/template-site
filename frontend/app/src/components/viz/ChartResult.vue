@@ -422,27 +422,26 @@ const renderSankey = () => {
 
   const requiredHeight = (() => {
     if (!useMinNodeHeight.value) return height
-    const columnInfo = new Map<number, { total: number; minValue: number; count: number }>()
+    const columnInfo = new Map<number, { total: number; count: number }>()
+    let globalMinValue = Number.POSITIVE_INFINITY
     baseGraph.nodes.forEach((node: any) => {
       const value = Number(node.value ?? 0)
-      if (value <= 0) return
       const depth = Number(node.depth ?? 0)
-      const entry = columnInfo.get(depth) ?? {
-        total: 0,
-        minValue: Number.POSITIVE_INFINITY,
-        count: 0,
-      }
+      const entry = columnInfo.get(depth) ?? { total: 0, count: 0 }
       entry.total += value
       entry.count += 1
-      entry.minValue = Math.min(entry.minValue, value)
       columnInfo.set(depth, entry)
+      if (value > 0) {
+        globalMinValue = Math.min(globalMinValue, value)
+      }
     })
 
     let requiredInner = 0
     columnInfo.forEach((info) => {
-      if (!Number.isFinite(info.minValue) || info.minValue <= 0) return
+      if (!Number.isFinite(globalMinValue) || globalMinValue <= 0) return
       const innerHeight =
-        info.total * (minNodeHeight / info.minValue) + nodePadding * Math.max(0, info.count - 1)
+        info.total * (minNodeHeight / globalMinValue) +
+        nodePadding * Math.max(0, info.count - 1)
       requiredInner = Math.max(requiredInner, innerHeight)
     })
 
