@@ -402,7 +402,7 @@ const renderSankey = () => {
   const paddingTop = 20
   const paddingBottom = 64
   const nodePadding = 18
-  const minNodeHeight = 10
+  const minNodeHeight = 6
   const createLayout = (layoutHeight: number) =>
     d3Sankey()
       .nodeId((d: { id: string }) => d.id)
