@@ -398,7 +398,7 @@ const renderSankey = () => {
   if (!links.length) return
 
   const paddingLeft = 80
-  const paddingRight = 80
+  const paddingRight = 120
   const paddingTop = 20
   const paddingBottom = 64
   const nodePadding = 18
@@ -1096,27 +1096,27 @@ onBeforeUnmount(() => {
   width: 100%;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
   overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.sankey-wrap--scroll {
+  overflow-y: auto;
   scrollbar-gutter: stable;
   scrollbar-width: none;
   padding-right: 8px;
 }
 
-.sankey-wrap--scroll {
-  overflow-y: auto;
-}
-
-.sankey-wrap::-webkit-scrollbar {
+.sankey-wrap--scroll::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-.sankey-wrap::-webkit-scrollbar-track {
+.sankey-wrap--scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.sankey-wrap::-webkit-scrollbar-thumb {
+.sankey-wrap--scroll::-webkit-scrollbar-thumb {
   background: transparent;
 }
 
