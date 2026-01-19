@@ -10,6 +10,7 @@ const sankeySvg = ref<SVGSVGElement | null>(null)
 const sankeyWrap = ref<HTMLElement | null>(null)
 const wrapSize = ref({ width: 0, height: 0 })
 const tooltip = ref({ visible: false, x: 0, y: 0, text: '' })
+const useMinNodeHeight = ref(false)
 const selectedLink = ref<{
   key: string
   type: 'root-company' | 'company-project-group' | 'project-group-pm' | 'pm-project' | 'project-pl'
@@ -363,7 +364,6 @@ const renderSankey = () => {
   const width = size.width
   const height = size.height
   svg.setAttribute('width', `${width}`)
-  svg.setAttribute('height', `${height}`)
 
   const nodes = Array.from(nodesMap.values()).map((node) => ({
     id: node.id,
@@ -401,20 +401,66 @@ const renderSankey = () => {
   const paddingRight = 80
   const paddingTop = 20
   const paddingBottom = 64
-  const layout = d3Sankey()
-    .nodeId((d: { id: string }) => d.id)
-    .nodeWidth(18)
-    .nodePadding(18)
-    .nodeAlign(sankeyJustify)
+  const nodePadding = 18
+  const minNodeHeight = 10
+  const createLayout = (layoutHeight: number) =>
+    d3Sankey()
+      .nodeId((d: { id: string }) => d.id)
+      .nodeWidth(18)
+      .nodePadding(nodePadding)
+      .nodeAlign(sankeyJustify)
     .extent([
       [paddingLeft, paddingTop],
-      [width - paddingRight, height - paddingBottom],
+      [width - paddingRight, layoutHeight - paddingBottom],
     ])
 
-  const graph = layout({
+  const baseLayout = createLayout(height)
+  const baseGraph = baseLayout({
     nodes: nodes.map((node) => ({ ...node })),
     links: links.map((link) => ({ ...link })),
   })
+
+  const requiredHeight = (() => {
+    if (!useMinNodeHeight.value) return height
+    const columnInfo = new Map<number, { total: number; minValue: number; count: number }>()
+    baseGraph.nodes.forEach((node: any) => {
+      const value = Number(node.value ?? 0)
+      if (value <= 0) return
+      const depth = Number(node.depth ?? 0)
+      const entry = columnInfo.get(depth) ?? {
+        total: 0,
+        minValue: Number.POSITIVE_INFINITY,
+        count: 0,
+      }
+      entry.total += value
+      entry.count += 1
+      entry.minValue = Math.min(entry.minValue, value)
+      columnInfo.set(depth, entry)
+    })
+
+    let requiredInner = 0
+    columnInfo.forEach((info) => {
+      if (!Number.isFinite(info.minValue) || info.minValue <= 0) return
+      const innerHeight =
+        info.total * (minNodeHeight / info.minValue) +
+        nodePadding * Math.max(0, info.count - 1)
+      requiredInner = Math.max(requiredInner, innerHeight)
+    })
+
+    if (!requiredInner) return height
+    return Math.max(height, requiredInner + paddingTop + paddingBottom)
+  })()
+
+  const layoutHeight = requiredHeight
+  const layout = layoutHeight === height ? baseLayout : createLayout(layoutHeight)
+  const graph =
+    layoutHeight === height
+      ? baseGraph
+      : layout({
+          nodes: nodes.map((node) => ({ ...node })),
+          links: links.map((link) => ({ ...link })),
+        })
+  svg.setAttribute('height', `${layoutHeight}`)
 
   const defs = document.createElementNS(ns, 'defs')
   const linkGroup = document.createElementNS(ns, 'g')
@@ -933,7 +979,7 @@ const updateSize = () => {
   }
 }
 
-watch([sankeySummary, wrapSize], () => {
+watch([sankeySummary, wrapSize, useMinNodeHeight], () => {
   renderSankey()
 })
 
@@ -960,23 +1006,43 @@ onBeforeUnmount(() => {
     rounded="xl"
     variant="tonal"
   >
-    <v-card-title class="text-body-2 font-weight-medium viz-title">
-      Results
-      <v-btn-toggle v-model="selectedPeriod" mandatory density="compact" class="ml-4">
-        <v-btn
-          v-for="option in periodOptions"
-          :key="option.value"
-          :value="option.value"
-          size="small"
-        >
-          {{ option.label }}
-        </v-btn>
-      </v-btn-toggle>
+    <v-card-title class="text-body-2 font-weight-medium viz-title sankey-title">
+      <div class="sankey-title-left">
+        <span>Results</span>
+        <v-btn-toggle v-model="selectedPeriod" mandatory density="compact" class="ml-4">
+          <v-btn
+            v-for="option in periodOptions"
+            :key="option.value"
+            :value="option.value"
+            size="small"
+          >
+            {{ option.label }}
+          </v-btn>
+        </v-btn-toggle>
+      </div>
+      <v-switch
+        v-model="useMinNodeHeight"
+        color="primary"
+        density="compact"
+        hide-details
+        inset
+        label="最小高さスクロール"
+      />
     </v-card-title>
 
     <v-card-text class="pa-3 viz-card-text sankey-body">
-      <div ref="sankeyWrap" class="sankey-wrap">
-        <svg ref="sankeySvg" class="sankey-svg" role="img" aria-label="Sankey diagram" />
+      <div
+        ref="sankeyWrap"
+        class="sankey-wrap"
+        :class="{ 'sankey-wrap--scroll': useMinNodeHeight }"
+      >
+        <svg
+          ref="sankeySvg"
+          class="sankey-svg"
+          :class="{ 'sankey-svg--scroll': useMinNodeHeight }"
+          role="img"
+          aria-label="Sankey diagram"
+        />
         <div
           v-if="tooltip.visible"
           class="sankey-tooltip"
@@ -1002,6 +1068,20 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
+.sankey-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sankey-title-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .sankey-header {
   display: flex;
   align-items: baseline;
@@ -1022,9 +1102,19 @@ onBeforeUnmount(() => {
   min-height: 0;
 }
 
+.sankey-wrap--scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .sankey-svg {
   width: 100%;
   height: 100%;
+}
+
+.sankey-svg--scroll {
+  height: auto;
+  display: block;
 }
 
 .sankey-tooltip {
