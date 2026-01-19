@@ -409,10 +409,10 @@ const renderSankey = () => {
       .nodeWidth(18)
       .nodePadding(nodePadding)
       .nodeAlign(sankeyJustify)
-    .extent([
-      [paddingLeft, paddingTop],
-      [width - paddingRight, layoutHeight - paddingBottom],
-    ])
+      .extent([
+        [paddingLeft, paddingTop],
+        [width - paddingRight, layoutHeight - paddingBottom],
+      ])
 
   const baseLayout = createLayout(height)
   const baseGraph = baseLayout({
@@ -442,8 +442,7 @@ const renderSankey = () => {
     columnInfo.forEach((info) => {
       if (!Number.isFinite(info.minValue) || info.minValue <= 0) return
       const innerHeight =
-        info.total * (minNodeHeight / info.minValue) +
-        nodePadding * Math.max(0, info.count - 1)
+        info.total * (minNodeHeight / info.minValue) + nodePadding * Math.max(0, info.count - 1)
       requiredInner = Math.max(requiredInner, innerHeight)
     })
 
@@ -1023,10 +1022,9 @@ onBeforeUnmount(() => {
       <v-switch
         v-model="useMinNodeHeight"
         color="primary"
-        density="compact"
         hide-details
-        inset
-        label="最小高さスクロール"
+        class="sankey-switch"
+        label="Scroll"
       />
     </v-card-title>
 
@@ -1093,8 +1091,6 @@ onBeforeUnmount(() => {
   font-size: 18px;
   font-weight: 600;
 }
-
-
 .sankey-wrap {
   position: relative;
   width: 100%;
@@ -1105,6 +1101,18 @@ onBeforeUnmount(() => {
 .sankey-wrap--scroll {
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.sankey-switch :deep(.v-input__control) {
+  min-height: 24px;
+}
+
+.sankey-switch :deep(.v-selection-control) {
+  min-height: 24px;
+}
+
+.sankey-switch :deep(.v-label) {
+  font-size: 12px;
 }
 
 .sankey-svg {
