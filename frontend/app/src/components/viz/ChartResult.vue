@@ -1096,11 +1096,28 @@ onBeforeUnmount(() => {
   width: 100%;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scrollbar-width: none;
+  padding-right: 8px;
 }
 
 .sankey-wrap--scroll {
   overflow-y: auto;
-  overflow-x: hidden;
+}
+
+.sankey-wrap::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.sankey-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sankey-wrap::-webkit-scrollbar-thumb {
+  background: transparent;
 }
 
 .sankey-switch :deep(.v-input__control) {
