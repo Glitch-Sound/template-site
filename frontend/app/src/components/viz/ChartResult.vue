@@ -795,6 +795,7 @@ const renderSankey = () => {
 
   graph.nodes.forEach((node: any) => {
     const nodeId = String(node.id ?? '')
+    const nodeRid = Number(nodeId.split(':')[1] ?? 0)
     const isProjectNode = nodeId.startsWith('project-company:') || nodeId.startsWith('project-pm:')
     const fullWidth = node.x1 - node.x0
     const targetWidth = isProjectNode ? 8 : fullWidth
@@ -848,7 +849,6 @@ const renderSankey = () => {
     })
     rect.addEventListener('click', (event) => {
       event.stopPropagation()
-      const nodeRid = Number(nodeId.split(':')[1] ?? 0)
       let selectionInfo: typeof selectedLink.value = null
       if (nodeId.startsWith('company:')) {
         selectionInfo = {
