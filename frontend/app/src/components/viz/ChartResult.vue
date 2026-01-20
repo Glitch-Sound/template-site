@@ -23,6 +23,7 @@ const selectedLink = ref<{
 let resizeObserver: ResizeObserver | null = null
 let removeDragListeners: (() => void) | null = null
 let removeBackgroundClick: (() => void) | null = null
+let removeViewportListeners: (() => void) | null = null
 
 const periodOptions = [
   { label: 'Total', value: 'year' },
@@ -400,7 +401,8 @@ const renderSankey = () => {
   if (!links.length) return
 
   const paddingLeft = 80
-  const paddingRight = 120
+  const zoomScale = window.visualViewport?.scale ?? window.devicePixelRatio ?? 1
+  const paddingRight = Math.round(120 * zoomScale)
   const paddingTop = 20
   const paddingBottom = 64
   const nodePadding = 18
@@ -993,6 +995,15 @@ onMounted(() => {
     })
     resizeObserver.observe(sankeyWrap.value)
   }
+  const onViewportResize = () => {
+    updateSize()
+  }
+  window.addEventListener('resize', onViewportResize)
+  window.visualViewport?.addEventListener('resize', onViewportResize)
+  removeViewportListeners = () => {
+    window.removeEventListener('resize', onViewportResize)
+    window.visualViewport?.removeEventListener('resize', onViewportResize)
+  }
 
   const wrap = sankeyWrap.value
   const svg = sankeySvg.value
@@ -1052,6 +1063,8 @@ onBeforeUnmount(() => {
   removeDragListeners = null
   removeBackgroundClick?.()
   removeBackgroundClick = null
+  removeViewportListeners?.()
+  removeViewportListeners = null
 })
 </script>
 
