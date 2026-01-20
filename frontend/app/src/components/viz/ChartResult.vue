@@ -426,26 +426,19 @@ const renderSankey = () => {
 
   const requiredHeight = (() => {
     if (!useMinNodeHeight.value) return height
-    const columnInfo = new Map<number, { total: number; count: number }>()
-    let globalMinValue = Number.POSITIVE_INFINITY
+    const columns = new Map<number, Array<{ height: number }>>()
     baseGraph.nodes.forEach((node: any) => {
-      const value = Number(node.value ?? 0)
       const depth = Number(node.depth ?? 0)
-      const entry = columnInfo.get(depth) ?? { total: 0, count: 0 }
-      entry.total += value
-      entry.count += 1
-      columnInfo.set(depth, entry)
-      if (value > 0) {
-        globalMinValue = Math.min(globalMinValue, value)
-      }
+      const height = Math.max(0, Number(node.y1 ?? 0) - Number(node.y0 ?? 0))
+      const entry = columns.get(depth) ?? []
+      entry.push({ height })
+      columns.set(depth, entry)
     })
 
     let requiredInner = 0
-    columnInfo.forEach((info) => {
-      if (!Number.isFinite(globalMinValue) || globalMinValue <= 0) return
-      const innerHeight =
-        info.total * (minNodeHeight / globalMinValue) +
-        nodePadding * Math.max(0, info.count - 1)
+    columns.forEach((nodes) => {
+      const total = nodes.reduce((sum, node) => sum + Math.max(node.height, minNodeHeight), 0)
+      const innerHeight = total + nodePadding * Math.max(0, nodes.length - 1)
       requiredInner = Math.max(requiredInner, innerHeight)
     })
 
@@ -454,14 +447,27 @@ const renderSankey = () => {
   })()
 
   const layoutHeight = requiredHeight
-  const layout = layoutHeight === height ? baseLayout : createLayout(layoutHeight)
-  const graph =
-    layoutHeight === height
-      ? baseGraph
-      : layout({
-          nodes: nodes.map((node) => ({ ...node })),
-          links: links.map((link) => ({ ...link })),
-        })
+  const graph = baseGraph
+  if (useMinNodeHeight.value) {
+    const columns = new Map<number, Array<any>>()
+    graph.nodes.forEach((node: any) => {
+      const depth = Number(node.depth ?? 0)
+      const entry = columns.get(depth) ?? []
+      entry.push(node)
+      columns.set(depth, entry)
+    })
+    columns.forEach((nodes) => {
+      nodes.sort((a, b) => (a.y0 ?? 0) - (b.y0 ?? 0))
+      let cursor = paddingTop
+      nodes.forEach((node) => {
+        const height = Math.max(minNodeHeight, (node.y1 ?? 0) - (node.y0 ?? 0))
+        node.y0 = cursor
+        node.y1 = cursor + height
+        cursor = node.y1 + nodePadding
+      })
+    })
+    baseLayout.update(graph)
+  }
   svg.setAttribute('height', `${layoutHeight}`)
 
   const defs = document.createElementNS(ns, 'defs')
