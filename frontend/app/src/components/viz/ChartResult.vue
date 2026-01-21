@@ -720,7 +720,9 @@ const renderSankey = () => {
       path.style.strokeOpacity = '0.3'
       delete path.dataset.fadeToStroke
     }
-    path.setAttribute('stroke-width', `${Math.max(1, link.width ?? 1)}`)
+    const rawLinkWidth = Number(link.width ?? 0)
+    const minLinkWidth = useMinNodeHeight.value ? 1 : 0
+    path.setAttribute('stroke-width', `${Math.max(minLinkWidth, rawLinkWidth)}`)
     path.setAttribute('stroke-linecap', 'butt')
     path.style.transition = 'stroke-opacity 10ms ease'
 
@@ -806,7 +808,9 @@ const renderSankey = () => {
     rect.setAttribute('x', `${x0}`)
     rect.setAttribute('y', `${node.y0}`)
     rect.setAttribute('width', `${Math.max(2, x1 - x0)}`)
-    rect.setAttribute('height', `${Math.max(2, node.y1 - node.y0)}`)
+    const rawNodeHeight = Math.max(0, (node.y1 ?? 0) - (node.y0 ?? 0))
+    const minRenderHeight = useMinNodeHeight.value ? minNodeHeight : 0
+    rect.setAttribute('height', `${Math.max(minRenderHeight, rawNodeHeight)}`)
     rect.setAttribute('fill', node.color ?? '#888888')
     rect.setAttribute('rx', '2')
     rect.addEventListener('mouseenter', (event) => {
