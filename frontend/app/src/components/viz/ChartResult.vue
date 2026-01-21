@@ -426,24 +426,29 @@ const renderSankey = () => {
 
   const requiredHeight = (() => {
     if (!useMinNodeHeight.value) return height
-    const columns = new Map<number, Array<{ height: number }>>()
+    const columns = new Map<number, { heights: number[]; top: number }>()
     baseGraph.nodes.forEach((node: any) => {
       const depth = Number(node.depth ?? 0)
       const height = Math.max(0, Number(node.y1 ?? 0) - Number(node.y0 ?? 0))
-      const entry = columns.get(depth) ?? []
-      entry.push({ height })
+      const entry = columns.get(depth) ?? { heights: [], top: Number.POSITIVE_INFINITY }
+      entry.heights.push(height)
+      entry.top = Math.min(entry.top, Number(node.y0 ?? 0))
       columns.set(depth, entry)
     })
 
-    let requiredInner = 0
-    columns.forEach((nodes) => {
-      const total = nodes.reduce((sum, node) => sum + Math.max(node.height, minNodeHeight), 0)
-      const innerHeight = total + nodePadding * Math.max(0, nodes.length - 1)
-      requiredInner = Math.max(requiredInner, innerHeight)
+    let requiredTotal = height
+    columns.forEach((column) => {
+      const total = column.heights.reduce(
+        (sum, nodeHeight) => sum + Math.max(nodeHeight, minNodeHeight),
+        0,
+      )
+      const innerHeight = total + nodePadding * Math.max(0, column.heights.length - 1)
+      const top = Number.isFinite(column.top) ? column.top : paddingTop
+      const bottom = top + innerHeight + paddingBottom
+      requiredTotal = Math.max(requiredTotal, bottom)
     })
 
-    if (!requiredInner) return height
-    return Math.max(height, requiredInner + paddingTop + paddingBottom)
+    return requiredTotal
   })()
 
   const layoutHeight = requiredHeight
@@ -458,7 +463,8 @@ const renderSankey = () => {
     })
     columns.forEach((nodes) => {
       nodes.sort((a, b) => (a.y0 ?? 0) - (b.y0 ?? 0))
-      let cursor = paddingTop
+      const firstTop = Number(nodes[0]?.y0 ?? paddingTop)
+      let cursor = Number.isFinite(firstTop) ? firstTop : paddingTop
       nodes.forEach((node) => {
         const height = Math.max(minNodeHeight, (node.y1 ?? 0) - (node.y0 ?? 0))
         node.y0 = cursor
