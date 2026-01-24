@@ -366,6 +366,8 @@ const renderSankey = () => {
   const ns = 'http://www.w3.org/2000/svg'
   const width = size.width
   const height = size.height
+  const pixelRatio = window.devicePixelRatio ?? 1
+  const snap = (value: number) => Math.round(value * pixelRatio) / pixelRatio
   svg.setAttribute('width', `${width}`)
 
   const nodes = Array.from(nodesMap.values()).map((node) => ({
@@ -728,7 +730,7 @@ const renderSankey = () => {
     }
     const rawLinkWidth = Number(link.width ?? 0)
     const minLinkWidth = useMinNodeHeight.value ? 1 : 0.5
-    path.setAttribute('stroke-width', `${Math.max(minLinkWidth, rawLinkWidth)}`)
+    path.setAttribute('stroke-width', `${snap(Math.max(minLinkWidth, rawLinkWidth))}`)
     path.setAttribute('stroke-linecap', 'butt')
     path.style.transition = 'stroke-opacity 10ms ease'
 
@@ -811,12 +813,16 @@ const renderSankey = () => {
     const x0 = node.x0 + widthDiff / 2
     const x1 = node.x1 - widthDiff / 2
     const rect = document.createElementNS(ns, 'rect')
-    rect.setAttribute('x', `${x0}`)
-    rect.setAttribute('y', `${node.y0}`)
-    rect.setAttribute('width', `${Math.max(2, x1 - x0)}`)
+    const snappedX0 = snap(x0)
+    const snappedX1 = snap(x1)
+    const rawY0 = Number(node.y0 ?? 0)
+    const rawY1 = Number(node.y1 ?? 0)
+    rect.setAttribute('x', `${snappedX0}`)
+    rect.setAttribute('y', `${rawY0}`)
+    rect.setAttribute('width', `${Math.max(2, snappedX1 - snappedX0)}`)
     const rawNodeHeight = Math.max(0, (node.y1 ?? 0) - (node.y0 ?? 0))
     const minRenderHeight = useMinNodeHeight.value ? minNodeHeight : 0.5
-    rect.setAttribute('height', `${Math.max(minRenderHeight, rawNodeHeight)}`)
+    rect.setAttribute('height', `${Math.max(minRenderHeight, rawY1 - rawY0)}`)
     rect.setAttribute('fill', node.color ?? '#888888')
     rect.setAttribute('rx', '2')
     rect.addEventListener('mouseenter', (event) => {
@@ -906,16 +912,16 @@ const renderSankey = () => {
     label.setAttribute('dominant-baseline', 'middle')
 
     if (nodeId.startsWith('pm:')) {
-      label.setAttribute('x', `${node.x1 + 12}`)
+      label.setAttribute('x', `${snap(node.x1 + 12)}`)
       label.setAttribute('text-anchor', 'start')
     } else if (node.x0 < leftEdge) {
-      label.setAttribute('x', `${node.x0 - 12}`)
+      label.setAttribute('x', `${snap(node.x0 - 12)}`)
       label.setAttribute('text-anchor', 'end')
     } else if (node.x0 > rightEdge) {
-      label.setAttribute('x', `${node.x1 + 12}`)
+      label.setAttribute('x', `${snap(node.x1 + 12)}`)
       label.setAttribute('text-anchor', 'start')
     } else {
-      label.setAttribute('x', `${centerX}`)
+      label.setAttribute('x', `${snap(centerX)}`)
       label.setAttribute('text-anchor', 'middle')
     }
     const text = (node.display ?? node.name ?? '').trim()
@@ -952,7 +958,7 @@ const renderSankey = () => {
       const projectCount = metricSource.projectCount
       const metricText = `${percent.toFixed(1)}% (${projectCount}PJ)`
       const metricLabel = document.createElementNS(ns, 'text')
-      metricLabel.setAttribute('x', `${metricAnchor.x}`)
+      metricLabel.setAttribute('x', `${snap(metricAnchor.x)}`)
       metricLabel.setAttribute('y', `${yMid}`)
       metricLabel.setAttribute('fill', '#efefef')
       metricLabel.setAttribute('font-size', '11')
