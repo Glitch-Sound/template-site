@@ -88,6 +88,8 @@ const selectedNodeId = ref<string | null>(null)
 const highlightedNodes = ref<Set<string>>(new Set())
 const highlightedLinks = ref<Set<string>>(new Set())
 const tooltip = ref({ visible: false, x: 0, y: 0, text: '' })
+const scrollEnabled = ref(false)
+const layoutHeight = ref(0)
 
 const currencyFormatter = new Intl.NumberFormat('ja-JP', {
   style: 'currency',
@@ -392,12 +394,57 @@ const computeHighlightsFromNode = (nodeId: string) => {
 }
 
 const labelPadding = 140
+const nodePadding = 22
+const minNodeHeight = 5
+
+const columnOrder: Record<NodeType, number> = {
+  root: 0,
+  company: 1,
+  'project-group': 2,
+  pm: 3,
+  project: 4,
+  pl: 5,
+}
+
+const calculateLayoutHeight = (nodes: NodeDatum[], links: LinkDatum[]) => {
+  if (!scrollEnabled.value) return size.value.height
+  const incoming = new Map<string, number>()
+  const outgoing = new Map<string, number>()
+
+  links.forEach((link) => {
+    incoming.set(link.target, (incoming.get(link.target) ?? 0) + link.value)
+    outgoing.set(link.source, (outgoing.get(link.source) ?? 0) + link.value)
+  })
+
+  const columnValues = new Map<number, number[]>()
+  nodes.forEach((node) => {
+    const column = columnOrder[node.type]
+    const value = Math.max(incoming.get(node.id) ?? 0, outgoing.get(node.id) ?? 0)
+    if (!columnValues.has(column)) columnValues.set(column, [])
+    columnValues.get(column)?.push(value)
+  })
+
+  let requiredHeight = size.value.height
+  columnValues.forEach((values) => {
+    if (values.length === 0) return
+    const positiveValues = values.filter((value) => value > 0)
+    if (positiveValues.length === 0) return
+    const minValue = Math.min(...positiveValues)
+    const totalValue = values.reduce((sum, value) => sum + value, 0)
+    const scaleNeeded = minNodeHeight / minValue
+    const heightNeeded = totalValue * scaleNeeded + (values.length - 1) * nodePadding
+    requiredHeight = Math.max(requiredHeight, heightNeeded)
+  })
+
+  return Math.max(size.value.height, requiredHeight)
+}
 
 const updateLayout = () => {
   const summary = summaryStore.summaries_sankey
   if (!summary || size.value.width === 0 || size.value.height === 0) {
     layoutNodes.value = []
     layoutLinks.value = []
+    layoutHeight.value = size.value.height
     return
   }
 
@@ -407,16 +454,22 @@ const updateLayout = () => {
   if (nodes.length === 0 || links.length === 0) {
     layoutNodes.value = []
     layoutLinks.value = []
+    layoutHeight.value = size.value.height
     return
   }
+
+  layoutHeight.value = scrollEnabled.value ? calculateLayoutHeight(nodes, links) : size.value.height
 
   const sankeyGen = sankey<NodeDatum, LinkDatum>()
     .nodeId((d) => d.id)
     .nodeWidth(16)
-    .nodePadding(22)
+    .nodePadding(nodePadding)
     .extent([
       [labelPadding, 6],
-      [Math.max(labelPadding + 40, size.value.width - labelPadding), size.value.height - 6],
+      [
+        Math.max(labelPadding + 40, size.value.width - labelPadding),
+        layoutHeight.value - 6,
+      ],
     ])
 
   const graph = sankeyGen({
@@ -563,6 +616,12 @@ watch(
   { immediate: false },
 )
 
+watch(scrollEnabled, () => {
+  resetSelection()
+  resetTooltip()
+  updateLayout()
+})
+
 watch(
   () => summaryStore.summaries_sankey,
   () => {
@@ -609,18 +668,37 @@ const isDimmedLink = (link: LinkRender) =>
 
 <template>
   <v-card class="viz-card result-card" color="#808080" rounded="xl" variant="tonal">
-    <v-card-title class="text-subtitle-2 font-weight-medium viz-title">
+    <v-card-title class="text-subtitle-2 font-weight-medium viz-title result-title">
       Results
       <v-btn-toggle v-model="selectedPeriod" mandatory density="compact" class="period-toggle">
         <v-btn v-for="option in periodOptions" :key="option.value" :value="option.value" size="small">
           {{ option.label }}
         </v-btn>
       </v-btn-toggle>
+      <v-switch
+        v-model="scrollEnabled"
+        label="Scroll"
+        color="primary"
+        density="compact"
+        hide-details
+        class="scroll-switch"
+      />
     </v-card-title>
 
     <v-card-text class="viz-card-text result-card__body">
-      <div ref="containerRef" class="sankey-container" @click="clearSelection">
-        <svg ref="svgRef" class="sankey-svg" :width="size.width" :height="size.height">
+      <div
+        ref="containerRef"
+        class="sankey-container"
+        :class="{ 'sankey-container--scroll': scrollEnabled }"
+        @click="clearSelection"
+      >
+        <svg
+          ref="svgRef"
+          class="sankey-svg"
+          :class="{ 'sankey-svg--scroll': scrollEnabled }"
+          :width="size.width"
+          :height="scrollEnabled ? layoutHeight : size.height"
+        >
           <defs>
             <linearGradient
               v-for="link in layoutLinks"
@@ -712,8 +790,15 @@ const isDimmedLink = (link: LinkRender) =>
   flex-direction: column;
 }
 
+.result-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .result-card__body {
   flex: 1;
+  min-height: 0;
   padding-top: 20px;
   padding-bottom: 20px;
 }
@@ -722,16 +807,32 @@ const isDimmedLink = (link: LinkRender) =>
   position: relative;
   width: 100%;
   height: 100%;
+  max-height: 100%;
   min-height: 420px;
   cursor: default;
   overflow: visible;
 }
 
+.sankey-container--scroll {
+  overflow-y: auto;
+  overflow-x: visible;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.sankey-container--scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 .sankey-svg {
   width: 100%;
-  height: 100%;
   display: block;
   overflow: visible;
+}
+
+.sankey-svg--scroll {
+  height: auto;
 }
 
 .sankey-link {
