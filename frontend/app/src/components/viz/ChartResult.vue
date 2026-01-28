@@ -1,58 +1,93 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { sankey as d3Sankey, sankeyJustify, sankeyLinkHorizontal } from 'd3-sankey'
+import { sankey, sankeyLinkHorizontal } from 'd3-sankey'
 import { chartPalette } from '@/constants/chartPalette'
 import { useSummaryStore } from '@/stores/SummaryStore'
+import type { SankeySummary } from '@/types/Summary'
+
+type NodeType = 'root' | 'company' | 'project-group' | 'pm' | 'project' | 'pl'
+
+type LinkKind =
+  | 'root-company'
+  | 'company-project-group'
+  | 'project-group-pm'
+  | 'pm-project'
+  | 'project-pl'
+
+interface NodeDatum {
+  id: string
+  name: string
+  type: NodeType
+  rid?: number
+  projectCount?: number
+}
+
+interface LinkDatum {
+  id: string
+  source: string
+  target: string
+  value: number
+  kind: LinkKind
+  meta: {
+    companyName?: string
+    projectGroupName?: string
+    pmName?: string
+    plName?: string
+    projectName?: string
+  }
+}
+
+interface NodeRender extends NodeDatum {
+  x0: number
+  x1: number
+  y0: number
+  y1: number
+  value: number
+  color: string
+  labelLeft: string | null
+  labelRight: string | null
+  labelY: number
+  labelLeftX: number
+  labelRightX: number
+  showLeft: boolean
+  showRight: boolean
+}
+
+interface LinkRender extends LinkDatum {
+  path: string
+  width: number
+  gradientId: string
+  sourceNodeId: string
+  targetNodeId: string
+  sourceColor: string
+  targetColor: string
+  gradientX1: number
+  gradientX2: number
+}
 
 const summaryStore = useSummaryStore()
-const primaryColor = ref('#2196f3')
-const sankeySvg = ref<SVGSVGElement | null>(null)
-const sankeyWrap = ref<HTMLElement | null>(null)
-const wrapSize = ref({ width: 0, height: 0 })
-const tooltip = ref({ visible: false, x: 0, y: 0, text: '' })
-const useMinNodeHeight = ref(false)
-const selectedLink = ref<{
-  key: string
-  type: 'root-company' | 'company-project-group' | 'project-group-pm' | 'pm-project' | 'project-pl'
-  companyRid?: number
-  projectGroupRid?: number
-  pmRid?: number
-  projectRid?: number
-  plRid?: number
-} | null>(null)
-let resizeObserver: ResizeObserver | null = null
-let removeDragListeners: (() => void) | null = null
-let removeBackgroundClick: (() => void) | null = null
-let removeViewportListeners: (() => void) | null = null
 
 const periodOptions = [
-  { label: 'Total', value: 'year' },
-  { label: 'H1', value: 'h1' },
-  { label: 'H2', value: 'h2' },
-  { label: '1Q', value: 'q1' },
-  { label: '2Q', value: 'q2' },
-  { label: '3Q', value: 'q3' },
-  { label: '4Q', value: 'q4' },
-]
-const selectedPeriod = ref('year')
+  { value: 'year', label: 'YEAR' },
+  { value: 'h1', label: 'H1' },
+  { value: 'h2', label: 'H2' },
+  { value: 'q1', label: 'Q1' },
+  { value: 'q2', label: 'Q2' },
+  { value: 'q3', label: 'Q3' },
+  { value: 'q4', label: 'Q4' },
+] as const
 
-onMounted(async () => {
-  await summaryStore.fetchSummariesSankey(selectedPeriod.value)
-  const primary = getComputedStyle(document.documentElement)
-    .getPropertyValue('--v-theme-primary')
-    .trim()
-  if (primary) {
-    primaryColor.value = primary.includes(',') ? `rgb(${primary})` : primary
-  }
-})
-
-watch(selectedPeriod, async (next) => {
-  await summaryStore.fetchSummariesSankey(next)
-  selectedLink.value = null
-  tooltip.value = { ...tooltip.value, visible: false }
-})
-
-const sankeySummary = computed(() => summaryStore.summaries_sankey)
+const selectedPeriod = ref<string>('year')
+const containerRef = ref<HTMLDivElement | null>(null)
+const svgRef = ref<SVGSVGElement | null>(null)
+const size = ref({ width: 0, height: 0 })
+const layoutNodes = ref<NodeRender[]>([])
+const layoutLinks = ref<LinkRender[]>([])
+const selectedLinkId = ref<string | null>(null)
+const selectedNodeId = ref<string | null>(null)
+const highlightedNodes = ref<Set<string>>(new Set())
+const highlightedLinks = ref<Set<string>>(new Set())
+const tooltip = ref({ visible: false, x: 0, y: 0, text: '' })
 
 const currencyFormatter = new Intl.NumberFormat('ja-JP', {
   style: 'currency',
@@ -60,1087 +95,607 @@ const currencyFormatter = new Intl.NumberFormat('ja-JP', {
   maximumFractionDigits: 0,
 })
 
-const rootLabel = computed(() => {
-  const year = sankeySummary.value?.year
-  const period = selectedPeriod.value
-  const labelByPeriod: Record<string, string> = {
-    year: 'Total',
-    h1: 'H1',
-    h2: 'H2',
-    q1: '1Q',
-    q2: '2Q',
-    q3: '3Q',
-    q4: '4Q',
-  }
-  const periodLabel = labelByPeriod[period] ?? 'Total'
-  return year ? `${year} ${periodLabel}` : periodLabel
-})
+const formatCurrency = (value: number) => currencyFormatter.format(value)
 
-const companyLabel = (name: string) => `${name}`
-const projectLabel = (name: string) => `${name || 'Unknown'}`
-const pmLabel = (name: string, rid: number) => `PM: ${name || 'Unknown'} (${rid || 0})`
-const plLabel = (name: string, rid: number) => `PL: ${name || 'Unknown'} (${rid || 0})`
-
-const colorForCompany = (rid: number) => {
-  const index = Math.abs(rid) % chartPalette.length
-  return chartPalette[index] ?? '#9c9c9c'
+const periodLabel = (summary: SankeySummary | null, period: string) => {
+  if (!summary) return ''
+  const year = summary.year
+  const suffix = period.toUpperCase()
+  return period === 'year' ? `${year}` : `${year} ${suffix}`
 }
 
-const colorForPerson = (rid: number) => {
-  if (!rid) return '#7a7a7a'
-  const hue = (Math.abs(rid) * 137.508) % 360
-  return `hsl(${hue}, 55%, 55%)`
+const companyPalette = chartPalette.filter((color) => color.toLowerCase() !== '#ffffff')
+
+const companyColor = (rid?: number) => {
+  if (!rid || companyPalette.length === 0) return '#5c5c5c'
+  return companyPalette[rid % companyPalette.length] ?? '#5c5c5c'
 }
 
-const metricsByNode = computed(() => {
-  const summary = sankeySummary.value
-  const empty = {
-    totalAmount: 0,
-    company: new Map<number, { amount: number; projectCount: number }>(),
-    pm: new Map<number, { amount: number; projectCount: number }>(),
-    pl: new Map<number, { amount: number; projectCount: number }>(),
+const personColor = (rid?: number) => {
+  const safeRid = rid ?? 0
+  const hue = (safeRid * 137) % 360
+  return `hsl(${hue} 55% 46%)`
+}
+
+const nodeColor = (node: NodeDatum) => {
+  switch (node.type) {
+    case 'root':
+      return '#5a5a5a'
+    case 'company':
+      return companyColor(node.rid)
+    case 'project-group':
+      return '#3c3c3c'
+    case 'pm':
+    case 'pl':
+      return personColor(node.rid)
+    case 'project':
+      return '#4a4a4a'
+    default:
+      return '#5a5a5a'
   }
-  if (!summary) return empty
+}
 
-  const company = new Map<number, { amount: number; projectCount: number }>()
-  const pm = new Map<number, { amount: number; projectCount: number }>()
-  const pl = new Map<number, { amount: number; projectCount: number }>()
-  const companyCounts = new Map(
-    summary.company_project_counts.map((row) => [row.rid, row.project_count]),
-  )
-  const pmCounts = new Map(summary.pm_project_counts.map((row) => [row.rid, row.project_count]))
-  const plCounts = new Map(summary.pl_project_counts.map((row) => [row.rid, row.project_count]))
-
-  summary.project_groups.forEach((projectGroup) => {
-    if (!projectGroup.company_rid) return
-    const entry = company.get(projectGroup.company_rid) ?? {
-      amount: 0,
-      projectCount: companyCounts.get(projectGroup.company_rid) ?? 0,
-    }
-    entry.amount += projectGroup.amount
-    company.set(projectGroup.company_rid, entry)
-  })
-
-  summary.company_pm.forEach((item) => {
-    if (!item.pm_rid) return
-    const entry = pm.get(item.pm_rid) ?? {
-      amount: 0,
-      projectCount: pmCounts.get(item.pm_rid) ?? 0,
-    }
-    entry.amount += item.amount
-    pm.set(item.pm_rid, entry)
-  })
-
-  summary.pm_pl.forEach((item) => {
-    if (!item.pl_rid) return
-    const entry = pl.get(item.pl_rid) ?? {
-      amount: 0,
-      projectCount: plCounts.get(item.pl_rid) ?? 0,
-    }
-    entry.amount += item.amount
-    pl.set(item.pl_rid, entry)
-  })
-
-  return {
-    totalAmount: summary.total_amount ?? 0,
-    projectGroups: new Map(
-      summary.project_groups.map((group) => [
-        group.rid,
-        { amount: group.amount, projectCount: group.project_count },
-      ]),
-    ),
-    company,
-    pm,
-    pl,
+const labelConfig = (node: NodeDatum, percentLabel: string) => {
+  switch (node.type) {
+    case 'root':
+      return { left: node.name, right: percentLabel }
+    case 'company':
+      return { left: node.name, right: percentLabel }
+    case 'pm':
+      return { left: percentLabel, right: node.name }
+    case 'pl':
+      return { left: percentLabel, right: node.name }
+    default:
+      return { left: null, right: null }
   }
-})
+}
 
-const sankeyIndex = computed(() => {
-  const summary = sankeySummary.value
-  if (!summary) return null
+const buildGraphData = (summary: SankeySummary, rootName: string) => {
+  const nodes: NodeDatum[] = []
+  const links: LinkDatum[] = []
+  const nodeMap = new Map<string, NodeDatum>()
 
-  const projectGroupById = new Map<number, { companyRid: number }>()
-  const projectGroupsByCompany = new Map<number, Set<number>>()
-  summary.project_groups.forEach((group) => {
-    projectGroupById.set(group.rid, { companyRid: group.company_rid })
-    const set = projectGroupsByCompany.get(group.company_rid) ?? new Set<number>()
-    set.add(group.rid)
-    projectGroupsByCompany.set(group.company_rid, set)
-  })
-
-  const projectGroupsByPm = new Map<number, Set<number>>()
-  const pmsByProjectGroup = new Map<number, Set<number>>()
-  summary.company_pm.forEach((item) => {
-    const pmSet = projectGroupsByPm.get(item.pm_rid) ?? new Set<number>()
-    pmSet.add(item.project_group_rid)
-    projectGroupsByPm.set(item.pm_rid, pmSet)
-
-    const groupSet = pmsByProjectGroup.get(item.project_group_rid) ?? new Set<number>()
-    groupSet.add(item.pm_rid)
-    pmsByProjectGroup.set(item.project_group_rid, groupSet)
-  })
-
-  const projectGroupByProject = new Map<number, number>()
-  const projectsByProjectGroup = new Map<number, Set<number>>()
-  const projectsByPm = new Map<number, Set<number>>()
-  const projectsByPl = new Map<number, Set<number>>()
-  const pmByProject = new Map<number, number>()
-  const plByProject = new Map<number, number>()
-  summary.pm_pl.forEach((item) => {
-    projectGroupByProject.set(item.project_rid, item.project_group_rid)
-    pmByProject.set(item.project_rid, item.pm_rid)
-    plByProject.set(item.project_rid, item.pl_rid)
-
-    const groupProjects = projectsByProjectGroup.get(item.project_group_rid) ?? new Set<number>()
-    groupProjects.add(item.project_rid)
-    projectsByProjectGroup.set(item.project_group_rid, groupProjects)
-
-    const pmProjects = projectsByPm.get(item.pm_rid) ?? new Set<number>()
-    pmProjects.add(item.project_rid)
-    projectsByPm.set(item.pm_rid, pmProjects)
-
-    const plProjects = projectsByPl.get(item.pl_rid) ?? new Set<number>()
-    plProjects.add(item.project_rid)
-    projectsByPl.set(item.pl_rid, plProjects)
-  })
-
-  return {
-    projectGroupById,
-    projectGroupsByCompany,
-    projectGroupsByPm,
-    pmsByProjectGroup,
-    projectGroupByProject,
-    projectsByProjectGroup,
-    projectsByPm,
-    projectsByPl,
-    pmByProject,
-    plByProject,
+  const addNode = (node: NodeDatum) => {
+    if (nodeMap.has(node.id)) return
+    nodeMap.set(node.id, node)
+    nodes.push(node)
   }
-})
 
-const nodeRegistry = computed(() => {
-  const summary = sankeySummary.value
-  const nodes = new Map<string, { id: string; name: string; color: string; display: string }>()
-  nodes.set('root', {
+  addNode({
     id: 'root',
-    name: rootLabel.value,
-    display: rootLabel.value,
-    color: primaryColor.value,
+    name: rootName,
+    type: 'root',
+    projectCount: summary.project_groups.reduce((acc, group) => acc + group.project_count, 0),
   })
-  if (!summary) return nodes
+
+  const companyCounts = new Map<number, number>()
+  summary.company_project_counts.forEach((item) => companyCounts.set(item.rid, item.project_count))
+
+  const pmCounts = new Map<number, number>()
+  summary.pm_project_counts.forEach((item) => pmCounts.set(item.rid, item.project_count))
+
+  const plCounts = new Map<number, number>()
+  summary.pl_project_counts.forEach((item) => plCounts.set(item.rid, item.project_count))
 
   summary.companies.forEach((company) => {
-    const id = `company:${company.rid}`
-    nodes.set(id, {
-      id,
-      name: companyLabel(company.name),
-      display: company.name,
-      color: colorForCompany(company.rid),
+    addNode({
+      id: `company-${company.rid}`,
+      name: company.name,
+      type: 'company',
+      rid: company.rid,
+      projectCount: companyCounts.get(company.rid) ?? 0,
+    })
+
+    links.push({
+      id: `root-company-${company.rid}`,
+      source: 'root',
+      target: `company-${company.rid}`,
+      value: company.amount,
+      kind: 'root-company',
+      meta: { companyName: company.name },
     })
   })
 
-  summary.project_groups.forEach((projectGroup) => {
-    const id = `project-company:${projectGroup.rid}`
-    nodes.set(id, {
-      id,
-      name: projectLabel(projectGroup.name),
-      display: '',
-      color: colorForCompany(projectGroup.company_rid),
+  summary.project_groups.forEach((group) => {
+    addNode({
+      id: `project-group-${group.rid}`,
+      name: group.name,
+      type: 'project-group',
+      rid: group.rid,
+      projectCount: group.project_count,
+    })
+
+    links.push({
+      id: `company-project-group-${group.company_rid}-${group.rid}`,
+      source: `company-${group.company_rid}`,
+      target: `project-group-${group.rid}`,
+      value: group.amount,
+      kind: 'company-project-group',
+      meta: { projectGroupName: group.name },
     })
   })
 
   summary.company_pm.forEach((item) => {
-    const id = `pm:${item.pm_rid}`
-    if (nodes.has(id)) return
-    nodes.set(id, {
-      id,
-      name: pmLabel(item.pm_name, item.pm_rid),
-      display: `PM ${item.pm_name || 'Unknown'}`,
-      color: colorForPerson(item.pm_rid),
+    addNode({
+      id: `pm-${item.pm_rid}`,
+      name: item.pm_name,
+      type: 'pm',
+      rid: item.pm_rid,
+      projectCount: pmCounts.get(item.pm_rid) ?? 0,
+    })
+
+    links.push({
+      id: `project-group-pm-${item.project_group_rid}-${item.pm_rid}`,
+      source: `project-group-${item.project_group_rid}`,
+      target: `pm-${item.pm_rid}`,
+      value: item.amount,
+      kind: 'project-group-pm',
+      meta: { projectGroupName: item.project_group_name, pmName: item.pm_name },
     })
   })
 
+  const projectLinks = new Map<string, LinkDatum>()
+
   summary.pm_pl.forEach((item) => {
-    const projectId = `project-pm:${item.project_rid}`
-    if (!nodes.has(projectId)) {
-      nodes.set(projectId, {
-        id: projectId,
-        name: projectLabel(item.project_name),
-        display: '',
-        color: colorForPerson(item.pm_rid),
+    addNode({
+      id: `project-${item.project_rid}`,
+      name: item.project_name,
+      type: 'project',
+      rid: item.project_rid,
+    })
+    addNode({
+      id: `pl-${item.pl_rid}`,
+      name: item.pl_name,
+      type: 'pl',
+      rid: item.pl_rid,
+      projectCount: plCounts.get(item.pl_rid) ?? 0,
+    })
+
+    const projectKey = `pm-project-${item.pm_rid}-${item.project_rid}`
+    const existing = projectLinks.get(projectKey)
+    if (existing) {
+      existing.value += item.amount
+    } else {
+      projectLinks.set(projectKey, {
+        id: projectKey,
+        source: `pm-${item.pm_rid}`,
+        target: `project-${item.project_rid}`,
+        value: item.amount,
+        kind: 'pm-project',
+        meta: { projectName: item.project_name },
       })
     }
 
-    const id = `pl:${item.pl_rid}`
-    if (nodes.has(id)) return
-    nodes.set(id, {
-      id,
-      name: plLabel(item.pl_name, item.pl_rid),
-      display: `PL ${item.pl_name || 'Unknown'}`,
-      color: colorForPerson(item.pl_rid),
-    })
-  })
-
-  return nodes
-})
-
-const sankeyLinks = computed(() => {
-  const summary = sankeySummary.value
-  if (!summary) return []
-
-  const links: Array<{
-    source: string
-    target: string
-    value: number
-    projectName?: string
-    projectRid?: number
-    projectGroupRid?: number
-  }> = []
-
-  summary.companies.forEach((company) => {
-    if (!company.amount) return
     links.push({
-      source: 'root',
-      target: `company:${company.rid}`,
-      value: company.amount,
-    })
-  })
-
-  summary.project_groups.forEach((projectGroup) => {
-    if (!projectGroup.amount) return
-    links.push({
-      source: `company:${projectGroup.company_rid}`,
-      target: `project-company:${projectGroup.rid}`,
-      value: projectGroup.amount,
-      projectName: projectGroup.name,
-      projectRid: projectGroup.rid,
-      projectGroupRid: projectGroup.rid,
-    })
-  })
-
-  summary.company_pm.forEach((item) => {
-    if (!item.amount) return
-    links.push({
-      source: `project-company:${item.project_group_rid}`,
-      target: `pm:${item.pm_rid}`,
+      id: `project-pl-${item.project_rid}-${item.pl_rid}`,
+      source: `project-${item.project_rid}`,
+      target: `pl-${item.pl_rid}`,
       value: item.amount,
-      projectName: item.project_group_name,
-      projectRid: item.project_group_rid,
-      projectGroupRid: item.project_group_rid,
+      kind: 'project-pl',
+      meta: { projectName: item.project_name, plName: item.pl_name },
     })
   })
 
-  summary.pm_pl.forEach((item) => {
-    if (!item.amount) return
-    links.push({
-      source: `pm:${item.pm_rid}`,
-      target: `project-pm:${item.project_rid}`,
-      value: item.amount,
-      projectName: item.project_name,
-      projectRid: item.project_rid,
-      projectGroupRid: item.project_group_rid,
-    })
-    links.push({
-      source: `project-pm:${item.project_rid}`,
-      target: `pl:${item.pl_rid}`,
-      value: item.amount,
-      projectName: item.project_name,
-      projectRid: item.project_rid,
-      projectGroupRid: item.project_group_rid,
-    })
-  })
+  projectLinks.forEach((link) => links.push(link))
 
-  return links
-})
+  return { nodes, links }
+}
 
-const renderSankey = () => {
-  const svg = sankeySvg.value
-  const size = wrapSize.value
-  const nodesMap = nodeRegistry.value
-  if (!svg || !size.width || !size.height || !nodesMap.size) return
+const resetSelection = () => {
+  selectedLinkId.value = null
+  selectedNodeId.value = null
+  highlightedNodes.value = new Set()
+  highlightedLinks.value = new Set()
+}
 
-  while (svg.firstChild) {
-    svg.removeChild(svg.firstChild)
+const resetTooltip = () => {
+  tooltip.value = { visible: false, x: 0, y: 0, text: '' }
+}
+
+const computeHighlights = (linkId: string) => {
+  const selectedLink = layoutLinks.value.find((link) => link.id === linkId)
+  if (!selectedLink) {
+    resetSelection()
+    return
   }
 
-  const ns = 'http://www.w3.org/2000/svg'
-  const width = size.width
-  const height = size.height
-  const pixelRatio = window.devicePixelRatio ?? 1
-  const snap = (value: number) => Math.round(value * pixelRatio) / pixelRatio
-  svg.setAttribute('width', `${width}`)
+  const incoming = new Map<string, LinkRender[]>()
+  const outgoing = new Map<string, LinkRender[]>()
 
-  const nodes = Array.from(nodesMap.values()).map((node) => ({
-    id: node.id,
-    name: node.name,
-    display: node.display,
-    color: node.color,
-  }))
+  layoutLinks.value.forEach((link) => {
+    const source = link.sourceNodeId
+    const target = link.targetNodeId
+    if (!outgoing.has(source)) outgoing.set(source, [])
+    if (!incoming.has(target)) incoming.set(target, [])
+    outgoing.get(source)?.push(link)
+    incoming.get(target)?.push(link)
+  })
 
-  const summary = sankeySummary.value
-  const projectGroupNameById = new Map<number, string>()
-  const projectNameById = new Map<number, string>()
-  if (summary) {
-    summary.project_groups.forEach((group) => {
-      projectGroupNameById.set(group.rid, group.name)
-    })
-    summary.pm_pl.forEach((item) => {
-      if (item.project_rid) {
-        projectNameById.set(item.project_rid, item.project_name)
-      }
+  const nodes = new Set<string>()
+  const links = new Set<string>()
+
+  const walkUpstream = (nodeId: string) => {
+    const incomingLinks = incoming.get(nodeId) ?? []
+    incomingLinks.forEach((link) => {
+      if (links.has(link.id)) return
+      links.add(link.id)
+      nodes.add(link.sourceNodeId)
+      nodes.add(link.targetNodeId)
+      walkUpstream(link.sourceNodeId)
     })
   }
 
-  const links = sankeyLinks.value.map((link) => ({
-    source: link.source,
-    target: link.target,
-    value: link.value,
-    projectName: link.projectName,
-    projectRid: link.projectRid,
-    projectGroupRid: link.projectGroupRid,
-  }))
+  const walkDownstream = (nodeId: string) => {
+    const outgoingLinks = outgoing.get(nodeId) ?? []
+    outgoingLinks.forEach((link) => {
+      if (links.has(link.id)) return
+      links.add(link.id)
+      nodes.add(link.sourceNodeId)
+      nodes.add(link.targetNodeId)
+      walkDownstream(link.targetNodeId)
+    })
+  }
 
-  if (!links.length) return
+  nodes.add(selectedLink.sourceNodeId)
+  nodes.add(selectedLink.targetNodeId)
+  links.add(selectedLink.id)
+  walkUpstream(selectedLink.sourceNodeId)
+  walkDownstream(selectedLink.targetNodeId)
 
-  const paddingLeft = 80
-  const zoomScale = window.visualViewport?.scale ?? window.devicePixelRatio ?? 1
-  const paddingRight = Math.round(120 * zoomScale)
-  const paddingTop = 20
-  const paddingBottom = 64
-  const nodePadding = 18
-  const minNodeHeight = 6
-  const createLayout = (layoutHeight: number) =>
-    d3Sankey()
-      .nodeId((d: { id: string }) => d.id)
-      .nodeWidth(18)
-      .nodePadding(nodePadding)
-      .nodeAlign(sankeyJustify)
-      .extent([
-        [paddingLeft, paddingTop],
-        [width - paddingRight, layoutHeight - paddingBottom],
-      ])
+  highlightedNodes.value = nodes
+  highlightedLinks.value = links
+}
 
-  const baseLayout = createLayout(height)
-  const baseGraph = baseLayout({
+const computeHighlightsFromNode = (nodeId: string) => {
+  const incoming = new Map<string, LinkRender[]>()
+  const outgoing = new Map<string, LinkRender[]>()
+
+  layoutLinks.value.forEach((link) => {
+    const source = link.sourceNodeId
+    const target = link.targetNodeId
+    if (!outgoing.has(source)) outgoing.set(source, [])
+    if (!incoming.has(target)) incoming.set(target, [])
+    outgoing.get(source)?.push(link)
+    incoming.get(target)?.push(link)
+  })
+
+  const nodes = new Set<string>([nodeId])
+  const links = new Set<string>()
+
+  const walkUpstream = (currentId: string) => {
+    const incomingLinks = incoming.get(currentId) ?? []
+    incomingLinks.forEach((link) => {
+      if (links.has(link.id)) return
+      links.add(link.id)
+      nodes.add(link.sourceNodeId)
+      nodes.add(link.targetNodeId)
+      walkUpstream(link.sourceNodeId)
+    })
+  }
+
+  const walkDownstream = (currentId: string) => {
+    const outgoingLinks = outgoing.get(currentId) ?? []
+    outgoingLinks.forEach((link) => {
+      if (links.has(link.id)) return
+      links.add(link.id)
+      nodes.add(link.sourceNodeId)
+      nodes.add(link.targetNodeId)
+      walkDownstream(link.targetNodeId)
+    })
+  }
+
+  walkUpstream(nodeId)
+  walkDownstream(nodeId)
+
+  highlightedNodes.value = nodes
+  highlightedLinks.value = links
+}
+
+const labelPadding = 140
+
+const updateLayout = () => {
+  const summary = summaryStore.summaries_sankey
+  if (!summary || size.value.width === 0 || size.value.height === 0) {
+    layoutNodes.value = []
+    layoutLinks.value = []
+    return
+  }
+
+  const rootName = periodLabel(summary, selectedPeriod.value)
+  const { nodes, links } = buildGraphData(summary, rootName)
+
+  if (nodes.length === 0 || links.length === 0) {
+    layoutNodes.value = []
+    layoutLinks.value = []
+    return
+  }
+
+  const sankeyGen = sankey<NodeDatum, LinkDatum>()
+    .nodeId((d) => d.id)
+    .nodeWidth(16)
+    .nodePadding(22)
+    .extent([
+      [labelPadding, 6],
+      [Math.max(labelPadding + 40, size.value.width - labelPadding), size.value.height - 6],
+    ])
+
+  const graph = sankeyGen({
     nodes: nodes.map((node) => ({ ...node })),
     links: links.map((link) => ({ ...link })),
   })
 
-  const requiredHeight = (() => {
-    if (!useMinNodeHeight.value) return height
-    const columns = new Map<number, { heights: number[]; top: number }>()
-    baseGraph.nodes.forEach((node: any) => {
-      const depth = Number(node.depth ?? 0)
-      const height = Math.max(0, Number(node.y1 ?? 0) - Number(node.y0 ?? 0))
-      const entry = columns.get(depth) ?? { heights: [], top: Number.POSITIVE_INFINITY }
-      entry.heights.push(height)
-      entry.top = Math.min(entry.top, Number(node.y0 ?? 0))
-      columns.set(depth, entry)
-    })
-
-    let requiredTotal = height
-    columns.forEach((column) => {
-      const total = column.heights.reduce(
-        (sum, nodeHeight) => sum + Math.max(nodeHeight, minNodeHeight),
-        0,
-      )
-      const innerHeight = total + nodePadding * Math.max(0, column.heights.length - 1)
-      const top = Number.isFinite(column.top) ? column.top : paddingTop
-      const bottom = top + innerHeight + paddingBottom
-      requiredTotal = Math.max(requiredTotal, bottom)
-    })
-
-    return requiredTotal
-  })()
-
-  const layoutHeight = requiredHeight
-  const graph = baseGraph
-  if (useMinNodeHeight.value) {
-    const columns = new Map<number, Array<any>>()
-    graph.nodes.forEach((node: any) => {
-      const depth = Number(node.depth ?? 0)
-      const entry = columns.get(depth) ?? []
-      entry.push(node)
-      columns.set(depth, entry)
-    })
-    columns.forEach((nodes) => {
-      nodes.sort((a, b) => (a.y0 ?? 0) - (b.y0 ?? 0))
-      const firstTop = Number(nodes[0]?.y0 ?? paddingTop)
-      let cursor = Number.isFinite(firstTop) ? firstTop : paddingTop
-      nodes.forEach((node) => {
-        const height = Math.max(minNodeHeight, (node.y1 ?? 0) - (node.y0 ?? 0))
-        node.y0 = cursor
-        node.y1 = cursor + height
-        cursor = node.y1 + nodePadding
-      })
-    })
-    baseLayout.update(graph)
-  }
-  svg.setAttribute('height', `${layoutHeight}`)
-
-  const defs = document.createElementNS(ns, 'defs')
-  const linkGroup = document.createElementNS(ns, 'g')
-  const nodeGroup = document.createElementNS(ns, 'g')
-  svg.appendChild(defs)
-  svg.appendChild(linkGroup)
-  svg.appendChild(nodeGroup)
-
   const linkPath = sankeyLinkHorizontal()
-  const centerX = width / 2
-  const leftEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.35
-  const rightEdge = paddingLeft + (width - paddingLeft - paddingRight) * 0.65
-  const shiftByType = [
-    { prefix: 'company:', shift: 8 },
-    { prefix: 'project-company:', shift: -6 },
-    { prefix: 'pm:', shift: -10 },
-    { prefix: 'project-pm:', shift: -12 },
-    { prefix: 'pl:', shift: -10 },
-  ]
+  const nodeColorMap = new Map<string, string>()
 
-  graph.nodes.forEach((node: any) => {
-    const nodeId = String(node.id ?? '')
-    const match = shiftByType.find((entry) => nodeId.startsWith(entry.prefix))
-    if (!match) return
-    node.x0 += match.shift
-    node.x1 += match.shift
+  const renderedNodes: NodeRender[] = graph.nodes.map((node) => {
+    const color = nodeColor(node)
+    nodeColorMap.set(node.id, color)
+
+    const percent = summary.total_amount
+      ? Math.min(100, (node.value / summary.total_amount) * 100)
+      : 0
+    const count = node.projectCount ?? 0
+    const percentLabel = `${percent.toFixed(1)}% / ${count} PJ`
+    const { left, right } = labelConfig(node, percentLabel)
+
+    return {
+      ...node,
+      color,
+      labelY: (node.y0 + node.y1) / 2,
+      labelLeft: left,
+      labelRight: right,
+      labelLeftX: node.x0 - 10,
+      labelRightX: node.x1 + 10,
+      showLeft: left !== null,
+      showRight: right !== null,
+    }
   })
 
-  const index = sankeyIndex.value
-  const selection = selectedLink.value
-  const parseRid = (id: string) => Number(id.split(':')[1] ?? 0)
-  const addAll = (target: Set<number>, source?: Set<number>) => {
-    if (!source) return
-    source.forEach((value) => target.add(value))
-  }
-  const collectCompaniesFromGroups = (groupIds: Set<number>) => {
-    const companies = new Set<number>()
-    if (!index) return companies
-    groupIds.forEach((groupId) => {
-      const companyRid = index.projectGroupById.get(groupId)?.companyRid
-      if (companyRid) companies.add(companyRid)
-    })
-    return companies
-  }
-  const collectGroupsFromProjects = (projectIds: Set<number>) => {
-    const groups = new Set<number>()
-    if (!index) return groups
-    projectIds.forEach((projectId) => {
-      const groupId = index.projectGroupByProject.get(projectId)
-      if (groupId) groups.add(groupId)
-    })
-    return groups
-  }
-  const collectPmsFromProjects = (projectIds: Set<number>) => {
-    const pms = new Set<number>()
-    if (!index) return pms
-    projectIds.forEach((projectId) => {
-      const pmRid = index.pmByProject.get(projectId)
-      if (pmRid) pms.add(pmRid)
-    })
-    return pms
-  }
-  const collectPlsFromProjects = (projectIds: Set<number>) => {
-    const pls = new Set<number>()
-    if (!index) return pls
-    projectIds.forEach((projectId) => {
-      const plRid = index.plByProject.get(projectId)
-      if (plRid) pls.add(plRid)
-    })
-    return pls
-  }
+  const renderedLinks: LinkRender[] = graph.links.map((link, index) => {
+    const source = link.source as NodeRender
+    const target = link.target as NodeRender
+    const sourceColor = nodeColorMap.get(source.id) ?? '#5a5a5a'
+    const targetColor = nodeColorMap.get(target.id) ?? '#5a5a5a'
 
-  let selectionSets: {
-    companyRids?: Set<number>
-    projectGroupRids?: Set<number>
-    pmRids?: Set<number>
-    projectRids?: Set<number>
-    plRids?: Set<number>
-  } | null = null
-
-  if (selection && index) {
-    if (selection.type === 'root-company' && selection.companyRid) {
-      const companyRids = new Set([selection.companyRid])
-      const projectGroupRids = index.projectGroupsByCompany.get(selection.companyRid) ?? new Set()
-      const projectRids = new Set<number>()
-      projectGroupRids.forEach((groupId) => {
-        addAll(projectRids, index.projectsByProjectGroup.get(groupId))
-      })
-      selectionSets = {
-        companyRids,
-        projectGroupRids,
-        projectRids,
-      }
-    } else if (selection.type === 'company-project-group' && selection.projectGroupRid) {
-      const projectGroupRids = new Set([selection.projectGroupRid])
-      const companyRids = collectCompaniesFromGroups(projectGroupRids)
-      const projectRids = new Set<number>()
-      projectGroupRids.forEach((groupId) => {
-        addAll(projectRids, index.projectsByProjectGroup.get(groupId))
-      })
-      selectionSets = {
-        companyRids,
-        projectGroupRids,
-        projectRids,
-      }
-    } else if (selection.type === 'project-group-pm' && selection.pmRid) {
-      const pmRids = new Set([selection.pmRid])
-      const projectGroupRids = index.projectGroupsByPm.get(selection.pmRid) ?? new Set()
-      const projectRids = index.projectsByPm.get(selection.pmRid) ?? new Set()
-      const companyRids = collectCompaniesFromGroups(projectGroupRids)
-      selectionSets = {
-        companyRids,
-        projectGroupRids,
-        pmRids,
-        projectRids,
-      }
-    } else if (selection.type === 'pm-project' && selection.projectRid) {
-      const projectRids = new Set([selection.projectRid])
-      const projectGroupRids = collectGroupsFromProjects(projectRids)
-      const companyRids = collectCompaniesFromGroups(projectGroupRids)
-      const pmRids = selection.pmRid
-        ? new Set([selection.pmRid])
-        : collectPmsFromProjects(projectRids)
-      const plRids = collectPlsFromProjects(projectRids)
-      selectionSets = {
-        companyRids,
-        projectGroupRids,
-        pmRids,
-        projectRids,
-        plRids,
-      }
-    } else if (selection.type === 'project-pl' && selection.plRid) {
-      const plRids = new Set([selection.plRid])
-      const projectRids = index.projectsByPl.get(selection.plRid) ?? new Set()
-      const projectGroupRids = collectGroupsFromProjects(projectRids)
-      const companyRids = collectCompaniesFromGroups(projectGroupRids)
-      const pmRids = collectPmsFromProjects(projectRids)
-      selectionSets = {
-        companyRids,
-        projectGroupRids,
-        pmRids,
-        projectRids,
-        plRids,
-      }
+    return {
+      ...link,
+      path: linkPath(link) ?? '',
+      width: link.width ?? 1,
+      gradientId: `sankey-gradient-${index}`,
+      sourceNodeId: source.id,
+      targetNodeId: target.id,
+      sourceColor,
+      targetColor,
+      gradientX1: source.x1,
+      gradientX2: target.x0,
     }
-  }
-
-  const linkKeyMap = new Map<any, string>()
-  let gradientCounter = 0
-  graph.links.forEach((link: any) => {
-    const sourceId = String(link.source?.id ?? '')
-    const targetId = String(link.target?.id ?? '')
-    const linkKey = `${sourceId}|${targetId}|${link.projectRid ?? ''}|${link.value ?? ''}`
-    linkKeyMap.set(link, linkKey)
   })
 
-  const activeLinkKeys = new Set<string>()
-  const activeNodeIds = new Set<string>()
+  layoutNodes.value = renderedNodes
+  layoutLinks.value = renderedLinks
 
-  graph.links.forEach((link: any) => {
-    const sourceId = String(link.source?.id ?? '')
-    const targetId = String(link.target?.id ?? '')
-    const sourceRid = parseRid(sourceId)
-    const targetRid = parseRid(targetId)
-    const linkKey = linkKeyMap.get(link) ?? ''
-    const projectGroupRid = link.projectGroupRid ?? 0
-    const projectRid = link.projectRid ?? 0
-    let linkType:
-      | 'root-company'
-      | 'company-project-group'
-      | 'project-group-pm'
-      | 'pm-project'
-      | 'project-pl' = 'root-company'
-    let pmRid = 0
-    let plRid = 0
-    let companyRid = 0
-    if (sourceId === 'root' && targetId.startsWith('company:')) {
-      linkType = 'root-company'
-      companyRid = targetRid
-    } else if (sourceId.startsWith('company:') && targetId.startsWith('project-company:')) {
-      linkType = 'company-project-group'
-      companyRid = sourceRid
-    } else if (sourceId.startsWith('project-company:') && targetId.startsWith('pm:')) {
-      linkType = 'project-group-pm'
-      pmRid = targetRid
-    } else if (sourceId.startsWith('pm:') && targetId.startsWith('project-pm:')) {
-      linkType = 'pm-project'
-      pmRid = sourceRid
-    } else if (sourceId.startsWith('project-pm:') && targetId.startsWith('pl:')) {
-      linkType = 'project-pl'
-      plRid = targetRid
-    }
-
-    const inSet = (set: Set<number> | undefined, value: number) => !set || set.has(value)
-    const isActive = (() => {
-      if (!selectionSets) return true
-      if (linkType === 'root-company') {
-        return inSet(selectionSets.companyRids, companyRid)
-      }
-      if (linkType === 'company-project-group') {
-        return inSet(selectionSets.projectGroupRids, projectGroupRid)
-      }
-      if (linkType === 'project-group-pm') {
-        return (
-          inSet(selectionSets.projectGroupRids, projectGroupRid) &&
-          inSet(selectionSets.pmRids, pmRid)
-        )
-      }
-      if (linkType === 'pm-project') {
-        return inSet(selectionSets.projectRids, projectRid) && inSet(selectionSets.pmRids, pmRid)
-      }
-      return inSet(selectionSets.projectRids, projectRid) && inSet(selectionSets.plRids, plRid)
-    })()
-
-    if (isActive) {
-      activeLinkKeys.add(linkKey)
-      activeNodeIds.add(sourceId)
-      activeNodeIds.add(targetId)
-    }
-
-    const path = document.createElementNS(ns, 'path')
-    const d = linkPath(link)
-    if (!d) return
-    const gradientId = `sankey-link-${gradientCounter++}`
-    const gradient = document.createElementNS(ns, 'linearGradient')
-    gradient.setAttribute('id', gradientId)
-    gradient.setAttribute('gradientUnits', 'userSpaceOnUse')
-    const yMid = (link.y0 + link.y1) / 2
-    gradient.setAttribute('x1', `${link.source?.x1 ?? link.x0}`)
-    gradient.setAttribute('y1', `${yMid}`)
-    gradient.setAttribute('x2', `${link.target?.x0 ?? link.x1}`)
-    gradient.setAttribute('y2', `${yMid}`)
-    const stopStart = document.createElementNS(ns, 'stop')
-    stopStart.setAttribute('offset', '0%')
-    stopStart.setAttribute('stop-color', link.source?.color ?? '#888888')
-    const stopEnd = document.createElementNS(ns, 'stop')
-    stopEnd.setAttribute('offset', '100%')
-    stopEnd.setAttribute('stop-color', link.target?.color ?? '#888888')
-    gradient.appendChild(stopStart)
-    gradient.appendChild(stopEnd)
-    defs.appendChild(gradient)
-    path.setAttribute('d', d)
-    path.setAttribute('fill', 'none')
-    path.setAttribute('stroke', `url(#${gradientId})`)
-    if (selectionSets) {
-      path.style.strokeOpacity = '0.3'
-      path.dataset.fadeToStroke = isActive ? '0.3' : '0.03'
+  if (selectedLinkId.value) {
+    if (renderedLinks.some((link) => link.id === selectedLinkId.value)) {
+      computeHighlights(selectedLinkId.value)
     } else {
-      path.style.strokeOpacity = '0.3'
-      delete path.dataset.fadeToStroke
+      resetSelection()
     }
-    const rawLinkWidth = Number(link.width ?? 0)
-    const minLinkWidth = useMinNodeHeight.value ? 1 : 0.5
-    path.setAttribute('stroke-width', `${snap(Math.max(minLinkWidth, rawLinkWidth))}`)
-    path.setAttribute('stroke-linecap', 'butt')
-    path.style.transition = 'stroke-opacity 10ms ease'
-
-    const targetName = (link.target?.display ?? link.target?.name ?? '').trim()
-    const projectName = (link.projectName ?? '').trim()
-    const tooltipLabel = (() => {
-      if (sourceId === 'root' && targetId.startsWith('company:')) return targetName
-      if (sourceId.startsWith('company:') && targetId.startsWith('project-company:'))
-        return projectName || targetName
-      if (sourceId.startsWith('project-company:') && targetId.startsWith('pm:')) {
-        const pmName = targetName.replace(/^PM\\s*/, '')
-        const groupName =
-          projectGroupNameById.get(Number(link.projectGroupRid ?? 0)) ?? link.projectName ?? ''
-        if (groupName) return `${groupName}: ${pmName}`
-        return pmName
-      }
-      if (sourceId.startsWith('pm:') && targetId.startsWith('project-pm:'))
-        return projectName || targetName
-      if (sourceId.startsWith('project-pm:') && targetId.startsWith('pl:')) {
-        const plName = targetName.replace(/^PL\\s*/, '')
-        return projectName ? `${projectName}: ${plName}` : plName
-      }
-      return targetName
-    })()
-    const tooltipText = `${tooltipLabel}: ${currencyFormatter.format(link.value ?? 0)}`
-
-    path.addEventListener('mouseenter', (event) => {
-      const wrap = sankeyWrap.value
-      if (!wrap) return
-      const rect = wrap.getBoundingClientRect()
-      tooltip.value = {
-        visible: true,
-        x: event.clientX - rect.left + 12,
-        y: event.clientY - rect.top + 12,
-        text: tooltipText,
-      }
-    })
-    path.addEventListener('mousemove', (event) => {
-      const wrap = sankeyWrap.value
-      if (!wrap) return
-      const rect = wrap.getBoundingClientRect()
-      tooltip.value = {
-        ...tooltip.value,
-        x: event.clientX - rect.left + 12,
-        y: event.clientY - rect.top + 12,
-      }
-    })
-    path.addEventListener('mouseleave', () => {
-      tooltip.value = { ...tooltip.value, visible: false }
-    })
-    path.addEventListener('click', (event) => {
-      event.stopPropagation()
-      let selectionInfo: typeof selectedLink.value = null
-      if (linkType === 'root-company') {
-        selectionInfo = { key: linkKey, type: linkType, companyRid }
-      } else if (linkType === 'company-project-group') {
-        selectionInfo = { key: linkKey, type: linkType, projectGroupRid }
-      } else if (linkType === 'project-group-pm') {
-        selectionInfo = { key: linkKey, type: linkType, pmRid }
-      } else if (linkType === 'pm-project') {
-        selectionInfo = { key: linkKey, type: linkType, pmRid, projectRid }
-      } else if (linkType === 'project-pl') {
-        selectionInfo = { key: linkKey, type: linkType, plRid }
-      }
-      selectedLink.value =
-        selectedLink.value && selectedLink.value.key === linkKey ? null : selectionInfo
-      renderSankey()
-    })
-
-    linkGroup.appendChild(path)
-  })
-
-  graph.nodes.forEach((node: any) => {
-    const nodeId = String(node.id ?? '')
-    const nodeRid = Number(nodeId.split(':')[1] ?? 0)
-    const isProjectNode = nodeId.startsWith('project-company:') || nodeId.startsWith('project-pm:')
-    const fullWidth = node.x1 - node.x0
-    const targetWidth = isProjectNode ? 8 : fullWidth
-    const widthDiff = Math.max(0, fullWidth - targetWidth)
-    const x0 = node.x0 + widthDiff / 2
-    const x1 = node.x1 - widthDiff / 2
-    const rect = document.createElementNS(ns, 'rect')
-    const snappedX0 = snap(x0)
-    const snappedX1 = snap(x1)
-    const rawY0 = Number(node.y0 ?? 0)
-    const rawY1 = Number(node.y1 ?? 0)
-    rect.setAttribute('x', `${snappedX0}`)
-    rect.setAttribute('y', `${rawY0}`)
-    rect.setAttribute('width', `${Math.max(2, snappedX1 - snappedX0)}`)
-    const rawNodeHeight = Math.max(0, (node.y1 ?? 0) - (node.y0 ?? 0))
-    const minRenderHeight = useMinNodeHeight.value ? minNodeHeight : 0.5
-    rect.setAttribute('height', `${Math.max(minRenderHeight, rawY1 - rawY0)}`)
-    rect.setAttribute('fill', node.color ?? '#888888')
-    rect.setAttribute('rx', '2')
-    rect.addEventListener('mouseenter', (event) => {
-      const wrap = sankeyWrap.value
-      if (!wrap) return
-      const rectBox = wrap.getBoundingClientRect()
-      const rawName = (node.display ?? node.name ?? '').trim()
-      let labelText = rawName
-      if (nodeId.startsWith('project-company:')) {
-        const name = projectGroupNameById.get(nodeRid)
-        labelText = name ?? rawName
-      } else if (nodeId.startsWith('project-pm:')) {
-        const name = projectNameById.get(nodeRid)
-        labelText = name ?? rawName
-      } else if (nodeId.startsWith('pm:')) {
-        labelText = rawName.replace(/^PM\\s*/, '')
-      } else if (nodeId.startsWith('pl:')) {
-        labelText = rawName.replace(/^PL\\s*/, '')
-      }
-      const valueText = currencyFormatter.format(node.value ?? 0)
-      tooltip.value = {
-        visible: true,
-        x: event.clientX - rectBox.left + 12,
-        y: event.clientY - rectBox.top + 12,
-        text: `${labelText}: ${valueText}`,
-      }
-    })
-    rect.addEventListener('mousemove', (event) => {
-      const wrap = sankeyWrap.value
-      if (!wrap) return
-      const rectBox = wrap.getBoundingClientRect()
-      tooltip.value = {
-        ...tooltip.value,
-        x: event.clientX - rectBox.left + 12,
-        y: event.clientY - rectBox.top + 12,
-      }
-    })
-    rect.addEventListener('mouseleave', () => {
-      tooltip.value = { ...tooltip.value, visible: false }
-    })
-    rect.addEventListener('click', (event) => {
-      event.stopPropagation()
-      let selectionInfo: typeof selectedLink.value = null
-      if (nodeId.startsWith('company:')) {
-        selectionInfo = {
-          key: `node:company:${nodeRid}`,
-          type: 'root-company',
-          companyRid: nodeRid,
-        }
-      } else if (nodeId.startsWith('project-company:')) {
-        selectionInfo = {
-          key: `node:project-group:${nodeRid}`,
-          type: 'company-project-group',
-          projectGroupRid: nodeRid,
-        }
-      } else if (nodeId.startsWith('pm:')) {
-        selectionInfo = { key: `node:pm:${nodeRid}`, type: 'project-group-pm', pmRid: nodeRid }
-      } else if (nodeId.startsWith('project-pm:')) {
-        selectionInfo = { key: `node:project:${nodeRid}`, type: 'pm-project', projectRid: nodeRid }
-      } else if (nodeId.startsWith('pl:')) {
-        selectionInfo = { key: `node:pl:${nodeRid}`, type: 'project-pl', plRid: nodeRid }
-      } else {
-        selectionInfo = null
-      }
-      selectedLink.value =
-        selectedLink.value && selectionInfo && selectedLink.value.key === selectionInfo.key
-          ? null
-          : selectionInfo
-      renderSankey()
-    })
-    if (selectionSets) {
-      rect.style.opacity = activeNodeIds.has(nodeId) ? '1' : '0.6'
-      rect.dataset.fadeTo = activeNodeIds.has(nodeId) ? '1' : '0.12'
-    } else {
-      rect.style.opacity = '1'
-      delete rect.dataset.fadeTo
-    }
-    rect.style.transition = 'opacity 10ms ease'
-    nodeGroup.appendChild(rect)
-
-    const label = document.createElementNS(ns, 'text')
-    const xMid = (node.x0 + node.x1) / 2
-    const yMid = node.y0 + (node.y1 - node.y0) / 2
-    label.setAttribute('y', `${yMid}`)
-    label.setAttribute('fill', '#efefef')
-    label.setAttribute('font-size', '12')
-    label.setAttribute('dominant-baseline', 'middle')
-
-    if (nodeId.startsWith('pm:')) {
-      label.setAttribute('x', `${snap(node.x1 + 12)}`)
-      label.setAttribute('text-anchor', 'start')
-    } else if (node.x0 < leftEdge) {
-      label.setAttribute('x', `${snap(node.x0 - 12)}`)
-      label.setAttribute('text-anchor', 'end')
-    } else if (node.x0 > rightEdge) {
-      label.setAttribute('x', `${snap(node.x1 + 12)}`)
-      label.setAttribute('text-anchor', 'start')
-    } else {
-      label.setAttribute('x', `${snap(centerX)}`)
-      label.setAttribute('text-anchor', 'middle')
-    }
-    const text = (node.display ?? node.name ?? '').trim()
-    if (text) {
-      label.textContent = text
-      if (selectionSets) {
-        label.style.opacity = activeNodeIds.has(nodeId) ? '1' : '0.6'
-        label.dataset.fadeTo = activeNodeIds.has(nodeId) ? '1' : '0.12'
-      } else {
-        label.style.opacity = '1'
-        delete label.dataset.fadeTo
-      }
-      label.style.transition = 'opacity 10ms ease'
-      nodeGroup.appendChild(label)
-    }
-
-    const metrics = metricsByNode.value
-    const ridPart = Number(nodeId.split(':')[1] ?? 0)
-    let metricSource: { amount: number; projectCount: number } | undefined
-    let metricAnchor: { x: number; align: 'start' | 'end' } | null = null
-    if (nodeId.startsWith('company:')) {
-      metricSource = metrics.company.get(ridPart)
-      metricAnchor = { x: node.x1 + 12, align: 'start' }
-    } else if (nodeId.startsWith('pm:')) {
-      metricSource = metrics.pm.get(ridPart)
-      metricAnchor = { x: node.x0 - 12, align: 'end' }
-    } else if (nodeId.startsWith('pl:')) {
-      metricSource = metrics.pl.get(ridPart)
-      metricAnchor = { x: node.x0 - 12, align: 'end' }
-    }
-
-    if (metricSource && metricAnchor) {
-      const percent = metrics.totalAmount ? (metricSource.amount / metrics.totalAmount) * 100 : 0
-      const projectCount = metricSource.projectCount
-      const metricText = `${percent.toFixed(1)}% (${projectCount}PJ)`
-      const metricLabel = document.createElementNS(ns, 'text')
-      metricLabel.setAttribute('x', `${snap(metricAnchor.x)}`)
-      metricLabel.setAttribute('y', `${yMid}`)
-      metricLabel.setAttribute('fill', '#efefef')
-      metricLabel.setAttribute('font-size', '11')
-      metricLabel.setAttribute('dominant-baseline', 'middle')
-      metricLabel.setAttribute('text-anchor', metricAnchor.align)
-      metricLabel.textContent = metricText
-      if (selectionSets) {
-        metricLabel.style.opacity = activeNodeIds.has(nodeId) ? '1' : '0.6'
-        metricLabel.dataset.fadeTo = activeNodeIds.has(nodeId) ? '1' : '0.12'
-      } else {
-        metricLabel.style.opacity = '1'
-        delete metricLabel.dataset.fadeTo
-      }
-      metricLabel.style.transition = 'opacity 10ms ease'
-      nodeGroup.appendChild(metricLabel)
-    }
-  })
-
-  if (selectionSets) {
-    requestAnimationFrame(() => {
-      const svgEl = sankeySvg.value
-      if (!svgEl) return
-      svgEl.querySelectorAll<SVGElement>('[data-fade-to]').forEach((element) => {
-        const target = element.dataset.fadeTo
-        if (target) {
-          element.style.opacity = target
-        }
-      })
-      svgEl.querySelectorAll<SVGElement>('[data-fade-to-stroke]').forEach((element) => {
-        const target = element.dataset.fadeToStroke
-        if (target) {
-          element.style.strokeOpacity = target
-        }
-      })
-    })
   }
 }
 
-const updateSize = () => {
-  if (!sankeyWrap.value) return
-  wrapSize.value = {
-    width: Math.max(0, sankeyWrap.value.clientWidth),
-    height: Math.max(0, sankeyWrap.value.clientHeight),
+const tooltipTextForLink = (link: LinkRender) => {
+  switch (link.kind) {
+    case 'root-company':
+      return `${link.meta.companyName ?? ''}: ${formatCurrency(link.value)}`
+    case 'company-project-group':
+      return `${link.meta.projectGroupName ?? ''}: ${formatCurrency(link.value)}`
+    case 'project-group-pm':
+      return `${link.meta.projectGroupName ?? ''}: ${link.meta.pmName ?? ''}: ${formatCurrency(
+        link.value,
+      )}`
+    case 'pm-project':
+      return `${link.meta.projectName ?? ''}: ${formatCurrency(link.value)}`
+    case 'project-pl':
+      return `${link.meta.projectName ?? ''}: ${link.meta.plName ?? ''}: ${formatCurrency(
+        link.value,
+      )}`
+    default:
+      return formatCurrency(link.value)
   }
 }
 
-watch([sankeySummary, wrapSize, useMinNodeHeight], () => {
-  renderSankey()
-})
+const updateTooltipPosition = (event: MouseEvent) => {
+  if (!svgRef.value) return
+  const rect = svgRef.value.getBoundingClientRect()
+  tooltip.value = {
+    ...tooltip.value,
+    x: event.clientX - rect.left + 12,
+    y: event.clientY - rect.top + 12,
+  }
+}
 
-onMounted(() => {
-  updateSize()
-  if (sankeyWrap.value) {
-    resizeObserver = new ResizeObserver(() => {
-      updateSize()
+const handleLinkEnter = (link: LinkRender, event: MouseEvent) => {
+  tooltip.value = { visible: true, x: 0, y: 0, text: tooltipTextForLink(link) }
+  updateTooltipPosition(event)
+}
+
+const handleLinkMove = (event: MouseEvent) => {
+  if (!tooltip.value.visible) return
+  updateTooltipPosition(event)
+}
+
+const handleLinkLeave = () => {
+  resetTooltip()
+}
+
+const toggleLinkSelection = (link: LinkRender) => {
+  if (selectedLinkId.value === link.id) {
+    resetSelection()
+    return
+  }
+  selectedLinkId.value = link.id
+  selectedNodeId.value = null
+  computeHighlights(link.id)
+}
+
+const toggleNodeSelection = (node: NodeRender) => {
+  if (selectedNodeId.value === node.id) {
+    resetSelection()
+    return
+  }
+  selectedNodeId.value = node.id
+  selectedLinkId.value = null
+  computeHighlightsFromNode(node.id)
+}
+
+const clearSelection = () => {
+  resetSelection()
+}
+
+watch(
+  selectedPeriod,
+  async (nextPeriod) => {
+    resetSelection()
+    resetTooltip()
+    await summaryStore.fetchSummariesSankey(nextPeriod)
+    updateLayout()
+  },
+  { immediate: false },
+)
+
+watch(
+  () => summaryStore.summaries_sankey,
+  () => {
+    updateLayout()
+  },
+)
+
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(async () => {
+  await summaryStore.fetchSummariesSankey(selectedPeriod.value)
+
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (!entry) return
+      const { width, height } = entry.contentRect
+      size.value = { width, height }
+      updateLayout()
     })
-    resizeObserver.observe(sankeyWrap.value)
-  }
-  const onViewportResize = () => {
-    updateSize()
-  }
-  window.addEventListener('resize', onViewportResize)
-  window.visualViewport?.addEventListener('resize', onViewportResize)
-  removeViewportListeners = () => {
-    window.removeEventListener('resize', onViewportResize)
-    window.visualViewport?.removeEventListener('resize', onViewportResize)
-  }
-
-  const wrap = sankeyWrap.value
-  const svg = sankeySvg.value
-  if (wrap && svg) {
-    const dragState = {
-      active: false,
-      startY: 0,
-      startScrollTop: 0,
-    }
-    const onMouseDown = (event: MouseEvent) => {
-      if (!useMinNodeHeight.value) return
-      if (event.button !== 0) return
-      if (event.target !== svg) return
-      dragState.active = true
-      dragState.startY = event.clientY
-      dragState.startScrollTop = wrap.scrollTop
-      wrap.classList.add('sankey-wrap--dragging')
-      event.preventDefault()
-    }
-    const onMouseMove = (event: MouseEvent) => {
-      if (!dragState.active) return
-      const deltaY = event.clientY - dragState.startY
-      wrap.scrollTop = dragState.startScrollTop - deltaY
-    }
-    const onMouseUp = () => {
-      if (!dragState.active) return
-      dragState.active = false
-      wrap.classList.remove('sankey-wrap--dragging')
-    }
-    wrap.addEventListener('mousedown', onMouseDown)
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-    removeDragListeners = () => {
-      wrap.removeEventListener('mousedown', onMouseDown)
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    }
-
-    const onBackgroundClick = (event: MouseEvent) => {
-      if (event.target !== svg && event.target !== wrap) return
-      if (!selectedLink.value) return
-      selectedLink.value = null
-      tooltip.value = { ...tooltip.value, visible: false }
-      renderSankey()
-    }
-    wrap.addEventListener('click', onBackgroundClick)
-    removeBackgroundClick = () => {
-      wrap.removeEventListener('click', onBackgroundClick)
-    }
+    resizeObserver.observe(containerRef.value)
   }
 })
 
 onBeforeUnmount(() => {
-  resizeObserver?.disconnect()
-  resizeObserver = null
-  removeDragListeners?.()
-  removeDragListeners = null
-  removeBackgroundClick?.()
-  removeBackgroundClick = null
-  removeViewportListeners?.()
-  removeViewportListeners = null
+  if (resizeObserver && containerRef.value) {
+    resizeObserver.unobserve(containerRef.value)
+  }
 })
+
+const tooltipStyle = computed(() => ({
+  left: `${tooltip.value.x}px`,
+  top: `${tooltip.value.y}px`,
+}))
+
+const hasSelection = computed(() => selectedLinkId.value !== null || selectedNodeId.value !== null)
+
+const isDimmedNode = (node: NodeRender) =>
+  hasSelection.value && !highlightedNodes.value.has(node.id)
+
+const isDimmedLink = (link: LinkRender) =>
+  hasSelection.value && !highlightedLinks.value.has(link.id)
 </script>
 
 <template>
-  <v-card
-    class="viz-card viz-card--tall company-card sankey-card"
-    color="#808080"
-    rounded="xl"
-    variant="tonal"
-  >
-    <v-card-title class="text-body-2 font-weight-medium viz-title sankey-title">
-      <div class="sankey-title-left">
-        <span>Results</span>
-        <v-btn-toggle v-model="selectedPeriod" mandatory density="compact" class="ml-4">
-          <v-btn
-            v-for="option in periodOptions"
-            :key="option.value"
-            :value="option.value"
-            size="small"
-          >
-            {{ option.label }}
-          </v-btn>
-        </v-btn-toggle>
-      </div>
-      <v-switch
-        v-model="useMinNodeHeight"
-        color="primary"
-        hide-details
-        class="sankey-switch"
-        label="Scroll"
-      />
+  <v-card class="viz-card result-card" color="#808080" rounded="xl" variant="tonal">
+    <v-card-title class="text-subtitle-2 font-weight-medium viz-title">
+      Results
+      <v-btn-toggle v-model="selectedPeriod" mandatory density="compact" class="period-toggle">
+        <v-btn v-for="option in periodOptions" :key="option.value" :value="option.value" size="small">
+          {{ option.label }}
+        </v-btn>
+      </v-btn-toggle>
     </v-card-title>
 
-    <v-card-text class="pa-3 viz-card-text sankey-body">
-      <div
-        ref="sankeyWrap"
-        class="sankey-wrap"
-        :class="{
-          'sankey-wrap--scroll': useMinNodeHeight,
-          'sankey-wrap--draggable': useMinNodeHeight,
-        }"
-      >
-        <svg
-          ref="sankeySvg"
-          class="sankey-svg"
-          :class="{ 'sankey-svg--scroll': useMinNodeHeight }"
-          role="img"
-          aria-label="Sankey diagram"
-        />
-        <div
-          v-if="tooltip.visible"
-          class="sankey-tooltip"
-          :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
-        >
+    <v-card-text class="viz-card-text result-card__body">
+      <div ref="containerRef" class="sankey-container" @click="clearSelection">
+        <svg ref="svgRef" class="sankey-svg" :width="size.width" :height="size.height">
+          <defs>
+            <linearGradient
+              v-for="link in layoutLinks"
+              :key="link.gradientId"
+              :id="link.gradientId"
+              gradientUnits="userSpaceOnUse"
+              :x1="link.gradientX1"
+              :x2="link.gradientX2"
+            >
+              <stop offset="0%" :stop-color="link.sourceColor" stop-opacity="0.7" />
+              <stop offset="100%" :stop-color="link.targetColor" stop-opacity="0.7" />
+            </linearGradient>
+          </defs>
+
+          <g class="sankey-links">
+            <path
+              v-for="link in layoutLinks"
+              :key="link.id"
+              class="sankey-link"
+              :class="{
+                'sankey-link--dimmed': isDimmedLink(link),
+                'sankey-link--active': selectedLinkId === link.id,
+              }"
+              :d="link.path"
+              :stroke="`url(#${link.gradientId})`"
+              :stroke-width="link.width"
+              @mouseenter="(event) => handleLinkEnter(link, event)"
+              @mousemove="handleLinkMove"
+              @mouseleave="handleLinkLeave"
+              @click.stop="toggleLinkSelection(link)"
+            />
+          </g>
+
+          <g class="sankey-nodes">
+            <rect
+              v-for="node in layoutNodes"
+              :key="node.id"
+              class="sankey-node"
+              :class="{ 'sankey-node--dimmed': isDimmedNode(node) }"
+              :x="node.x0"
+              :y="node.y0"
+              :width="node.x1 - node.x0"
+              :height="node.y1 - node.y0"
+              :fill="node.color"
+              @click.stop="toggleNodeSelection(node)"
+            />
+
+            <g v-for="node in layoutNodes" :key="`${node.id}-label`">
+              <text
+                v-if="node.showLeft"
+                class="sankey-label"
+                :class="{ 'sankey-label--dimmed': isDimmedNode(node) }"
+                :x="node.labelLeftX"
+                :y="node.labelY"
+                text-anchor="end"
+                dominant-baseline="middle"
+              >
+                {{ node.labelLeft }}
+              </text>
+              <text
+                v-if="node.showRight"
+                class="sankey-label sankey-label--right"
+                :class="{ 'sankey-label--dimmed': isDimmedNode(node) }"
+                :x="node.labelRightX"
+                :y="node.labelY"
+                text-anchor="start"
+                dominant-baseline="middle"
+              >
+                {{ node.labelRight }}
+              </text>
+            </g>
+          </g>
+        </svg>
+
+        <div v-show="tooltip.visible" class="sankey-tooltip" :style="tooltipStyle">
           {{ tooltip.text }}
         </div>
       </div>
@@ -1151,118 +706,82 @@ onBeforeUnmount(() => {
 <style scoped>
 @import './viz.css';
 
-.sankey-card {
-  height: 100%;
-}
-
-.sankey-body {
+.result-card {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
-.sankey-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.result-card__body {
+  flex: 1;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
-.sankey-title-left {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.sankey-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.sankey-total {
-  font-size: 18px;
-  font-weight: 600;
-}
-.sankey-wrap {
+.sankey-container {
   position: relative;
   width: 100%;
-  flex: 1;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: hidden;
-}
-
-.sankey-wrap--scroll {
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  scrollbar-width: none;
-  padding-right: 8px;
-}
-
-.sankey-wrap--draggable {
-  cursor: grab;
-}
-
-.sankey-wrap--dragging {
-  cursor: grabbing;
-}
-
-.sankey-wrap--scroll::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-.sankey-wrap--scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sankey-wrap--scroll::-webkit-scrollbar-thumb {
-  background: transparent;
-}
-
-.sankey-switch :deep(.v-input__control) {
-  min-height: 24px;
-}
-
-.sankey-switch :deep(.v-selection-control) {
-  min-height: 24px;
-}
-
-.sankey-switch :deep(.v-label) {
-  font-size: 12px;
+  height: 100%;
+  min-height: 420px;
+  cursor: default;
+  overflow: visible;
 }
 
 .sankey-svg {
   width: 100%;
   height: 100%;
+  display: block;
+  overflow: visible;
 }
 
-.sankey-svg--scroll {
-  height: auto;
-  display: block;
+.sankey-link {
+  fill: none;
+  stroke-linecap: butt;
+  stroke-opacity: 0.5;
+  transition: opacity 0.2s ease, stroke-opacity 0.2s ease;
+}
+
+.sankey-link--active {
+  stroke-opacity: 0.85;
+}
+
+.sankey-link--dimmed {
+  opacity: 0.15;
+}
+
+.sankey-node {
+  rx: 3px;
+  ry: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.sankey-node--dimmed {
+  opacity: 0.2;
+}
+
+.sankey-label {
+  fill: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  letter-spacing: 0.2px;
+}
+
+.sankey-label--dimmed {
+  opacity: 0.25;
 }
 
 .sankey-tooltip {
   position: absolute;
-  z-index: 2;
-  padding: 6px 8px;
+  background: rgba(15, 15, 15, 0.92);
+  color: #ffffff;
+  padding: 6px 10px;
   border-radius: 6px;
-  background: rgba(6, 6, 6, 0.95);
-  color: #efefef;
   font-size: 12px;
   pointer-events: none;
   white-space: nowrap;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
-.sankey-empty {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.period-toggle {
+  background: rgba(255, 255, 255, 0.08);
 }
 </style>
