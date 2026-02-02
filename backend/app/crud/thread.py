@@ -87,8 +87,6 @@ def get_threads_by_user(
         return a.op("||")(b)
 
     today = date.today().isoformat()
-    cutoff = datetime.utcnow() - timedelta(days=7)
-
     project_ids = [
         int(r[0])
         for r in db.query(model_project.Project.rid)
@@ -156,50 +154,13 @@ def get_threads_by_user(
             continue
 
         ordered_threads: list[model_thread.Thread] = []
-        threads_by_rid: dict[int, model_thread.Thread] = {}
-        children_map: dict[int | None, list[int]] = {}
-
         for obj, depth in rows:
             setattr(obj, "depth", int(depth))
             ordered_threads.append(obj)
-            threads_by_rid[obj.rid] = obj
-            children_map.setdefault(obj.rid_parent, []).append(obj.rid)
 
-        recent_ids = {
-            t.rid for t in ordered_threads if t.updated_at and t.updated_at >= cutoff
-        }
-        if not recent_ids:
-            continue
-
-        include_ids: set[int] = set()
-
-        def add_ancestors(rid: int) -> None:
-            current = rid
-            while True:
-                if current in include_ids:
-                    break
-                include_ids.add(current)
-                parent = threads_by_rid[current].rid_parent
-                if parent is None:
-                    break
-                current = parent
-
-        def add_descendants(rid: int) -> None:
-            for child in children_map.get(rid, []):
-                if child in include_ids:
-                    continue
-                include_ids.add(child)
-                add_descendants(child)
-
-        for rid in recent_ids:
-            add_ancestors(rid)
-            add_descendants(rid)
-
-        filtered_threads = [t for t in ordered_threads if t.rid in include_ids]
-        if filtered_threads:
-            results.append(
-                schema_thread.ThreadReport(rid_projects=rid_projects, threads=filtered_threads)
-            )
+        results.append(
+            schema_thread.ThreadReport(rid_projects=rid_projects, threads=ordered_threads)
+        )
 
     return results
 
