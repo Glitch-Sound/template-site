@@ -82,6 +82,9 @@ const parseNumber = (value: string) => {
 }
 
 const numericWithComma = (value: string) => rules.numeric(value.replace(/,/g, ''))
+const numberParentRules = [
+  (value: string) => /^[a-zA-Z0-9]{6}$/.test(value) || '6-digit alphanumeric required',
+]
 
 const formattedAmountExpected = computed(() => formatNumber(form_data.value.amount_expected))
 const formattedAmountOrder = computed(() => formatNumber(form_data.value.amount_order))
@@ -144,7 +147,11 @@ watch(
 
           <v-text-field v-model="form_data.name" :rules="[]" label="プロジェクト名" />
 
-          <v-text-field v-model="form_data.number_parent" :rules="[rules.text]" label="親番" />
+          <v-text-field
+            v-model="form_data.number_parent"
+            :rules="numberParentRules"
+            label="親番"
+          />
 
           <v-row dense class="mb-4">
             <v-col cols="6">
