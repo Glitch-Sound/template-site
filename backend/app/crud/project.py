@@ -1,3 +1,4 @@
+import calendar
 from datetime import date
 from typing import List
 
@@ -373,11 +374,22 @@ def get_projects(
 def get_project_report(
     db: Session, rid_users: int | None
 ) -> list[schema_project.ProjectList]:
-    today = date.today().isoformat()
+    today_dt = date.today()
+    today = today_dt.isoformat()
+    next_month = _add_months(today_dt, 1).isoformat()
     child_preds = [
         model_project.Project.is_deleted == 0,
-        model_project.Project.date_start <= today,
-        model_project.Project.date_end >= today,
+        or_(
+            and_(
+                model_project.Project.date_start <= today,
+                model_project.Project.date_end >= today,
+            ),
+            and_(
+                model_project.Project.date_start >= today,
+                model_project.Project.date_start <= next_month,
+                model_project.Project.date_start != "",
+            ),
+        ),
     ]
     if rid_users is not None:
         child_preds.append(model_project.Project.rid_users_pl == rid_users)
@@ -409,6 +421,14 @@ def _get_target(date_end: str) -> int:
         return 0
     date_end = date.fromisoformat(date_end)
     return date_end.year * 10 + (date_end.month + 2) // 3
+
+
+def _add_months(dt: date, months: int) -> date:
+    month_index = dt.month - 1 + months
+    year = dt.year + month_index // 12
+    month = month_index % 12 + 1
+    day = min(dt.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
 
 
 def create_project(
