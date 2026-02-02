@@ -42,9 +42,10 @@ const canSubmit = computed(
     form_data.value.rid_users_pl !== 0 &&
     form_data.value.rank !== TypeRank.NONE &&
     form_data.value.name !== '' &&
-    form_data.value.date_start !== '' &&
-    form_data.value.date_delivery !== '' &&
-    form_data.value.date_end !== '',
+    (form_data.value.rank === TypeRank.E ||
+      (form_data.value.date_start !== '' &&
+        form_data.value.date_delivery !== '' &&
+        form_data.value.date_end !== '')),
 )
 
 const handleProjectGroupSelected = (project_group: ProjectGroup) => {
@@ -102,6 +103,7 @@ watch(
     }
   },
 )
+
 </script>
 
 <template>

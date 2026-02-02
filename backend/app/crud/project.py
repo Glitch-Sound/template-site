@@ -157,6 +157,7 @@ def get_project_condition(db: Session) -> schema_project.SearchCondition:
     .filter(
         and_(
             model_project.Project.date_end.isnot(None),
+            model_project.Project.date_end != "",
             model_project.Project.is_deleted == 0,
         )
     )\
@@ -241,6 +242,7 @@ def get_project_targets(db: Session) -> schema_project.TargetQuarter:
     .filter(
         and_(
             model_project.Project.date_end.isnot(None),
+            model_project.Project.date_end != "",
             model_project.Project.is_deleted == 0,
         )
     )\
@@ -303,7 +305,13 @@ def get_projects(
     child_preds = [model_project.Project.is_deleted == 0]
 
     if condition.target:
-        child_preds.append(model_project.Project.target_quarter.in_(condition.target))
+        child_preds.append(
+            or_(
+                model_project.Project.target_quarter.in_(condition.target),
+                model_project.Project.date_end.is_(None),
+                model_project.Project.date_end == "",
+            )
+        )
 
     if condition.rid_users_pm:
         child_preds.append(
@@ -397,6 +405,8 @@ def get_project_report(
 
 
 def _get_target(date_end: str) -> int:
+    if not date_end:
+        return 0
     date_end = date.fromisoformat(date_end)
     return date_end.year * 10 + (date_end.month + 2) // 3
 
