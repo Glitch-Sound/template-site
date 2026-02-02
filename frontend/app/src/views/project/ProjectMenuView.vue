@@ -91,6 +91,7 @@ const handleClear = async () => {
   model_companies.value = companies.value.map((company) => company.rid)
   model_users_pm.value = selectable_users.value
   model_users_pl.value = selectable_users.value
+  model_ranks.value = store.defaultCondition().ranks ?? []
   model_none_pre_approval.value = false
   model_none_number_m.value = false
   model_none_number_s.value = false
