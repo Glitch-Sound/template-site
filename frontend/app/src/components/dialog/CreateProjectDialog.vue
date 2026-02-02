@@ -42,6 +42,9 @@ const canSubmit = computed(
     form_data.value.rid_users_pl !== 0 &&
     form_data.value.rank !== TypeRank.NONE &&
     form_data.value.name !== '' &&
+    (form_data.value.rank !== TypeRank.A ||
+      (/^[a-zA-Z0-9]{6}$/.test(form_data.value.number_parent) &&
+        form_data.value.amount_order > 0)) &&
     (form_data.value.rank === TypeRank.E ||
       (form_data.value.date_start !== '' &&
         form_data.value.date_delivery !== '' &&
@@ -83,7 +86,17 @@ const parseNumber = (value: string) => {
 
 const numericWithComma = (value: string) => rules.numeric(value.replace(/,/g, ''))
 const numberParentRules = [
-  (value: string) => /^[a-zA-Z0-9]{6}$/.test(value) || '6-digit alphanumeric required',
+  (value: string) => {
+    if (form_data.value.rank !== TypeRank.A && value === '') return true
+    return /^[a-zA-Z0-9]{6}$/.test(value) || '6-digit alphanumeric required'
+  },
+]
+const amountOrderRules = [
+  (value: string) => {
+    const parsed = parseNumber(value)
+    if (form_data.value.rank !== TypeRank.A) return true
+    return parsed > 0 || 'Amount is required'
+  },
 ]
 
 const formattedAmountExpected = computed(() => formatNumber(form_data.value.amount_expected))
@@ -167,7 +180,7 @@ watch(
             <v-col cols="6">
               <v-text-field
                 :model-value="formattedAmountOrder"
-                :rules="[numericWithComma]"
+                :rules="[numericWithComma, ...amountOrderRules]"
                 label="受注金額"
                 inputmode="numeric"
                 @update:model-value="updateAmountOrder"
